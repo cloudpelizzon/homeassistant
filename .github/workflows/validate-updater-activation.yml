@@ -39,12 +39,12 @@ jobs:
           assert.match(optionalSrc, /class CloudPelizzonModuleSlot/);
           assert.match(optionalSrc, /cp_retry=/);
           assert.match(optionalSrc, /Tentar carregar novamente/);
-          assert.doesNotMatch(optionalSrc, /customElements\\.define\\(\\s*tag/);
+          assert.equal(optionalSrc.includes("customElements.define(tag"), false);
           assert.doesNotMatch(optionalSrc, /Este módulo não está instalado neste equipamento/);
           for (const sku of ['CP-MAINTENANCE','CP-ENERGY','CP-SECURITY']) {
             assert.match(unifiedSrc, new RegExp('cloudpelizzon-module-slot sku="'+sku+'"'));
           }
-          assert.match(unifiedSrc, /slot\\.activate\\(\\)/);
+          assert.equal(unifiedSrc.includes("slot.activate()"), true);
 
           const updaterSrc = fs.readFileSync(
             'custom_components/cloudpelizzon/updater/frontend/panel.js', 'utf8'
