@@ -49,6 +49,26 @@ async def authorize_module(hass, sku: str) -> dict:
         }
 
 
+def is_module_authorized_cached(hass, sku: str) -> bool:
+    """Synchronous fail-closed entitlement for event callbacks.
+
+    This uses the last verified CP1/CP2 status. A separate Core background
+    check-in refreshes revocation state; callers that can await must use
+    is_module_authorized() for an online verification.
+    """
+    platform = hass.data.get(PLATFORM_DOMAIN, {})
+    core = platform.get("core", {}) if isinstance(platform, dict) else {}
+    manager = core.get("license_manager") if isinstance(core, dict) else None
+    control = core.get("control") if isinstance(core, dict) else None
+    if manager is None or control is None or control.mode != "enforce":
+        return False
+    try:
+        return bool(manager.status_sync(sku, installed=True).get("allowed"))
+    except Exception:
+        LOGGER.exception("Commercial cached entitlement failure sku=%s", sku)
+        return False
+
+
 async def is_module_authorized(hass, sku: str) -> bool:
     """Use at every HTTP handler and background dispatch boundary."""
     decision = await authorize_module(hass, sku)
