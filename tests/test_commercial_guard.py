@@ -41,7 +41,8 @@ def main():
             self.status = "active"
             self.checks = 0
 
-        async def async_checkin(self):
+        async def async_checkin(self, *, force=False):
+            assert force is True
             self.checks += 1
             return {"status": self.status}
 
