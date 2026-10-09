@@ -61,10 +61,21 @@ def main():
             self.results.append(args)
 
     manager = Manager()
+
+    class Control:
+        mode = "enforce"
+        def __init__(self):
+            self.checks = 0
+        async def authorize(self, sku, *, installed):
+            self.checks += 1
+            result = manager.status_sync(sku, installed=installed)
+            return {"effective_allowed": result["allowed"]}
+
+    control = Control()
     registry = {"maintenance/list": (original, False)}
     hass = types.SimpleNamespace(data={
         "websocket_api": registry,
-        "cloudpelizzon": {"core": {"license_manager": manager}},
+        "cloudpelizzon": {"core": {"license_manager": manager, "control": control}},
     })
     assert module["registered_commands"](hass) == {"maintenance/list"}
     assert module["protect_new_commands"](hass, set(), "CP-MAINTENANCE") == ["maintenance/list"]
@@ -84,6 +95,7 @@ def main():
     assert denied.errors and denied.errors[0][1] == "commercial_license_denied"
     assert calls == ["executed"], "revoked handler must never be executed"
     assert manager.checks == 2
+    assert control.checks == 2
 
     # Missing licensing runtime also fails closed.
     hass.data["cloudpelizzon"] = {}
