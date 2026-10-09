@@ -22,7 +22,7 @@ async def async_register_frontend(hass: HomeAssistant) -> None:
         webcomponent_name=PANEL_ELEMENT,
         sidebar_title="CloudPelizzon",
         sidebar_icon="mdi:cloud-outline",
-        module_url=f"{FRONTEND_URL}/panel.js?v=0120",
+        module_url=f"{FRONTEND_URL}/panel.js?v=6211",
         embed_iframe=False,
         trust_external=False,
         require_admin=False,

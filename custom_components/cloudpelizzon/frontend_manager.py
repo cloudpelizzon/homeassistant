@@ -88,7 +88,7 @@ async def async_register_frontend(
         sidebar_icon="mdi:cloud-outline",
         module_url=(
             "/cloudpelizzon/frontend/"
-            "panel.js?v=20261009-hacs-bootstrap-r1"
+            "panel.js?v=20261009-unified-6211"
         ),
         embed_iframe=False,
         trust_external=False,
