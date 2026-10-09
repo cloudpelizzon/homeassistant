@@ -5,6 +5,7 @@ Descriptions and identifiers only. Do not publish proprietary module code here.
 
 MODULES = {
     "CP-MAINTENANCE": {
+        "lifecycle": "developed",
         "name": "Manutenção Residencial Preventiva",
         "domain": "cloudpelizzon_maintenance",
         "path": "/cloudpelizzon-maintenance",
@@ -13,6 +14,7 @@ MODULES = {
     },
 
     "CP-NOC": {
+        "lifecycle": "planned",
         "name": "Infraestrutura e NOC",
         "domain": "cloudpelizzon_noc",
         "path": "/cloudpelizzon-noc",
@@ -21,6 +23,7 @@ MODULES = {
     },
 
     "CP-ALEXA": {
+        "lifecycle": "planned",
         "name": "Central de Monitoramento das Alexas",
         "domain": "cloudpelizzon_alexa",
         "path": "/cloudpelizzon-alexa",
@@ -29,6 +32,7 @@ MODULES = {
     },
 
     "CP-ENERGY": {
+        "lifecycle": "developed",
         "name": "Inteligência de Energia",
         "domain": "cloudpelizzon_energy",
         "path": "/cloudpelizzon-energy",
@@ -37,6 +41,7 @@ MODULES = {
     },
 
     "CP-SOLAR": {
+        "lifecycle": "planned",
         "name": "Inteligência Solar",
         "domain": "cloudpelizzon_solar",
         "path": "/cloudpelizzon-solar",
@@ -45,6 +50,7 @@ MODULES = {
     },
 
     "CP-BACKUP": {
+        "lifecycle": "planned",
         "name": "Inteligência de Backups",
         "domain": "cloudpelizzon_backup",
         "path": "/cloudpelizzon-backup",
@@ -53,6 +59,7 @@ MODULES = {
     },
 
     "CP-SECURITY": {
+        "lifecycle": "developed",
         "name": "Central de Segurança",
         "domain": "cloudpelizzon_security",
         "path": "/cloudpelizzon-security",
@@ -61,6 +68,7 @@ MODULES = {
     },
 
     "CP-SECURITY-PRO": {
+        "lifecycle": "planned",
         "name": "Central de Segurança Pro",
         "domain": "cloudpelizzon_security_pro",
         "path": "/cloudpelizzon-security-pro",
@@ -69,6 +77,7 @@ MODULES = {
     },
 
     "CP-CAMERAS": {
+        "lifecycle": "planned",
         "name": "Inteligência de Câmeras",
         "domain": "cloudpelizzon_cameras",
         "path": "/cloudpelizzon-cameras",
@@ -77,6 +86,7 @@ MODULES = {
     },
 
     "CP-AUTOMATION": {
+        "lifecycle": "planned",
         "name": "Central Inteligente de Automações",
         "domain": "cloudpelizzon_automation_intelligence",
         "path": "/cloudpelizzon-automation",
@@ -85,6 +95,7 @@ MODULES = {
     },
 
     "CP-AMBIENTE": {
+        "lifecycle": "planned",
         "name": "Ambiente",
         "domain": "cloudpelizzon_ambiente",
         "path": "/cloudpelizzon-ambiente",
@@ -93,6 +104,7 @@ MODULES = {
     },
 
     "CP-WATER": {
+        "lifecycle": "planned",
         "name": "Inteligência de Água",
         "domain": "cloudpelizzon_water",
         "path": "/cloudpelizzon-water",
@@ -101,6 +113,7 @@ MODULES = {
     },
 
     "CP-GAS": {
+        "lifecycle": "planned",
         "name": "Segurança de Gás",
         "domain": "cloudpelizzon_gas",
         "path": "/cloudpelizzon-gas",
@@ -109,6 +122,7 @@ MODULES = {
     },
 
     "CP-PRESENCE": {
+        "lifecycle": "planned",
         "name": "Presença Inteligente",
         "domain": "cloudpelizzon_presence",
         "path": "/cloudpelizzon-presence",
@@ -117,6 +131,7 @@ MODULES = {
     },
 
     "CP-FITOS": {
+        "lifecycle": "planned",
         "name": "FIT OS",
         "domain": "cloudpelizzon_fitos",
         "path": "/cloudpelizzon-fitos",
@@ -125,6 +140,7 @@ MODULES = {
     },
 
     "CP-GAMIFICATION": {
+        "lifecycle": "planned",
         "name": "Gamificação",
         "domain": "cloudpelizzon_gamification",
         "path": "/cloudpelizzon-gamification",
@@ -133,6 +149,7 @@ MODULES = {
     },
 
     "CP-NOTIFICATIONS-PRO": {
+        "lifecycle": "planned",
         "name": "Notificações Pro",
         "domain": "cloudpelizzon_notifications_pro",
         "path": "/cloudpelizzon-notifications-pro",
