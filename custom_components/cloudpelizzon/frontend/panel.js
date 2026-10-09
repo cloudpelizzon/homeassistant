@@ -1,5 +1,5 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
-import "/cloudpelizzon-core/frontend/panel.js?v=620-license-modal-r1c";
+import "/cloudpelizzon-core/frontend/panel.js?v=6211-global-commercial-install";
 import "/cloudpelizzon/frontend/optional-modules.js?v=20261009-hacs-bootstrap-r1";
 import "/cloudpelizzon-updater/frontend/panel.js?v=20260929-doclinks-v2";
 
