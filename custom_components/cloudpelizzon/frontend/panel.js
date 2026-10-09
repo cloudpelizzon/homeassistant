@@ -1,6 +1,6 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 import "/cloudpelizzon-core/frontend/panel.js?v=6211-global-commercial-install";
-import "/cloudpelizzon/frontend/optional-modules.js?v=20261009-hacs-bootstrap-r1";
+import "/cloudpelizzon/frontend/optional-modules.js?v=20261009-dynamic-module-loader-r1";
 import "/cloudpelizzon-updater/frontend/panel.js?v=6211-global-commercial-install";
 
 
@@ -41,7 +41,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
     const securityPanel =
       this.shadowRoot?.querySelector(
-        "cloudpelizzon-security-panel"
+        "cloudpelizzon-module-slot[sku=\"CP-SECURITY\"]"
       );
 
     if (securityPanel) {
@@ -953,8 +953,8 @@ class CloudPelizzonPanel extends HTMLElement {
         id="view-maintenance"
         class="view">
 
-        <cloudpelizzon-maintenance-panel>
-        </cloudpelizzon-maintenance-panel>
+        <cloudpelizzon-module-slot sku="CP-MAINTENANCE">
+        </cloudpelizzon-module-slot>
 
       </section>
 
@@ -963,8 +963,8 @@ class CloudPelizzonPanel extends HTMLElement {
         id="view-energy"
         class="view">
 
-        <cloudpelizzon-energy-panel>
-        </cloudpelizzon-energy-panel>
+        <cloudpelizzon-module-slot sku="CP-ENERGY">
+        </cloudpelizzon-module-slot>
 
       </section>
 
@@ -974,8 +974,8 @@ class CloudPelizzonPanel extends HTMLElement {
         id="view-security"
         class="view">
 
-        <cloudpelizzon-security-panel>
-        </cloudpelizzon-security-panel>
+        <cloudpelizzon-module-slot sku="CP-SECURITY">
+        </cloudpelizzon-module-slot>
 
       </section>
       ` : ""}
@@ -1053,7 +1053,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
     const securityPanel =
       this.shadowRoot.querySelector(
-        "cloudpelizzon-security-panel"
+        "cloudpelizzon-module-slot[sku=\"CP-SECURITY\"]"
       );
 
     if (
@@ -1559,6 +1559,10 @@ class CloudPelizzonPanel extends HTMLElement {
       );
     }
 
+    // Retrying a private panel must not depend on a full browser restart.
+    const slot = target?.querySelector("cloudpelizzon-module-slot");
+    if (slot) slot.activate();
+
 
     const button =
       this.shadowRoot.querySelector(
@@ -1594,7 +1598,7 @@ class CloudPelizzonPanel extends HTMLElement {
       :host{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;overflow-x:hidden!important}
       .topbar{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;display:flex!important;flex-wrap:wrap!important;padding-left:clamp(8px,1vw,18px)!important;padding-right:clamp(8px,1vw,18px)!important}
       .view{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;overflow-x:hidden!important}
-      cloudpelizzon-core-panel,cloudpelizzon-maintenance-panel,cloudpelizzon-energy-panel,cloudpelizzon-updater-panel{display:block!important;width:100%!important;max-width:none!important;min-width:0!important}
+      cloudpelizzon-core-panel,cloudpelizzon-module-slot,cloudpelizzon-updater-panel{display:block!important;width:100%!important;max-width:none!important;min-width:0!important}
       @media(max-width:800px){.topbar{gap:4px!important}.topbar button{padding-left:8px!important;padding-right:8px!important}}
     `;
     this.shadowRoot.appendChild(style);
@@ -1615,8 +1619,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
     [
       "cloudpelizzon-core-panel",
-      "cloudpelizzon-maintenance-panel",
-      "cloudpelizzon-energy-panel",
+      "cloudpelizzon-module-slot",
       "cloudpelizzon-updater-panel",
     ]
       .forEach(selector => {

@@ -1,7 +1,7 @@
 {
   "domain": "cloudpelizzon",
   "name": "CloudPelizzon",
-  "version": "6.2.11",
+  "version": "6.2.12",
   "documentation": "https://cloudpelizzon.com.br",
   "integration_type": "hub",
   "config_flow": true,
