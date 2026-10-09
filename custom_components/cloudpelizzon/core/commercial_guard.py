@@ -38,7 +38,7 @@ async def authorize_module(hass, sku: str) -> dict:
         # Check-ins are serialized and rate-limited by LicenseManager.
         # If an authoritative revoked decision was previously received,
         # the existing CP2 lease must never override it.
-        await manager.async_checkin()
+        await manager.async_checkin(force=True)
         decision = await control.authorize(sku, installed=True)
         return decision
     except Exception:
