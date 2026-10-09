@@ -19,6 +19,8 @@ jobs:
         run: |
           node --check custom_components/cloudpelizzon/updater/frontend/panel.js
           node --check custom_components/cloudpelizzon/core/frontend/panel.js
+          node --check custom_components/cloudpelizzon/frontend/optional-modules.js
+          node --input-type=module --check < custom_components/cloudpelizzon/frontend/panel.js
 
       - name: Smoke test activation and navigation
         shell: bash
@@ -27,6 +29,22 @@ jobs:
           const assert = require('node:assert/strict');
           const fs = require('node:fs');
           const vm = require('node:vm');
+
+          const optionalSrc = fs.readFileSync(
+            'custom_components/cloudpelizzon/frontend/optional-modules.js', 'utf8'
+          );
+          const unifiedSrc = fs.readFileSync(
+            'custom_components/cloudpelizzon/frontend/panel.js', 'utf8'
+          );
+          assert.match(optionalSrc, /class CloudPelizzonModuleSlot/);
+          assert.match(optionalSrc, /cp_retry=/);
+          assert.match(optionalSrc, /Tentar carregar novamente/);
+          assert.doesNotMatch(optionalSrc, /customElements\\.define\\(\\s*tag/);
+          assert.doesNotMatch(optionalSrc, /Este módulo não está instalado neste equipamento/);
+          for (const sku of ['CP-MAINTENANCE','CP-ENERGY','CP-SECURITY']) {
+            assert.match(unifiedSrc, new RegExp('cloudpelizzon-module-slot sku="'+sku+'"'));
+          }
+          assert.match(unifiedSrc, /slot\\.activate\\(\\)/);
 
           const updaterSrc = fs.readFileSync(
             'custom_components/cloudpelizzon/updater/frontend/panel.js', 'utf8'
