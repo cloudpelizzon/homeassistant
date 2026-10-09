@@ -288,11 +288,9 @@ class LicenseManager:
             now_mono = time.monotonic()
 
             if (
-                not force
-                and self._last_checkin_monotonic > 0
+                self._last_checkin_monotonic > 0
                 and (
-                    now_mono
-                    - self._last_checkin_monotonic
+                    now_mono - self._last_checkin_monotonic
                 ) < (FORCED_CHECKIN_GAP_SEC if force else MIN_CHECKIN_GAP_SEC)
             ):
 
@@ -315,10 +313,13 @@ class LicenseManager:
 
             if (
                 isinstance(result, dict)
-                and result.get("ok")
-                and str(
-                    result.get("status") or ""
-                ) in ({"active"} | DENY_IMMEDIATELY)
+                and (
+                    (
+                        result.get("ok")
+                        and str(result.get("status") or "") == "active"
+                    )
+                    or str(result.get("status") or "") in DENY_IMMEDIATELY
+                )
             ):
 
                 self._last_checkin_monotonic = (
