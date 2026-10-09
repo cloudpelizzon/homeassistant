@@ -181,10 +181,9 @@ async def _start_core(
             __package__,
         )
 
-        data.setdefault(
-            "control_mode",
-            "audit",
-        )
+        # Customer environments must enforce entitlements. Audit mode was
+        # informative only and made an authoritative DENY effectively allowed.
+        data["control_mode"] = "enforce"
 
         control = control_module.ControlLayer(
             hass,
@@ -636,6 +635,17 @@ async def async_start(
         ),
     )
 
+    # Commercial modules must not register operational APIs before licensing
+    # has been checked. Apply independent WS guards to every new command they
+    # register; installed files alone are not evidence of entitlement.
+    from .core import commercial_guard
+
+    commercial_skus = {
+        "maintenance": "CP-MAINTENANCE",
+        "energy": "CP-ENERGY",
+        "security": "CP-SECURITY",
+    }
+
     for name, factory in stages:
         # HACS_BOOTSTRAP_OPTIONAL_STAGE_GATE
         optional_stage_dirs = {
@@ -659,19 +669,51 @@ async def async_start(
             await _persist_status(hass)
             continue
 
+        sku = commercial_skus.get(name)
+        before_commands = None
+
+        if sku:
+            try:
+                before_commands = commercial_guard.registered_commands(hass)
+                core_runtime = platform.get("core", {})
+                manager = core_runtime.get("license_manager")
+                control = core_runtime.get("control")
+                if manager is None or control is None:
+                    raise RuntimeError("commercial_license_authority_unavailable")
+
+                await manager.async_checkin(force=True)
+                entitlement = await control.authorize(sku, installed=True)
+                if not entitlement.get("effective_allowed", False):
+                    platform.setdefault("optional_modules", {})[name] = (
+                        "license_denied:" + str(entitlement.get("status") or "unknown")
+                    )
+                    await _persist_status(hass)
+                    continue
+            except Exception as error:
+                _record_error(hass, name + "_authorization", error)
+                platform.setdefault("optional_modules", {})[name] = "license_guard_error"
+                await _persist_status(hass)
+                continue
+
         try:
             await factory()
 
         except Exception as error:
-            _record_error(
-                hass,
-                name,
-                error,
-            )
+            _record_error(hass, name, error)
 
-        await _persist_status(
-            hass
-        )
+        finally:
+            if sku and before_commands is not None:
+                try:
+                    commercial_guard.protect_new_commands(hass, before_commands, sku)
+                except Exception as error:
+                    _record_error(hass, name + "_ws_guard", error)
+                    # A failure must not leave unprotected WS commands active.
+                    handlers = hass.data.get("websocket_api", {})
+                    if isinstance(handlers, dict):
+                        for key in set(handlers) - before_commands:
+                            handlers.pop(key, None)
+
+        await _persist_status(hass)
 
     try:
         recovery = import_module(
