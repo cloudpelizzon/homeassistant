@@ -1,0 +1,92 @@
+name: Validate CloudPelizzon updater activation UX
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  updater-ux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check custom_components/cloudpelizzon/updater/frontend/panel.js
+          node --check custom_components/cloudpelizzon/core/frontend/panel.js
+
+      - name: Smoke test activation and navigation
+        shell: bash
+        run: |
+          node <<'JS'
+          const assert = require('node:assert/strict');
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+
+          const updaterSrc = fs.readFileSync(
+            'custom_components/cloudpelizzon/updater/frontend/panel.js', 'utf8'
+          );
+          const coreSrc = fs.readFileSync(
+            'custom_components/cloudpelizzon/core/frontend/panel.js', 'utf8'
+          );
+
+          const classes = new Map();
+          let destination = null;
+          const context = {
+            HTMLElement: class {},
+            customElements: {
+              define: (name, ctor) => classes.set(name, ctor),
+              get: name => classes.get(name),
+              whenDefined: async name => classes.get(name),
+            },
+            document: { querySelectorAll: () => [] },
+            window: {
+              addEventListener: () => {},
+              location: { assign: url => { destination = url; } },
+            },
+            requestAnimationFrame: () => {},
+            queueMicrotask: () => {},
+            console,
+          };
+          vm.runInNewContext(updaterSrc, context, { timeout: 2500 });
+          const Updater = classes.get('cloudpelizzon-updater-panel');
+          assert.ok(Updater, 'Updater panel is registered');
+          const panel = new Updater();
+          const handlers = {};
+          panel.querySelector = selector => ({
+            addEventListener: (type, fn) => { handlers[selector] = fn; },
+            set onclick(fn) { handlers[selector] = fn; }
+          });
+
+          panel.renderError('online_activation_required');
+          assert.match(panel.innerHTML, /Ativa[cç][aã]o necess[aá]ria/i);
+          assert.match(panel.innerHTML, /Gerenciar licen[cç]a/);
+          assert.match(panel.innerHTML, /href="\/hacs"/);
+          assert.doesNotMatch(panel.innerHTML, /activation_secret|CP1\.\.\./);
+          assert.equal(typeof handlers['#open-license'], 'function');
+          handlers['#open-license']();
+          assert.equal(destination, '/cloudpelizzon?cp_open_license=1');
+
+          panel.renderError('installation_id_missing');
+          assert.match(panel.innerHTML, /Identifica[cç][aã]o da instala[cç][aã]o necess[aá]ria/);
+
+          panel.renderError('temporarily_unavailable');
+          assert.match(panel.innerHTML, /Tentar novamente/);
+          assert.doesNotMatch(panel.innerHTML, /id="open-license"/);
+
+          assert.match(coreSrc, /openLicenseFromUrl\(\)/);
+          assert.match(coreSrc, /cp_open_license/);
+          assert.match(coreSrc, /this\.showLicense\(\)/);
+
+          const managerSrc = fs.readFileSync(
+            'custom_components/cloudpelizzon/updater/manager.py', 'utf8'
+          );
+          assert.match(managerSrc, /online_activation_required/);
+          assert.match(managerSrc, /activation_secret/);
+          console.log('PASS: activation CTA, HACS link, generic error, unchanged licensing guard');
+          JS

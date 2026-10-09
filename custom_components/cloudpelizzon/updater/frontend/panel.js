@@ -5,7 +5,48 @@ class CloudPelizzonUpdaterPanel extends HTMLElement{
   fmt(v){if(!v)return '—';try{return new Date(v).toLocaleString('pt-BR')}catch(e){return v}}
   async load(check=false){this.renderLoading();try{this.data=check?await this.ws('cloudpelizzon/updater/check'):await this.ws('cloudpelizzon/updater/status');this.render()}catch(e){this.renderError(e.message||String(e))}}
   renderLoading(){this.innerHTML=`<style>${this.css()}</style><div class="center"><div class="spin"></div><b>Consultando Release Center...</b></div>`}
-  renderError(e){this.innerHTML=`<style>${this.css()}</style><main><section class="hero"><div><span>UPDATE CENTER</span><h1>Atualizações CloudPelizzon</h1><p>${this.esc(e)}</p></div><button id="retry">Tentar novamente</button></section></main>`;this.querySelector('#retry').onclick=()=>this.load(true)}
+  isActivationError(error){
+    const detail=String(error?.message||error||"");
+    return /(?:online_activation_required|installation_id_missing)/.test(detail);
+  }
+  renderActivationRequired(error){
+    const missingId=String(error||"").includes("installation_id_missing");
+    const heading=missingId?"Identificação da instalação necessária":"Ativação necessária";
+    const summary=missingId
+      ?"Não foi possível identificar esta instalação. Confira o licenciamento no Control Center CloudPelizzon antes de consultar atualizações comerciais."
+      :"Para consultar atualizações dos módulos comerciais, ative e valide sua licença CloudPelizzon.";
+    this.innerHTML=`<style>${this.css()}
+      .cp-activation{border:1px solid #165073;border-radius:18px;background:linear-gradient(140deg,#08263c,#041522);padding:22px 26px;margin-top:12px}
+      .cp-activation h2{margin:0 0 9px;font-size:20px;color:#e7f8ff}
+      .cp-activation p{color:#b9d7e8;line-height:1.6;margin:0 0 14px}
+      .cp-activation a{color:#50ccff;font-weight:800;text-decoration:none}
+      .cp-activation a:focus-visible,.cp-activation a:hover{text-decoration:underline}
+      .cp-activation .cp-safe{color:#82d6ad;font-size:12px;margin-top:12px}
+      @media(max-width:760px){.cp-activation{padding:17px}}
+      </style><main>
+      <section class="hero">
+        <div><span>UPDATE CENTER • LICENCIAMENTO</span>
+          <h1>Atualizações CloudPelizzon</h1>
+          <p>O acesso às atualizações comerciais está protegido.</p>
+        </div>
+        <div class="heroactions"><button type="button" id="open-license">Gerenciar licença</button></div>
+      </section>
+      <section class="cp-activation" role="status">
+        <h2>${heading}</h2>
+        <p>${summary}</p>
+        <p>Seus módulos demonstrativos continuam disponíveis no Control Center. As atualizações públicas da integração são gerenciadas separadamente pelo HACS.</p>
+        <a href="/hacs">Abrir atualizações públicas no HACS ↗</a>
+        <div class="cp-safe">Nenhum módulo comercial foi liberado e nenhuma configuração de segurança foi alterada.</div>
+      </section></main>`;
+    this.querySelector("#open-license").addEventListener("click",()=>{
+      window.location.assign("/cloudpelizzon?cp_open_license=1");
+    });
+  }
+  renderError(e){
+    if(this.isActivationError(e)){this.renderActivationRequired(e);return;}
+    this.innerHTML=`<style>${this.css()}</style><main><section class="hero"><div><span>UPDATE CENTER</span><h1>Atualizações CloudPelizzon</h1><p>${this.esc(e)}</p></div><button id="retry">Tentar novamente</button></section></main>`;
+    this.querySelector("#retry").onclick=()=>this.load(true);
+  }
   notes(r){return `<details><summary>Notas da versão</summary><div class="notes"><b>${this.esc(r.title)}</b><p>${this.esc(r.summary||'')}</p><pre>${this.esc(r.release_notes||'Sem notas cadastradas.')}</pre>${r.compatibility_notes?`<small>Compatibilidade: ${this.esc(r.compatibility_notes)}</small>`:''}</div></details>`}
   componentCard(c){const r=(this.data.releases||[]).find(x=>x.sku===c.sku);const backups=(this.data.backups||[]).filter(x=>x.sku===c.sku);let state='<span class="pill ok">Atualizado</span>',actions='';if(r&&r.update_available){state=`<span class="pill warn">Desatualizado • ${this.esc(r.version)} disponível</span>`;actions=`<button data-install="${this.esc(r.release_id)}">Instalar atualização</button>`}if(backups.length)actions+=`<button class="secondary" data-rollback="${this.esc(backups[0].backup_id)}">Rollback para ${this.esc(backups[0].from_version||'anterior')}</button>`;return `<article class="card"><div class="cardhead"><div><span>${this.esc(c.sku)}</span><h2>${this.esc(c.name)}</h2></div>${state}</div><div class="versions"><div><small>Instalada</small><b>${this.esc(c.version||'—')}</b></div><div><small>Disponível</small><b>${this.esc(r?.version||c.version||'—')}</b></div><div><small>Canal</small><b>${this.esc(r?.channel||this.data.channel||'—')}</b></div></div>${r?this.notes(r):'<p class="muted">Nenhuma versão publicada para este componente no canal atual.</p>'}<div class="actions">${actions}</div></article>`}
   render(){
