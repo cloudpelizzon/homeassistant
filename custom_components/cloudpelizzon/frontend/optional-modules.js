@@ -1,118 +1,130 @@
-const OPTIONAL_MODULES = [
-  {
+// CloudPelizzon commercial modules are distributed privately by Release Center.
+// Never define a commercial panel tag as a placeholder: customElements.define()
+// is irreversible for the life of a browser tab, even after HA restarts.
+const OPTIONAL_MODULES = {
+  "CP-MAINTENANCE": {
     tag: "cloudpelizzon-maintenance-panel",
     title: "Manutenção",
     url: "/cloudpelizzon-maintenance/frontend/panel.js?v=311-notify-ux-r581",
   },
-  {
+  "CP-ENERGY": {
     tag: "cloudpelizzon-energy-panel",
     title: "Energia",
     url: "/cloudpelizzon-energy/frontend/panel.js?v=20260928-energy-r5",
   },
-  {
+  "CP-SECURITY": {
     tag: "cloudpelizzon-security-panel",
     title: "Segurança",
     url: "/cloudpelizzon-security/frontend/panel.js?v=20261007-v0610-final-polish-r1",
   },
-];
+};
 
-
-function definePlaceholder(tag, title) {
-
-  if (customElements.get(tag)) {
-    return;
+class CloudPelizzonModuleSlot extends HTMLElement {
+  constructor() {
+    super();
+    this._hass = null;
+    this._child = null;
+    this._loading = false;
+    this._attempt = 0;
+    this._lastAttempt = 0;
   }
 
-  customElements.define(
-    tag,
-    class extends HTMLElement {
-
-      set hass(value) {
-        this._hass = value;
-      }
-
-      connectedCallback() {
-
-        if (this.shadowRoot) {
-          return;
-        }
-
-        const root = this.attachShadow({
-          mode: "open",
-        });
-
-        root.innerHTML = `
-          <style>
-            :host {
-              display: block;
-              width: 100%;
-            }
-
-            .cp-placeholder {
-              margin: 18px 0;
-              padding: 22px;
-              border: 1px solid rgba(45, 190, 255, .28);
-              border-radius: 18px;
-              background:
-                linear-gradient(
-                  145deg,
-                  rgba(4, 25, 39, .96),
-                  rgba(2, 13, 22, .98)
-                );
-              color: #dff6ff;
-              box-shadow:
-                0 18px 50px rgba(0, 0, 0, .28);
-              font-family:
-                var(--paper-font-body1_-_font-family, sans-serif);
-            }
-
-            .cp-kicker {
-              color: #65d7ff;
-              font-size: 11px;
-              font-weight: 800;
-              letter-spacing: .12em;
-              text-transform: uppercase;
-            }
-
-            h2 {
-              margin: 9px 0 8px;
-              font-size: 22px;
-            }
-
-            p {
-              margin: 0;
-              color: #8eb2c2;
-              line-height: 1.6;
-            }
-          </style>
-
-          <div class="cp-placeholder">
-            <div class="cp-kicker">
-              CloudPelizzon • Módulo comercial
-            </div>
-
-            <h2>${title}</h2>
-
-            <p>
-              Este módulo não está instalado neste equipamento.
-              A disponibilização ocorre pelo CloudPelizzon Update Center
-              após validação da licença e da autorização de distribuição.
-            </p>
-          </div>
-        `;
-      }
+  connectedCallback() {
+    this.style.display = "block";
+    this.style.width = "100%";
+    if (this.parentElement?.classList.contains("active")) {
+      this.load();
     }
-  );
+  }
+
+  set hass(value) {
+    this._hass = value;
+    if (this._child) {
+      this._child.hass = value;
+    } else if (value && this.parentElement?.classList.contains("active")) {
+      this.load();
+    }
+  }
+
+  get hass() {
+    return this._hass;
+  }
+
+  activate() {
+    this.load(true);
+  }
+
+  _notice(title, message, retry = false) {
+    this.replaceChildren();
+    const box = document.createElement("div");
+    box.style.cssText = [
+      "margin:18px 0",
+      "padding:22px",
+      "border:1px solid rgba(45,190,255,.28)",
+      "border-radius:18px",
+      "background:#041927",
+      "color:#dff6ff",
+      "font-family:sans-serif",
+    ].join(";");
+    const header = document.createElement("h2");
+    header.textContent = title;
+    const body = document.createElement("p");
+    body.textContent = message;
+    box.append(header, body);
+    if (retry) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = "Tentar carregar novamente";
+      button.style.cssText = "margin-top:16px;padding:10px 16px;cursor:pointer";
+      button.addEventListener("click", () => this.load(true));
+      box.append(button);
+    }
+    this.append(box);
+  }
+
+  async load(force = false) {
+    const module = OPTIONAL_MODULES[this.getAttribute("sku")];
+    if (!module || this._loading || this._child) return;
+    // HA updates hass frequently; do not flood requests for uninstalled modules.
+    if (!force && this._lastAttempt && Date.now() - this._lastAttempt < 30000) {
+      return;
+    }
+    this._loading = true;
+    this._lastAttempt = Date.now();
+    this._notice(module.title, "Carregando módulo CloudPelizzon...");
+
+    try {
+      if (!customElements.get(module.tag)) {
+        // A failed dynamic import is cached by browsers. Retrying must use a
+        // new URL, so installation can succeed without reopening the tab.
+        const retry = this._attempt++ > 0
+          ? "&cp_retry=" + Date.now()
+          : "";
+        await import(module.url + retry);
+      }
+      if (!customElements.get(module.tag)) {
+        throw new Error("module_frontend_not_registered");
+      }
+
+      const panel = document.createElement(module.tag);
+      this.replaceChildren(panel);
+      this._child = panel;
+      if (this._hass) panel.hass = this._hass;
+    } catch (error) {
+      console.warn("CloudPelizzon: painel comercial indisponível", module.tag, error);
+      this._notice(
+        module.title,
+        "Não foi possível carregar a interface do módulo. " +
+        "Caso a instalação tenha acabado de concluir, aguarde o reinício " +
+        "do Home Assistant e tente novamente.",
+        true,
+      );
+    } finally {
+      this._loading = false;
+    }
+  }
 }
 
-
-for (const module of OPTIONAL_MODULES) {
-
-  import(module.url)
-    .catch(() => {
-      definePlaceholder(
-        module.tag,
-        module.title,
-      );
-    });
+if (!customElements.get("cloudpelizzon-module-slot")) {
+  customElements.define("cloudpelizzon-module-slot", CloudPelizzonModuleSlot);
 }
