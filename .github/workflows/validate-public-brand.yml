@@ -1,0 +1,54 @@
+name: Validate CloudPelizzon public HACS branding
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-public-distribution:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout public integration
+        uses: actions/checkout@v4
+
+      - name: Check manifest, PNG branding and commercial boundaries
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          import struct
+          from pathlib import Path
+
+          integration = Path("custom_components/cloudpelizzon")
+          manifest = json.loads((integration / "manifest.json").read_text(encoding="utf-8"))
+          if manifest.get("domain") != integration.name:
+              raise SystemExit("ERROR: manifest domain must match integration folder")
+          if manifest.get("name") != "CloudPelizzon":
+              raise SystemExit("ERROR: unexpected integration name")
+
+          for name in ("icon.png", "logo.png", "dark_icon.png", "dark_logo.png"):
+              path = integration / "brand" / name
+              if not path.is_file():
+                  raise SystemExit(f"ERROR: missing public brand asset: {path}")
+              image = path.read_bytes()
+              if not image.startswith(b"\x89PNG\r\n\x1a\n") or len(image) < 1024:
+                  raise SystemExit(f"ERROR: invalid PNG: {path}")
+              width, height = struct.unpack(">II", image[16:24])
+              if not (64 <= width <= 4096 and 64 <= height <= 4096):
+                  raise SystemExit(f"ERROR: implausible PNG dimensions: {path}")
+              if "icon" in name and width != height:
+                  raise SystemExit(f"ERROR: HACS icon must be square: {path}")
+              print(f"OK {path}: {width}x{height}")
+
+          for module in ("energy", "maintenance", "security"):
+              for directory in (integration / module, integration / "modules" / module):
+                  if directory.exists():
+                      raise SystemExit(f"ERROR: private module directory in public release: {directory}")
+
+          print("PASS: public HACS branding and known commercial-module paths")
+          PY
