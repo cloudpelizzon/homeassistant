@@ -97,6 +97,12 @@ def main():
     assert calls == ["executed"], "revoked handler must never be executed"
     assert manager.checks == 2
     assert control.checks == 2
+    assert not module["is_module_authorized_cached"](hass, "CP-MAINTENANCE")
+    manager.allowed = True
+    manager.status = "active"
+    assert module["is_module_authorized_cached"](hass, "CP-MAINTENANCE")
+    manager.allowed = False
+    manager.status = "revoked"
 
     # The same shared helper is mandatory at HTTP and background-job ingress.
     manager.allowed = True
