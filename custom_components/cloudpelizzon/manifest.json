@@ -6,5 +6,9 @@
   "integration_type": "hub",
   "config_flow": true,
   "dependencies": [],
-  "requirements": []
+  "requirements": [],
+  "issue_tracker": "https://github.com/cloudpelizzon/homeassistant/issues",
+  "codeowners": [
+    "@cloudpelizzon"
+  ]
 }
