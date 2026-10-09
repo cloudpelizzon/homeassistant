@@ -48,14 +48,43 @@ class CloudPelizzonUpdaterPanel extends HTMLElement{
     this.querySelector("#retry").onclick=()=>this.load(true);
   }
   notes(r){return `<details><summary>Notas da versão</summary><div class="notes"><b>${this.esc(r.title)}</b><p>${this.esc(r.summary||'')}</p><pre>${this.esc(r.release_notes||'Sem notas cadastradas.')}</pre>${r.compatibility_notes?`<small>Compatibilidade: ${this.esc(r.compatibility_notes)}</small>`:''}</div></details>`}
-  componentCard(c){const r=(this.data.releases||[]).find(x=>x.sku===c.sku);const backups=(this.data.backups||[]).filter(x=>x.sku===c.sku);let state='<span class="pill ok">Atualizado</span>',actions='';if(r&&r.update_available){state=`<span class="pill warn">Desatualizado • ${this.esc(r.version)} disponível</span>`;actions=`<button data-install="${this.esc(r.release_id)}">Instalar atualização</button>`}if(backups.length)actions+=`<button class="secondary" data-rollback="${this.esc(backups[0].backup_id)}">Rollback para ${this.esc(backups[0].from_version||'anterior')}</button>`;return `<article class="card"><div class="cardhead"><div><span>${this.esc(c.sku)}</span><h2>${this.esc(c.name)}</h2></div>${state}</div><div class="versions"><div><small>Instalada</small><b>${this.esc(c.version||'—')}</b></div><div><small>Disponível</small><b>${this.esc(r?.version||c.version||'—')}</b></div><div><small>Canal</small><b>${this.esc(r?.channel||this.data.channel||'—')}</b></div></div>${r?this.notes(r):'<p class="muted">Nenhuma versão publicada para este componente no canal atual.</p>'}<div class="actions">${actions}</div></article>`}
+  componentCard(c){
+    const r=(this.data.releases||[]).find(x=>x.sku===c.sku);
+    const backups=(this.data.backups||[]).filter(x=>x.sku===c.sku);
+    const installed=Boolean(c.version);
+    let state=installed?'<span class="pill ok">Atualizado</span>':'<span class="pill warn">Não instalado</span>';
+    let actions='';
+    if(r&&r.update_available){
+      state=installed
+        ? `<span class="pill warn">Desatualizado • ${this.esc(r.version)} disponível</span>`
+        : `<span class="pill warn">Disponível para instalação • ${this.esc(r.version)}</span>`;
+      actions=`<button data-install="${this.esc(r.release_id)}">${installed?'Instalar atualização':'Instalar módulo'}</button>`;
+    }
+    if(backups.length){
+      actions+=`<button class="secondary" data-rollback="${this.esc(backups[0].backup_id)}">Rollback para ${this.esc(backups[0].from_version||'anterior')}</button>`;
+    }
+    return `<article class="card"><div class="cardhead"><div><span>${this.esc(c.sku)}</span><h2>${this.esc(c.name)}</h2></div>${state}</div><div class="versions"><div><small>Instalada</small><b>${this.esc(c.version||'—')}</b></div><div><small>Disponível</small><b>${this.esc(r?.version||c.version||'—')}</b></div><div><small>Canal</small><b>${this.esc(r?.channel||this.data.channel||'—')}</b></div></div>${r?this.notes(r):'<p class="muted">Nenhuma versão publicada para este componente no canal atual.</p>'}<div class="actions">${actions}</div></article>`;
+  }
   render(){
 
     const d =
       this.data || {};
 
-    const comps =
-      d.components || [];
+    const installedComponents = d.components || [];
+    const comps = [...installedComponents];
+
+    // Render only server-authorized, signed release entries returned by the
+    // updater, including commercial modules not yet installed on this HA.
+    for (const release of (d.releases || [])) {
+      if (!release || !release.update_available) continue;
+      if (!comps.some(component => component.sku === release.sku)) {
+        comps.push({
+          sku: release.sku,
+          name: release.title || release.sku,
+          version: '',
+        });
+      }
+    }
 
     const updates =
       (d.releases || [])
@@ -248,7 +277,7 @@ class CloudPelizzonUpdaterPanel extends HTMLElement{
 
           <article>
             <span>Componentes</span>
-            <b>${comps.length}</b>
+            <b>${installedComponents.length}</b>
           </article>
 
           <article>
