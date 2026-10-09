@@ -1,0 +1,14 @@
+{
+  "title": "CloudPelizzon",
+  "config": {
+    "step": {
+      "user": {
+        "title": "CloudPelizzon",
+        "description": "Ativar a plataforma CloudPelizzon nesta instalação."
+      }
+    },
+    "abort": {
+      "already_configured": "CloudPelizzon já está configurado."
+    }
+  }
+}

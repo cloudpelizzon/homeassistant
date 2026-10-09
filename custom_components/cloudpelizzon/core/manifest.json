@@ -1,0 +1,13 @@
+{
+  "domain": "cloudpelizzon_core",
+  "name": "CloudPelizzon Core",
+  "version": "0.13.0",
+  "documentation": "https://cloudpelizzon.com",
+  "integration_type": "hub",
+  "config_flow": true,
+  "dependencies": [
+    "cloudpelizzon_updater",
+    "panel_custom"
+  ],
+  "requirements": []
+}

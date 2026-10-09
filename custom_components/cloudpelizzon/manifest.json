@@ -1,0 +1,10 @@
+{
+  "domain": "cloudpelizzon",
+  "name": "CloudPelizzon",
+  "version": "6.2.9",
+  "documentation": "https://cloudpelizzon.com.br",
+  "integration_type": "hub",
+  "config_flow": true,
+  "dependencies": [],
+  "requirements": []
+}

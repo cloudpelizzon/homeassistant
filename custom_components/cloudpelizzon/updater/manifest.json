@@ -1,0 +1,9 @@
+{
+  "domain": "cloudpelizzon_updater",
+  "name": "CloudPelizzon Update Center",
+  "version": "1.0.0-release-center",
+  "documentation": "https://cloudpelizzon.com.br",
+  "integration_type": "service",
+  "dependencies": ["panel_custom"],
+  "requirements": []
+}
