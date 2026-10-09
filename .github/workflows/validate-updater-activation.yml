@@ -99,6 +99,12 @@ jobs:
 
           assert.match(coreSrc, /openLicenseFromUrl\(\)/);
           assert.match(coreSrc, /cp_open_license/);
+          assert.match(coreSrc, /MÓDULOS OPERACIONAIS/);
+          assert.match(coreSrc, /Em desenvolvimento/);
+          assert.match(coreSrc, /Licenciado • instalação pendente/);
+          assert.match(coreSrc, /data-updates/);
+          assert.match(coreSrc, /cloudpelizzon-updates/);
+
           assert.match(coreSrc, /this\.showLicense\(\)/);
 
           const managerSrc = fs.readFileSync(
@@ -128,6 +134,11 @@ jobs:
           licensed = set(MODULES)
           distributed = set(COMPONENTS) - {'CP-CORE', 'CP-UPDATER'}
           assert len(licensed) == 17, len(licensed)
+          developed = {sku for sku, meta in MODULES.items() if meta.get('lifecycle') == 'developed'}
+          planned = {sku for sku, meta in MODULES.items() if meta.get('lifecycle') == 'planned'}
+          assert developed == {'CP-MAINTENANCE', 'CP-ENERGY', 'CP-SECURITY'}, developed
+          assert len(planned) == 14 and not (planned & developed), planned
+
           assert licensed == distributed, (licensed ^ distributed)
 
           for sku in licensed:
