@@ -96,6 +96,33 @@ async def ws_license_checkin(hass, connection, msg):
     connection.send_result(msg["id"], result)
 
 
+@websocket_api.websocket_command({
+    probatio.Required("type"): "cloudpelizzon/core/access/refresh",
+})
+@websocket_api.async_response
+async def ws_access_refresh(hass, connection, msg):
+    """Authenticated, non-secret entitlement refresh for regular HA users."""
+    runtime = _runtime(hass)
+    if runtime is None:
+        connection.send_error(msg["id"], "not_loaded", "CloudPelizzon Core not loaded")
+        return
+    manager = runtime["license_manager"]
+    try:
+        await manager.async_checkin(force=True)
+        catalog = await manager.async_catalog(hass)
+    except Exception:
+        connection.send_error(msg["id"], "license_unavailable", "Cannot verify module license")
+        return
+    connection.send_result(msg["id"], {
+        "online_status": manager.data.get("online_status") or "not_activated",
+        "modules": [{
+            "sku": item["sku"],
+            "allowed": bool(item.get("license", {}).get("allowed")),
+            "status": str(item.get("license", {}).get("status") or ""),
+        } for item in catalog],
+    })
+
+
 @websocket_api.require_admin
 @websocket_api.websocket_command({probatio.Required("type"): "cloudpelizzon/core/license/diagnostics"})
 @websocket_api.async_response
@@ -171,6 +198,7 @@ def async_register_api(hass: HomeAssistant) -> None:
         ws_license_status,
         ws_license_activate,
         ws_license_checkin,
+        ws_access_refresh,
         ws_license_diagnostics,
         ws_license_server_url,
         ws_commercial_request,
