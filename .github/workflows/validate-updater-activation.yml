@@ -153,5 +153,7 @@ jobs:
                         'HACS_BOOTSTRAP_OWNERSHIP_GATE',
                         'HACS_BOOTSTRAP_ROLLBACK_GATE'):
               assert guard in manager, guard
+          assert 'release_downgrade_not_allowed' in manager
+          assert '_version_key(release["version"]) < _version_key(current)' in manager
           print('PASS: 17 SKUs match; commercial source absent; updater gates retained')
           PY
