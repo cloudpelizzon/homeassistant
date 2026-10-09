@@ -66,6 +66,46 @@ def _guarded_service_registration(node):
     )
 
 
+
+def _delayed_arm_rechecks_license(node):
+    """A license revoked during the arming countdown must abort activation."""
+    if node is None:
+        return False
+    try:
+        body = node.body
+        if len(body) != 1 or not isinstance(body[0], ast.Try):
+            return False
+        stmts = body[0].body
+        for i, stmt in enumerate(stmts):
+            if i == 0 or not isinstance(stmt, ast.Expr) or not isinstance(stmt.value, ast.Await):
+                continue
+            call = stmt.value.value
+            if not isinstance(call, ast.Call):
+                continue
+            if not isinstance(call.func, ast.Attribute) or call.func.attr != "async_set_state":
+                continue
+            if not call.args or not isinstance(call.args[0], ast.Name) or call.args[0].id != "final_state":
+                continue
+            gate = stmts[i - 1]
+            if not isinstance(gate, ast.If):
+                return False
+            if not isinstance(gate.test, ast.UnaryOp) or not isinstance(gate.test.op, ast.Not):
+                return False
+            if "is_module_authorized" not in ast.unparse(gate.test) or "CP-SECURITY" not in ast.unparse(gate.test):
+                return False
+            if not any(
+                isinstance(n, ast.Await) and isinstance(n.value, ast.Call)
+                and isinstance(n.value.func, ast.Attribute)
+                and n.value.func.attr == "async_disarm"
+                for n in ast.walk(ast.Module(body=gate.body, type_ignores=[]))
+            ):
+                return False
+            return any(isinstance(n, ast.Return) for n in gate.body)
+    except Exception:
+        return False
+    return False
+
+
 def private_emergency_runtime_verified(module_dir: Path) -> bool:
     """True only for a package with guarded arming and guarded HTTP config."""
     try:
@@ -81,6 +121,11 @@ def private_emergency_runtime_verified(module_dir: Path) -> bool:
 
         # Physical emergency operations must still be implemented.
         if _class_method(engine, "async_disarm") is None:
+            return False
+
+        if not _delayed_arm_rechecks_license(
+            _class_method(engine, "_finish_arming")
+        ):
             return False
 
         reg = _class_method(manager, "_register")
