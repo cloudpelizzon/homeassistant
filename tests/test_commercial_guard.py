@@ -97,6 +97,14 @@ def main():
     assert manager.checks == 2
     assert control.checks == 2
 
+    # The same shared helper is mandatory at HTTP and background-job ingress.
+    manager.allowed = True
+    manager.status = "active"
+    assert asyncio.run(module["is_module_authorized"](hass, "CP-MAINTENANCE"))
+    manager.allowed = False
+    manager.status = "revoked"
+    assert not asyncio.run(module["is_module_authorized"](hass, "CP-MAINTENANCE"))
+
     # Missing licensing runtime also fails closed.
     hass.data["cloudpelizzon"] = {}
     missing = Connection()
