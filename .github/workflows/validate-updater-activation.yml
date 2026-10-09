@@ -72,6 +72,24 @@ jobs:
           handlers['#open-license']();
           assert.equal(destination, '/cloudpelizzon?cp_open_license=1');
 
+          panel.data = {
+            channel: 'stable',
+            components: [{ sku: 'CP-CORE', name: 'Core', version: '6.2.10' }],
+            releases: [{
+              sku: 'CP-MAINTENANCE', title: 'Manutenção', release_id: 'signed-release-test',
+              version: '1.6.1', update_available: true, channel: 'stable'
+            }],
+            backups: [],
+            documentation: [],
+            history: [],
+          };
+          panel.querySelectorAll = () => [];
+          panel.render();
+          assert.match(panel.innerHTML, /CP-MAINTENANCE/);
+          assert.match(panel.innerHTML, /Instalar módulo/);
+          assert.match(panel.innerHTML, /data-install="signed-release-test"/);
+          assert.doesNotMatch(panel.innerHTML, /Não instalado.*Atualizado/s);
+
           panel.renderError('installation_id_missing');
           assert.match(panel.innerHTML, /Identifica[cç][aã]o da instala[cç][aã]o necess[aá]ria/);
 
@@ -90,3 +108,39 @@ jobs:
           assert.match(managerSrc, /activation_secret/);
           console.log('PASS: activation CTA, HACS link, generic error, unchanged licensing guard');
           JS
+
+      - name: Validate unified 17-SKU public metadata (no commercial code)
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import sys
+          import types
+
+          base = Path('custom_components/cloudpelizzon')
+          package = types.ModuleType('cloudpelizzon')
+          package.__path__ = [str(base)]
+          sys.modules['cloudpelizzon'] = package
+
+          from cloudpelizzon.module_catalog import MODULES
+          from cloudpelizzon.registry import COMPONENTS
+
+          licensed = set(MODULES)
+          distributed = set(COMPONENTS) - {'CP-CORE', 'CP-UPDATER'}
+          assert len(licensed) == 17, len(licensed)
+          assert licensed == distributed, (licensed ^ distributed)
+
+          for sku in licensed:
+              path = COMPONENTS[sku]['path']
+              assert path.startswith('modules/'), (sku, path)
+              assert not (base / path).exists(), f'Commercial module leaked to HACS: {sku}'
+
+          core_const = (base / 'core' / 'const.py').read_text(encoding='utf-8')
+          assert 'from ..module_catalog import MODULES' in core_const
+          manager = (base / 'updater' / 'manager.py').read_text(encoding='utf-8')
+          for guard in ('HACS_BOOTSTRAP_RELEASE_FILTER',
+                        'HACS_BOOTSTRAP_OWNERSHIP_GATE',
+                        'HACS_BOOTSTRAP_ROLLBACK_GATE'):
+              assert guard in manager, guard
+          print('PASS: 17 SKUs match; commercial source absent; updater gates retained')
+          PY
