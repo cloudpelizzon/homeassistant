@@ -695,12 +695,30 @@ async def async_start(
                         await _persist_status(hass)
                         continue
 
-                    # Security is physically safety-critical: revocation must
-                    # never remove the existing disarm / emergency endpoints.
-                    # CP-SECURITY's private signed package MUST guard arming
-                    # and commercial actions on its own entry points.
-                    # Never activate this public Core change before the
-                    # hardened private security package is deployed.
+                    # Security is physically safety-critical. Keep the
+                    # restricted runtime for disarm/emergency ONLY IF the
+                    # installed private package proves it guards arming,
+                    # services and HTTP. An older package must never bypass
+                    # entitlement simply because it is a security module.
+                    from .core.security_contract import (
+                        private_emergency_runtime_verified,
+                    )
+                    private_dir = (
+                        Path(__file__).resolve().parent
+                        / "modules"
+                        / "security"
+                    )
+                    if not private_emergency_runtime_verified(private_dir):
+                        platform.setdefault("optional_modules", {})[name] = (
+                            "license_denied:private_safety_contract_missing"
+                        )
+                        _LOGGER.error(
+                            "CP-SECURITY emergency runtime not loaded: "
+                            "private package lacks verified revocation guards"
+                        )
+                        await _persist_status(hass)
+                        continue
+
                     _LOGGER.warning(
                         "CP-SECURITY license denied (%s): starting limited "
                         "safety runtime; arming operations MUST be protected "
