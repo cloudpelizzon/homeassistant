@@ -23,12 +23,12 @@ def _first_statement(body):
     return body[0] if body else None
 
 
-def _class_method(source, cls_name, method_name):
+def _class_method(source, method_name):
     tree = ast.parse(source)
     matches = [
         m
         for cls in tree.body
-        if isinstance(cls, ast.ClassDef) and cls.name == cls_name
+        if isinstance(cls, ast.ClassDef)
         for m in cls.body
         if isinstance(m, (ast.FunctionDef, ast.AsyncFunctionDef))
         and m.name == method_name
@@ -75,15 +75,15 @@ def private_emergency_runtime_verified(module_dir: Path) -> bool:
         config = (module_dir / "api_configuracao.py").read_text(encoding="utf-8")
 
         for name in ("async_arm_home", "async_arm_away"):
-            method = _class_method(engine, "SecurityEngine", name)
+            method = _class_method(engine, name)
             if method is None or not _guarded_arm_method(method):
                 return False
 
         # Physical emergency operations must still be implemented.
-        if _class_method(engine, "SecurityEngine", "async_disarm") is None:
+        if _class_method(engine, "async_disarm") is None:
             return False
 
-        reg = _class_method(manager, "SecurityManager", "_register")
+        reg = _class_method(manager, "_register")
         if reg is None or not _guarded_service_registration(reg):
             return False
 
