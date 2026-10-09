@@ -30,6 +30,7 @@ class CloudPelizzonPanel extends HTMLElement {
     this._moduleRights = {};
     this._moduleRightsLoading = false;
     this._moduleRightsLoaded = false;
+    this._lastCommercialRefresh = 0;
   }
 
 
@@ -57,6 +58,13 @@ class CloudPelizzonPanel extends HTMLElement {
 
     if (value && !this._moduleRightsLoaded && !this._moduleRightsLoading) {
       this.loadModuleRights();
+    }
+    // Revalidate the currently visible commercial panel (existing browser tab).
+    if (value && ["maintenance", "energy", "security"].includes(this._view)
+        && !this._moduleRightsLoading
+        && Date.now() - this._lastCommercialRefresh > 30000) {
+      this._lastCommercialRefresh = Date.now();
+      this.loadModuleRights(true);
     }
   }
 
@@ -241,13 +249,14 @@ class CloudPelizzonPanel extends HTMLElement {
 
 
   async loadModuleRights(force=false) {
-    if(!this._hass)return;
-    if(this._moduleRightsLoading)return;
-    if(this._moduleRightsLoaded&&!force)return;
+    if(!this._hass)return false;
+    if(this._moduleRightsLoading)return false;
+    if(this._moduleRightsLoaded&&!force)return true;
 
     this._moduleRightsLoading=true;
 
     try{
+      if(force) await this.ws("cloudpelizzon/core/access/refresh");
       const data=await this.ws("cloudpelizzon/core/status");
       const rights={};
 
@@ -272,13 +281,36 @@ class CloudPelizzonPanel extends HTMLElement {
 
       this.render();
       this.propagateHass();
+      return true;
     }
     catch(error){
-      console.warn("CloudPelizzon: não foi possível carregar direitos dos módulos.",error);
+      console.warn("CloudPelizzon: não foi possível verificar direitos dos módulos.",error);
+      if(force){
+        // No stale authorization when online verification itself fails.
+        this._moduleRights={};
+        this._moduleRightsLoaded=false;
+        if(["maintenance","energy","security"].includes(this._view)){
+          this._view="core";
+        }
+        this.render();
+      }
+      return false;
     }
     finally{
       this._moduleRightsLoading=false;
     }
+  }
+
+  async showProtectedView(view){
+    const skus={
+      maintenance:"CP-MAINTENANCE",
+      energy:"CP-ENERGY",
+      security:"CP-SECURITY",
+    };
+    const sku=skus[view];
+    if(!sku){this.show(view);return;}
+    const refreshed=await this.loadModuleRights(true);
+    this.show(refreshed && this.isModuleAllowed(sku) ? view : "core");
   }
 
   isModuleAllowed(sku) {
@@ -1003,7 +1035,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
         button.addEventListener(
           "click",
-          () => this.show(
+          () => this.showProtectedView(
             button.dataset.view
           )
         );
