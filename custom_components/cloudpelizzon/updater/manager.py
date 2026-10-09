@@ -1074,6 +1074,11 @@ class UpdateManager:
             )
         )
 
+        # Commercial releases must never downgrade a customer installation.
+        # Rollback is an explicit, separate, audited operation.
+        if current and _version_key(release["version"]) < _version_key(current):
+            raise UpdateError("release_downgrade_not_allowed")
+
         timestamp = datetime.now().strftime(
             "%Y%m%d-%H%M%S"
         )
