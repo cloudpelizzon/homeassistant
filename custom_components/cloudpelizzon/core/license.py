@@ -27,6 +27,8 @@ from .const import (
 _SHA256_DER_PREFIX = bytes.fromhex("3031300d060960864801650304020105000420")
 DENY_IMMEDIATELY = {"revoked", "expired", "invalid", "installation_mismatch", "not_registered"}
 MIN_CHECKIN_GAP_SEC = 300
+FORCED_CHECKIN_GAP_SEC = 10
+MAX_BACKGROUND_CHECKIN_SEC = 300
 
 
 def _b64url_decode(value: str) -> bytes:
@@ -291,7 +293,7 @@ class LicenseManager:
                 and (
                     now_mono
                     - self._last_checkin_monotonic
-                ) < MIN_CHECKIN_GAP_SEC
+                ) < (FORCED_CHECKIN_GAP_SEC if force else MIN_CHECKIN_GAP_SEC)
             ):
 
                 return {
@@ -306,7 +308,7 @@ class LicenseManager:
                     "reason":
                         "client_cooldown",
                     "cooldown_sec":
-                        MIN_CHECKIN_GAP_SEC,
+                        FORCED_CHECKIN_GAP_SEC if force else MIN_CHECKIN_GAP_SEC,
                 }
 
             result = await self._async_checkin_network()
@@ -315,9 +317,8 @@ class LicenseManager:
                 isinstance(result, dict)
                 and result.get("ok")
                 and str(
-                    result.get("status")
-                    or ""
-                ) == "active"
+                    result.get("status") or ""
+                ) in ({"active"} | DENY_IMMEDIATELY)
             ):
 
                 self._last_checkin_monotonic = (
@@ -600,7 +601,7 @@ class LicenseManager:
             except Exception as err:
                 self.data["last_checkin_error"] = f"background:{type(err).__name__}:{err}"
                 await self.store.async_save()
-            interval = max(300, int(self.data.get("checkin_interval_sec") or DEFAULT_CHECKIN_INTERVAL_SEC))
+            interval = max(60, min(MAX_BACKGROUND_CHECKIN_SEC, int(self.data.get("checkin_interval_sec") or DEFAULT_CHECKIN_INTERVAL_SEC)))
             await asyncio.sleep(interval)
 
     async def async_stop(self) -> None:
