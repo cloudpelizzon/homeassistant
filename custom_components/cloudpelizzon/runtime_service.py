@@ -678,7 +678,11 @@ async def async_start(
                 core_runtime = platform.get("core", {})
                 manager = core_runtime.get("license_manager")
                 control = core_runtime.get("control")
-                if manager is None or control is None:
+                if (
+                    manager is None
+                    or control is None
+                    or getattr(control, "mode", None) != "enforce"
+                ):
                     raise RuntimeError("commercial_license_authority_unavailable")
 
                 await manager.async_checkin(force=True)
@@ -687,8 +691,22 @@ async def async_start(
                     platform.setdefault("optional_modules", {})[name] = (
                         "license_denied:" + str(entitlement.get("status") or "unknown")
                     )
-                    await _persist_status(hass)
-                    continue
+                    if name != "security":
+                        await _persist_status(hass)
+                        continue
+
+                    # Security is physically safety-critical: revocation must
+                    # never remove the existing disarm / emergency endpoints.
+                    # CP-SECURITY's private signed package MUST guard arming
+                    # and commercial actions on its own entry points.
+                    # Never activate this public Core change before the
+                    # hardened private security package is deployed.
+                    _LOGGER.warning(
+                        "CP-SECURITY license denied (%s): starting limited "
+                        "safety runtime; arming operations MUST be protected "
+                        "by the private package",
+                        entitlement.get("status"),
+                    )
             except Exception as error:
                 _record_error(hass, name + "_authorization", error)
                 platform.setdefault("optional_modules", {})[name] = "license_guard_error"
