@@ -48,10 +48,11 @@ def protect_new_commands(hass, before: set[str], sku: str) -> list[str]:
                 platform = hass.data.get(PLATFORM_DOMAIN, {})
                 core = platform.get("core", {}) if isinstance(platform, dict) else {}
                 manager = core.get("license_manager") if isinstance(core, dict) else None
-                if manager is None:
+                control = core.get("control") if isinstance(core, dict) else None
+                if manager is None or control is None or control.mode != "enforce":
                     connection.send_error(
                         msg["id"], "commercial_license_denied",
-                        "CloudPelizzon license authority unavailable",
+                        "CloudPelizzon license enforcement unavailable",
                     )
                     return
 
@@ -62,8 +63,10 @@ def protect_new_commands(hass, before: set[str], sku: str) -> list[str]:
                 except Exception:
                     LOGGER.exception("Commercial entitlement refresh failed")
 
-                entitlement = manager.status_sync(module_sku, installed=True)
-                if not entitlement.get("allowed", False):
+                # Re-evaluate the authoritative decision, including defined
+                # offline grace, independently of any stale frontend state.
+                decision = await control.authorize(module_sku, installed=True)
+                if not decision.get("effective_allowed", False):
                     connection.send_error(
                         msg["id"], "commercial_license_denied",
                         "Module license is inactive, revoked or not entitled",
