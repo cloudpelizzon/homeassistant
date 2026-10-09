@@ -17,6 +17,44 @@ PLATFORM_DOMAIN = "cloudpelizzon"
 WS_DOMAIN = "websocket_api"
 
 
+
+async def authorize_module(hass, sku: str) -> dict:
+    """Single fail-closed entitlement decision for WS, HTTP and background jobs.
+
+    Commercial packages must invoke this on their own HTTP routes and worker
+    entry points. Registered WebSocket routes receive it automatically.
+    """
+    platform = hass.data.get(PLATFORM_DOMAIN, {})
+    core = platform.get("core", {}) if isinstance(platform, dict) else {}
+    manager = core.get("license_manager") if isinstance(core, dict) else None
+    control = core.get("control") if isinstance(core, dict) else None
+    if manager is None or control is None or control.mode != "enforce":
+        return {
+            "effective_allowed": False,
+            "status": "license_authority_unavailable",
+        }
+
+    try:
+        # Check-ins are serialized and rate-limited by LicenseManager.
+        # If an authoritative revoked decision was previously received,
+        # the existing CP2 lease must never override it.
+        await manager.async_checkin()
+        decision = await control.authorize(sku, installed=True)
+        return decision
+    except Exception:
+        LOGGER.exception("Commercial authorization failure sku=%s", sku)
+        return {
+            "effective_allowed": False,
+            "status": "license_authorization_failed",
+        }
+
+
+async def is_module_authorized(hass, sku: str) -> bool:
+    """Use at every HTTP handler and background dispatch boundary."""
+    decision = await authorize_module(hass, sku)
+    return bool(decision.get("effective_allowed", False))
+
+
 def registered_commands(hass) -> set[str]:
     handlers = hass.data.get(WS_DOMAIN)
     if not isinstance(handlers, dict):
@@ -45,27 +83,7 @@ def protect_new_commands(hass, before: set[str], sku: str) -> list[str]:
         def make_guard(handler, module_sku):
             @websocket_api.async_response
             async def guarded(hass, connection, msg):
-                platform = hass.data.get(PLATFORM_DOMAIN, {})
-                core = platform.get("core", {}) if isinstance(platform, dict) else {}
-                manager = core.get("license_manager") if isinstance(core, dict) else None
-                control = core.get("control") if isinstance(core, dict) else None
-                if manager is None or control is None or control.mode != "enforce":
-                    connection.send_error(
-                        msg["id"], "commercial_license_denied",
-                        "CloudPelizzon license enforcement unavailable",
-                    )
-                    return
-
-                # Rate-limited online check-in. Immediate revocation is detected
-                # on the next successful online verification, not while offline.
-                try:
-                    await manager.async_checkin()
-                except Exception:
-                    LOGGER.exception("Commercial entitlement refresh failed")
-
-                # Re-evaluate the authoritative decision, including defined
-                # offline grace, independently of any stale frontend state.
-                decision = await control.authorize(module_sku, installed=True)
+                decision = await authorize_module(hass, module_sku)
                 if not decision.get("effective_allowed", False):
                     connection.send_error(
                         msg["id"], "commercial_license_denied",
