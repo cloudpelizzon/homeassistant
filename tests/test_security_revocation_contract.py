@@ -20,7 +20,20 @@ def write_files(target: Path, *, guarded: bool) -> None:
         f"        {cond}\n"
         "        return 'armed'\n"
         "    async def async_disarm(self):\n"
-        "        return 'disarmed'\n",
+        "        return 'disarmed'\n"
+        "    async def _finish_arming(self, final_state, delay, reason, source):\n"
+        "        try:\n"
+        "            await asyncio.sleep(delay)\n"
+        + ((
+          "            if not await is_module_authorized(self.hass, 'CP-SECURITY'):\n"
+          "                await self.async_disarm()\n"
+          "                return\n"
+        ) if guarded else "") +
+        "            await self.async_set_state(final_state, reason=reason, source=source)\n"
+        "        except asyncio.CancelledError:\n"
+        "            return\n"
+        "        finally:\n"
+        "            self._arming_task = None\n",
         encoding="utf-8",
     )
     reg = (
