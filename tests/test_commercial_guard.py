@@ -78,7 +78,7 @@ def main():
         "websocket_api": registry,
         "cloudpelizzon": {"core": {"license_manager": manager, "control": control}},
     })
-    assert module["registered_commands"](hass) == {"maintenance/list"}
+    assert module["registered_commands"](hass) == {"maintenance/list": original}
     assert module["protect_new_commands"](hass, set(), "CP-MAINTENANCE") == ["maintenance/list"]
     handler, schema = registry["maintenance/list"]
     assert schema is False
@@ -95,8 +95,32 @@ def main():
     assert not denied.results
     assert denied.errors and denied.errors[0][1] == "commercial_license_denied"
     assert calls == ["executed"], "revoked handler must never be executed"
-    assert manager.checks == 2
-    assert control.checks == 2
+
+    # Integration reload can replace a handler under the SAME command type.
+    # A key-only diff would silently drop commercial authorization.
+    previous_handlers = module["registered_commands"](hass)
+    reloaded_calls = []
+    def replacement(hass, connection, msg):
+        reloaded_calls.append("executed")
+        connection.send_result(msg["id"], "reloaded")
+    registry["maintenance/list"] = (replacement, False)
+    assert module["protect_new_commands"](
+        hass, previous_handlers, "CP-MAINTENANCE"
+    ) == ["maintenance/list"]
+    replacement_guarded, _ = registry["maintenance/list"]
+    denied_after_reload = Connection()
+    replacement_guarded(hass, denied_after_reload, {"id": 20, "type": "maintenance/list"})
+    assert denied_after_reload.errors and not reloaded_calls
+    manager.allowed = True
+    manager.status = "active"
+    admitted_after_reload = Connection()
+    replacement_guarded(hass, admitted_after_reload, {"id": 21, "type": "maintenance/list"})
+    assert admitted_after_reload.results == [(21, "reloaded")]
+    manager.allowed = False
+    manager.status = "revoked"
+
+    assert manager.checks == 4
+    assert control.checks == 4
     assert not module["is_module_authorized_cached"](hass, "CP-MAINTENANCE")
     manager.allowed = True
     manager.status = "active"
