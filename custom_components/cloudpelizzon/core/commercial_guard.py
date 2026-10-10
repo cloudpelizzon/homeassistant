@@ -75,20 +75,32 @@ async def is_module_authorized(hass, sku: str) -> bool:
     return bool(decision.get("effective_allowed", False))
 
 
-def registered_commands(hass) -> set[str]:
+def registered_commands(hass) -> dict[str, object]:
+    """Snapshot command handlers, including identity across entry reloads."""
     handlers = hass.data.get(WS_DOMAIN)
     if not isinstance(handlers, dict):
         raise RuntimeError("commercial_ws_registry_unavailable")
-    return set(handlers)
+    return {
+        command: entry[0] if isinstance(entry, tuple) and len(entry) == 2 else None
+        for command, entry in handlers.items()
+    }
 
 
-def protect_new_commands(hass, before: set[str], sku: str) -> list[str]:
-    """Wrap only commands registered by the commercial module's startup."""
+def protect_new_commands(hass, before: dict[str, object], sku: str) -> list[str]:
+    """Protect newly registered OR replaced commands after an entry reload."""
     handlers = hass.data.get(WS_DOMAIN)
     if not isinstance(handlers, dict):
         raise RuntimeError("commercial_ws_registry_unavailable")
 
-    added = sorted(set(handlers) - set(before))
+    added = sorted(
+        command for command, entry in handlers.items()
+        if command not in before
+        or (
+            isinstance(entry, tuple)
+            and len(entry) == 2
+            and entry[0] is not before[command]
+        )
+    )
     protected = []
 
     for command in added:
