@@ -19,7 +19,7 @@ class CloudPelizzonConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
     """Require authoritative Fleet registration for each NEW config entry."""
 
     VERSION = 1
-    MINOR_VERSION = 1
+    MINOR_VERSION = 0
 
     def __init__(self) -> None:
         self._installation_id = uuid4().hex
