@@ -1,9 +1,26 @@
 class CloudPelizzonUpdaterPanel extends HTMLElement{
   set hass(v){this._hass=v;if(!this._loaded){this._loaded=true;this.load(true)}} set panel(v){this._panel=v}
+  activate(){if(this._hass)this.load(true)}
   async ws(type,extra={}){return await this._hass.callWS({type,...extra})}
   esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
   fmt(v){if(!v)return '—';try{return new Date(v).toLocaleString('pt-BR')}catch(e){return v}}
-  async load(check=false){this.renderLoading();try{this.data=check?await this.ws('cloudpelizzon/updater/check'):await this.ws('cloudpelizzon/updater/status');this.render()}catch(e){this.renderError(e.message||String(e))}}
+  async load(check=false){
+    if(this._loading)return;
+    this._loading=true;
+    this.renderLoading();
+    try{
+      // A fresh signed entitlement decision is required before showing
+      // installed commercial components, old backups or cached releases.
+      await this.ws('cloudpelizzon/core/access/refresh');
+      this.data=check?await this.ws('cloudpelizzon/updater/check'):await this.ws('cloudpelizzon/updater/status');
+      this.render();
+    }catch(e){
+      this.data=null;
+      this.renderError(e.message||String(e));
+    }finally{
+      this._loading=false;
+    }
+  }
   renderLoading(){this.innerHTML=`<style>${this.css()}</style><div class="center"><div class="spin"></div><b>Consultando Release Center...</b></div>`}
   isActivationError(error){
     const detail=String(error?.message||error||"");
@@ -52,7 +69,7 @@ class CloudPelizzonUpdaterPanel extends HTMLElement{
     const r=(this.data.releases||[]).find(x=>x.sku===c.sku);
     const backups=(this.data.backups||[]).filter(x=>x.sku===c.sku);
     const installed=Boolean(c.version);
-    let state=installed?'<span class="pill ok">Atualizado</span>':'<span class="pill warn">Não instalado</span>';
+    let state=installed?'<span class="pill ok">Instalado</span>':'<span class="pill warn">Não instalado</span>';
     let actions='';
     if(r&&r.update_available){
       state=installed
