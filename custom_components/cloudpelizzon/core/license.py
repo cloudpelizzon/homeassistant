@@ -194,6 +194,10 @@ class LicenseManager:
             self.data["online_status"] = "local_only"
         await self.store.async_save()
         self.ensure_checkin_task()
+        # A module denied at startup is not initialized merely by obtaining a
+        # valid license. Resume its runtime without restarting Home Assistant.
+        from .reactivation import schedule_reactivation_resume
+        schedule_reactivation_resume(self.hass)
         return self.data.get("license_payload") or payload
 
     def decode_lease_from_response(self, online: dict) -> dict:
@@ -325,6 +329,16 @@ class LicenseManager:
                 self._last_checkin_monotonic = (
                     time.monotonic()
                 )
+
+            # Only a fresh authenticated ACTIVE server response can resume
+            # previously denied runtimes. Cached/coalesced checks must not.
+            if (
+                isinstance(result, dict)
+                and result.get("ok") is True
+                and str(result.get("status") or "") == "active"
+            ):
+                from .reactivation import schedule_reactivation_resume
+                schedule_reactivation_resume(self.hass)
 
             return result
 
