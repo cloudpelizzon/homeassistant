@@ -35,6 +35,7 @@ jobs:
           python3 tests/test_security_revocation_contract.py
           python3 tests/test_license_reactivation_resume.py
           python3 tests/test_license_revocation_sticky.py
+          python3 tests/test_updater_license_visibility.py
 
       - name: Smoke test activation and navigation
         shell: bash
