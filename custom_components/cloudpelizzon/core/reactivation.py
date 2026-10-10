@@ -21,6 +21,7 @@ MODULES = {
     "security": "CP-SECURITY",
 }
 RELOAD_COOLDOWN_SEC = 300
+MODULES_ROOT = Path(__file__).resolve().parents[1] / "modules"
 
 
 def _needs_runtime_resume(hass) -> bool:
@@ -47,7 +48,7 @@ def _needs_runtime_resume(hass) -> bool:
     if not isinstance(denied, dict):
         return False
 
-    root = Path(__file__).resolve().parents[1] / "modules"
+    root = MODULES_ROOT
     for name, sku in MODULES.items():
         status = str(denied.get(name) or "")
         if not status.startswith("license_denied:"):
