@@ -1,7 +1,7 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 import "/cloudpelizzon-core/frontend/panel.js?v=6211-global-commercial-install";
-import "/cloudpelizzon/frontend/optional-modules.js?v=20261009-dynamic-module-loader-r1";
-import "/cloudpelizzon-updater/frontend/panel.js?v=6211-global-commercial-install";
+import "/cloudpelizzon/frontend/optional-modules.js?v=20261010-module-lifecycle-r2";
+import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
 
 
 class CloudPelizzonPanel extends HTMLElement {
@@ -30,6 +30,7 @@ class CloudPelizzonPanel extends HTMLElement {
     this._moduleRights = {};
     this._moduleRightsLoading = false;
     this._moduleRightsLoaded = false;
+    this._lastCommercialRefresh = 0;
   }
 
 
@@ -57,6 +58,13 @@ class CloudPelizzonPanel extends HTMLElement {
 
     if (value && !this._moduleRightsLoaded && !this._moduleRightsLoading) {
       this.loadModuleRights();
+    }
+    // Revalidate the currently visible commercial panel (existing browser tab).
+    if (value && ["maintenance", "energy", "security"].includes(this._view)
+        && !this._moduleRightsLoading
+        && Date.now() - this._lastCommercialRefresh > 30000) {
+      this._lastCommercialRefresh = Date.now();
+      this.loadModuleRights(true);
     }
   }
 
@@ -241,13 +249,14 @@ class CloudPelizzonPanel extends HTMLElement {
 
 
   async loadModuleRights(force=false) {
-    if(!this._hass)return;
-    if(this._moduleRightsLoading)return;
-    if(this._moduleRightsLoaded&&!force)return;
+    if(!this._hass)return false;
+    if(this._moduleRightsLoading)return false;
+    if(this._moduleRightsLoaded&&!force)return true;
 
     this._moduleRightsLoading=true;
 
     try{
+      if(force) await this.ws("cloudpelizzon/core/access/refresh");
       const data=await this.ws("cloudpelizzon/core/status");
       const rights={};
 
@@ -255,6 +264,8 @@ class CloudPelizzonPanel extends HTMLElement {
         rights[item.sku]=Boolean(item?.license?.allowed);
       }
 
+      const rightsChanged = !this._moduleRightsLoaded
+        || JSON.stringify(this._moduleRights) !== JSON.stringify(rights);
       this._moduleRights=rights;
       this._moduleRightsLoaded=true;
 
@@ -270,15 +281,42 @@ class CloudPelizzonPanel extends HTMLElement {
         this._view="core";
       }
 
-      this.render();
-      this.propagateHass();
+      // A license poll must not destroy and recreate a working commercial
+      // panel every 30 seconds when nothing actually changed.
+      if(rightsChanged){
+        this.render();
+        this.propagateHass();
+      }
+      return true;
     }
     catch(error){
-      console.warn("CloudPelizzon: não foi possível carregar direitos dos módulos.",error);
+      console.warn("CloudPelizzon: não foi possível verificar direitos dos módulos.",error);
+      if(force){
+        // No stale authorization when online verification itself fails.
+        this._moduleRights={};
+        this._moduleRightsLoaded=false;
+        if(["maintenance","energy","security"].includes(this._view)){
+          this._view="core";
+        }
+        this.render();
+      }
+      return false;
     }
     finally{
       this._moduleRightsLoading=false;
     }
+  }
+
+  async showProtectedView(view){
+    const skus={
+      maintenance:"CP-MAINTENANCE",
+      energy:"CP-ENERGY",
+      security:"CP-SECURITY",
+    };
+    const sku=skus[view];
+    if(!sku){this.show(view);return;}
+    const refreshed=await this.loadModuleRights(true);
+    this.show(refreshed && this.isModuleAllowed(sku) ? view : "core");
   }
 
   isModuleAllowed(sku) {
@@ -1003,7 +1041,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
         button.addEventListener(
           "click",
-          () => this.show(
+          () => this.showProtectedView(
             button.dataset.view
           )
         );
@@ -1563,6 +1601,15 @@ class CloudPelizzonPanel extends HTMLElement {
     const slot = target?.querySelector("cloudpelizzon-module-slot");
     if (slot) slot.activate();
 
+    // The installed-component list must NEVER stay cached after license
+    // revocation. Revalidate on every visit to Update Center.
+    if (view === "updates") {
+      const updater = target?.querySelector("cloudpelizzon-updater-panel");
+      if (updater && typeof updater.activate === "function") {
+        updater.activate();
+      }
+    }
+
 
     const button =
       this.shadowRoot.querySelector(
@@ -1621,19 +1668,14 @@ class CloudPelizzonPanel extends HTMLElement {
       "cloudpelizzon-core-panel",
       "cloudpelizzon-module-slot",
       "cloudpelizzon-updater-panel",
-    ]
-      .forEach(selector => {
-
-        const element =
-          this.shadowRoot.querySelector(
-            selector
-          );
-
-        if (element) {
-          element.hass =
-            this._hass;
-        }
+    ].forEach(selector => {
+      // querySelector() updates only the FIRST module slot. With
+      // Maintenance before Energy, Energy never receives Home Assistant
+      // and remains stuck on "Inicializando módulo...".
+      this.shadowRoot.querySelectorAll(selector).forEach(element => {
+        element.hass = this._hass;
       });
+    });
   }
 }
 

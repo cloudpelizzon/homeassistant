@@ -21,6 +21,22 @@ jobs:
           node --check custom_components/cloudpelizzon/core/frontend/panel.js
           node --check custom_components/cloudpelizzon/frontend/optional-modules.js
           node --input-type=module --check < custom_components/cloudpelizzon/frontend/panel.js
+          node tests/test_frontend_multi_module_hass.cjs
+
+      - name: Check licensing guard syntax and revocation
+        run: |
+          python3 -m py_compile \
+            custom_components/cloudpelizzon/core/license.py \
+            custom_components/cloudpelizzon/core/commercial_guard.py \
+            custom_components/cloudpelizzon/core/api.py \
+            custom_components/cloudpelizzon/runtime_service.py
+          python3 -m py_compile custom_components/cloudpelizzon/core/security_contract.py
+          python3 -m py_compile custom_components/cloudpelizzon/core/reactivation.py
+          python3 tests/test_commercial_guard.py
+          python3 tests/test_security_revocation_contract.py
+          python3 tests/test_license_reactivation_resume.py
+          python3 tests/test_license_revocation_sticky.py
+          python3 tests/test_updater_license_visibility.py
 
       - name: Smoke test activation and navigation
         shell: bash

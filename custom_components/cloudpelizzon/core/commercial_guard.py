@@ -1,0 +1,141 @@
+"""Fail-closed WebSocket enforcement for privately installed commercial modules.
+
+The guard is installed centrally when each commercial runtime registers its WS
+handlers. It cannot be bypassed by hiding/showing a frontend tab. HTTP routes,
+services and background work require their own guards in commercial packages.
+"""
+
+from __future__ import annotations
+
+import inspect
+import logging
+
+from homeassistant.components import websocket_api
+
+LOGGER = logging.getLogger(__name__)
+PLATFORM_DOMAIN = "cloudpelizzon"
+WS_DOMAIN = "websocket_api"
+
+
+
+async def authorize_module(hass, sku: str) -> dict:
+    """Single fail-closed entitlement decision for WS, HTTP and background jobs.
+
+    Commercial packages must invoke this on their own HTTP routes and worker
+    entry points. Registered WebSocket routes receive it automatically.
+    """
+    platform = hass.data.get(PLATFORM_DOMAIN, {})
+    core = platform.get("core", {}) if isinstance(platform, dict) else {}
+    manager = core.get("license_manager") if isinstance(core, dict) else None
+    control = core.get("control") if isinstance(core, dict) else None
+    if manager is None or control is None or control.mode != "enforce":
+        return {
+            "effective_allowed": False,
+            "status": "license_authority_unavailable",
+        }
+
+    try:
+        # Check-ins are serialized and rate-limited by LicenseManager.
+        # If an authoritative revoked decision was previously received,
+        # the existing CP2 lease must never override it.
+        await manager.async_checkin(force=True)
+        decision = await control.authorize(sku, installed=True)
+        return decision
+    except Exception:
+        LOGGER.exception("Commercial authorization failure sku=%s", sku)
+        return {
+            "effective_allowed": False,
+            "status": "license_authorization_failed",
+        }
+
+
+def is_module_authorized_cached(hass, sku: str) -> bool:
+    """Synchronous fail-closed entitlement for event callbacks.
+
+    This uses the last verified CP1/CP2 status. A separate Core background
+    check-in refreshes revocation state; callers that can await must use
+    is_module_authorized() for an online verification.
+    """
+    platform = hass.data.get(PLATFORM_DOMAIN, {})
+    core = platform.get("core", {}) if isinstance(platform, dict) else {}
+    manager = core.get("license_manager") if isinstance(core, dict) else None
+    control = core.get("control") if isinstance(core, dict) else None
+    if manager is None or control is None or control.mode != "enforce":
+        return False
+    try:
+        return bool(manager.status_sync(sku, installed=True).get("allowed"))
+    except Exception:
+        LOGGER.exception("Commercial cached entitlement failure sku=%s", sku)
+        return False
+
+
+async def is_module_authorized(hass, sku: str) -> bool:
+    """Use at every HTTP handler and background dispatch boundary."""
+    decision = await authorize_module(hass, sku)
+    return bool(decision.get("effective_allowed", False))
+
+
+def registered_commands(hass) -> dict[str, object]:
+    """Snapshot command handlers, including identity across entry reloads."""
+    handlers = hass.data.get(WS_DOMAIN)
+    if not isinstance(handlers, dict):
+        raise RuntimeError("commercial_ws_registry_unavailable")
+    return {
+        command: entry[0] if isinstance(entry, tuple) and len(entry) == 2 else None
+        for command, entry in handlers.items()
+    }
+
+
+def protect_new_commands(hass, before: dict[str, object], sku: str) -> list[str]:
+    """Protect newly registered OR replaced commands after an entry reload."""
+    handlers = hass.data.get(WS_DOMAIN)
+    if not isinstance(handlers, dict):
+        raise RuntimeError("commercial_ws_registry_unavailable")
+
+    added = sorted(
+        command for command, entry in handlers.items()
+        if command not in before
+        or (
+            isinstance(entry, tuple)
+            and len(entry) == 2
+            and entry[0] is not before[command]
+        )
+    )
+    protected = []
+
+    for command in added:
+        entry = handlers.get(command)
+        if not isinstance(entry, tuple) or len(entry) != 2:
+            raise RuntimeError("commercial_ws_registration_invalid")
+
+        original, schema = entry
+        if getattr(original, "_cp_commercial_guard", False):
+            continue
+
+        def make_guard(handler, module_sku):
+            @websocket_api.async_response
+            async def guarded(hass, connection, msg):
+                decision = await authorize_module(hass, module_sku)
+                if not decision.get("effective_allowed", False):
+                    connection.send_error(
+                        msg["id"], "commercial_license_denied",
+                        "Module license is inactive, revoked or not entitled",
+                    )
+                    return
+
+                result = handler(hass, connection, msg)
+                if inspect.isawaitable(result):
+                    await result
+
+            guarded._cp_commercial_guard = True
+            guarded._cp_commercial_sku = module_sku
+            return guarded
+
+        handlers[command] = (make_guard(original, sku), schema)
+        protected.append(command)
+
+    LOGGER.info(
+        "CloudPelizzon commercial WebSocket guard: sku=%s commands=%s",
+        sku, len(protected),
+    )
+    return protected
