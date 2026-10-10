@@ -113,7 +113,12 @@ async def main():
         "lease_token": "valid-signed-CP2", "license_revision": 8,
     })
     resumed = await m._async_checkin_network()
-    assert resumed["ok"] and m.data["online_status"] == "active"
+    assert resumed.get("ok") is True and m.data["online_status"] == "active", (
+        "reactivation response rejected: "
+        + repr(resumed)
+        + " / "
+        + repr(m.data.get("last_checkin_error"))
+    )
     assert m.data["license_revision"] == 8
     assert m.data["lease_token"] == "valid-signed-CP2"
 
