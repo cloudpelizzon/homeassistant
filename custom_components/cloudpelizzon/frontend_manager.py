@@ -88,7 +88,7 @@ async def async_register_frontend(
         sidebar_icon="mdi:cloud-outline",
         module_url=(
             "/cloudpelizzon/frontend/"
-            "panel.js?v=20261009-license-enforce-6213rc1"
+            "panel.js?v=20261009-reactivation-6213rc2"
         ),
         embed_iframe=False,
         trust_external=False,
