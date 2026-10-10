@@ -30,6 +30,7 @@ def build_checkin_methods():
         "hashlib": hashlib, "hmac": hmac, "json": json,
         "_b64url_encode": lambda data: "unused-hmac",
         "_parse_dt": lambda v: datetime.fromisoformat(str(v).replace("Z", "+00:00")) if v else None,
+        "VERSION": "0.13.0",
         "DEFAULT_CHECKIN_INTERVAL_SEC": 21600,
         "DEFAULT_OFFLINE_GRACE_SEC": 604800,
         "DENY_IMMEDIATELY": {"revoked", "expired", "invalid", "installation_mismatch", "not_registered"},
