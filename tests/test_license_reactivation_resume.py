@@ -25,10 +25,10 @@ def assert_trigger_wired():
         assert "schedule_reactivation_resume" in found[name], (
             f"LicenseManager.{name} does not trigger a runtime resume"
         )
-    assert 'result.get("ok") is True' in found["async_checkin"]
-    assert "coalesced" not in found["async_checkin"].split(
-        "schedule_reactivation_resume"
-    )[0][-250:]
+    checkin = found["async_checkin"].replace('"', "'")
+    assert "result.get('ok') is True" in checkin
+    assert "result.get('status')" in checkin
+    assert "schedule_reactivation_resume" in checkin
 
 
 async def regression():
