@@ -3,9 +3,18 @@
   "config": {
     "step": {
       "user": {
-        "title": "CloudPelizzon",
-        "description": "Ativar a plataforma CloudPelizzon nesta instalação."
+        "title": "Ativar CloudPelizzon",
+        "description": "Obtenha o código no Portal CloudPelizzon. Para ativar esta integração, é obrigatório registrar a instalação no Fleet e aceitar o envio de dados técnicos de versão, identificador e estado dos módulos. O registro não concede licença comercial.",
+        "data": {
+          "code": "Código de registro do Portal",
+          "consent": "Li e aceito o registro e reporte obrigatório de dados técnicos"
+        }
       }
+    },
+    "error": {
+      "consent_required": "O aceite é obrigatório para ativar a CloudPelizzon.",
+      "invalid_code": "Código inválido, expirado, não entregue ou já utilizado.",
+      "fleet_unavailable": "Fleet indisponível. A ativação exige confirmação online."
     },
     "abort": {
       "already_configured": "CloudPelizzon já está configurado."
