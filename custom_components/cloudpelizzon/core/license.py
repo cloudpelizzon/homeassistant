@@ -418,7 +418,11 @@ class LicenseManager:
                 lease_payload = self._verify_new_online_lease(
                     lease_token, cp1_payload,
                 )
-                revision = int(result.get("license_revision") or 0)
+                revision = int(
+                    result.get("license_revision")
+                    or self.data.get("license_revision")
+                    or 0
+                )
                 if revision < int(self.data.get("license_revision") or 0):
                     raise ValueError("license_revision_rollback")
             except (TypeError, ValueError) as err:
@@ -451,7 +455,9 @@ class LicenseManager:
                     or DEFAULT_OFFLINE_GRACE_SEC
                 ),
             })
-        elif server_status in DENY_IMMEDIATELY and status in (200, 401, 403, 404, 410):
+        elif server_status in DENY_IMMEDIATELY and (
+            status == 200 or 400 <= status < 500
+        ):
             # An authoritative DENY is sticky across later transient failures.
             # Preserve the old CP2 for diagnostics, never for authorization.
             self.data["online_status"] = server_status
