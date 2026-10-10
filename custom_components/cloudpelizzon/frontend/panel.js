@@ -1,7 +1,7 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 import "/cloudpelizzon-core/frontend/panel.js?v=6211-global-commercial-install";
-import "/cloudpelizzon/frontend/optional-modules.js?v=20261009-dynamic-module-loader-r1";
-import "/cloudpelizzon-updater/frontend/panel.js?v=6211-global-commercial-install";
+import "/cloudpelizzon/frontend/optional-modules.js?v=20261010-module-lifecycle-r2";
+import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
 
 
 class CloudPelizzonPanel extends HTMLElement {
@@ -1594,6 +1594,15 @@ class CloudPelizzonPanel extends HTMLElement {
     // Retrying a private panel must not depend on a full browser restart.
     const slot = target?.querySelector("cloudpelizzon-module-slot");
     if (slot) slot.activate();
+
+    // The installed-component list must NEVER stay cached after license
+    // revocation. Revalidate on every visit to Update Center.
+    if (view === "updates") {
+      const updater = target?.querySelector("cloudpelizzon-updater-panel");
+      if (updater && typeof updater.activate === "function") {
+        updater.activate();
+      }
+    }
 
 
     const button =
