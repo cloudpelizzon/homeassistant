@@ -151,6 +151,19 @@ async def _start_core(
 
     data = await store.async_load()
 
+    # FLEET_ENROLLMENT_INSTALLATION_BINDING_R1
+    # Use the exact ID the Fleet server accepted during new config flow.
+    # Existing config entries (pre-Fleet) are untouched until migration.
+    enrolled_id = str(entry.data.get("fleet_installation_id") or "")
+    if enrolled_id:
+        if not entry.data.get("fleet_registered"):
+            raise RuntimeError("fleet_registration_not_confirmed")
+        current_id = str(data.get("installation_id") or "")
+        if (data.get("activation_id") or data.get("license_token")) and current_id != enrolled_id:
+            raise RuntimeError("fleet_registration_conflicts_with_active_license")
+        data["installation_id"] = enrolled_id
+        data["fleet_registration_status"] = "registered"
+
     license_manager = (
         license_module.LicenseManager(
             hass,
