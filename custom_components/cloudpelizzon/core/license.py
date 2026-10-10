@@ -403,39 +403,97 @@ class LicenseManager:
         now_iso = datetime.now(timezone.utc).isoformat()
         server_status = str(result.get("status") or result.get("error") or f"http_{status}")
         self.data["last_checkin_at"] = now_iso
-        self.data["last_checkin_error"] = "" if status == 200 else server_status
-        self.data["online_status"] = server_status
 
-        self.data["checkin_protocol"] = int(
-            result.get("protocol") or 1
-        )
-
-        self.data["telemetry_accepted"] = bool(
-            result.get(
-                "telemetry_accepted",
-                False,
-            )
-        )
-
-        if status == 200 and result.get("ok") and server_status == "active":
-            cp1 = str(result.get("cp1_token") or self.data.get("license_token") or "")
-            if cp1:
-                self.data["license_token"] = cp1
-                self.data["license_payload"] = self.decode_token(cp1)
+        # HTTP failures, malformed responses and network errors are NOT new
+        # licensing decisions. In particular, never erase a known REVOCATION
+        # with http_500: an old still-valid CP2 lease would re-enable access.
+        if status == 200 and result.get("ok") is True and server_status == "active":
+            cp1_token = str(result.get("cp1_token") or self.data.get("license_token") or "")
             lease_token = str(result.get("lease_token") or "")
-            if lease_token:
-                self.data["lease_token"] = lease_token
-                self.data["lease_payload"] = self.decode_lease(lease_token)
-            self.data["license_revision"] = int(result.get("license_revision") or self.data.get("license_revision") or 1)
-            self.data["checkin_interval_sec"] = int(result.get("checkin_interval_sec") or self.data.get("checkin_interval_sec") or DEFAULT_CHECKIN_INTERVAL_SEC)
-            self.data["offline_grace_sec"] = int(result.get("offline_grace_sec") or self.data.get("offline_grace_sec") or DEFAULT_OFFLINE_GRACE_SEC)
-        elif server_status in DENY_IMMEDIATELY:
-            # Keep the old lease for diagnostics, but entitlement is denied
-            # immediately by _online_status when the authoritative server says so.
-            pass
+
+            # A newly authenticated ACTIVE decision must carry a fresh signed
+            # CP2 lease. Reusing an older lease to clear a revoke is unsafe.
+            try:
+                cp1_payload = self.decode_token(cp1_token)
+                lease_payload = self._verify_new_online_lease(
+                    lease_token, cp1_payload,
+                )
+                revision = int(result.get("license_revision") or 0)
+                if revision < int(self.data.get("license_revision") or 0):
+                    raise ValueError("license_revision_rollback")
+            except (TypeError, ValueError) as err:
+                self.data["last_checkin_error"] = f"active_response_rejected:{err}"
+                await self.store.async_save()
+                return {
+                    "ok": False,
+                    "status": "invalid_online_lease",
+                    "error": str(err),
+                }
+
+            self.data.update({
+                "online_status": "active",
+                "last_checkin_error": "",
+                "license_token": cp1_token,
+                "license_payload": cp1_payload,
+                "lease_token": lease_token,
+                "lease_payload": lease_payload,
+                "license_revision": revision,
+                "checkin_protocol": int(result.get("protocol") or 1),
+                "telemetry_accepted": bool(result.get("telemetry_accepted", False)),
+                "checkin_interval_sec": int(
+                    result.get("checkin_interval_sec")
+                    or self.data.get("checkin_interval_sec")
+                    or DEFAULT_CHECKIN_INTERVAL_SEC
+                ),
+                "offline_grace_sec": int(
+                    result.get("offline_grace_sec")
+                    or self.data.get("offline_grace_sec")
+                    or DEFAULT_OFFLINE_GRACE_SEC
+                ),
+            })
+        elif server_status in DENY_IMMEDIATELY and status in (200, 401, 403, 404, 410):
+            # An authoritative DENY is sticky across later transient failures.
+            # Preserve the old CP2 for diagnostics, never for authorization.
+            self.data["online_status"] = server_status
+            self.data["last_checkin_error"] = server_status
+            self.data["checkin_protocol"] = int(result.get("protocol") or 1)
+        else:
+            self.data["last_checkin_error"] = (
+                f"checkin_unverified:http_{status}:{server_status}"
+            )
+            await self.store.async_save()
+            return {
+                "ok": False,
+                "status": "server_unverified",
+                "error": server_status,
+            }
 
         await self.store.async_save()
         return result
+
+    def _verify_new_online_lease(self, token: str, cp1: dict) -> dict:
+        """Verify the new CP2 against this installation and the new CP1."""
+        if not token:
+            raise ValueError("fresh_online_lease_missing")
+        _, lease = _decode_signed(token, ("CP2",))
+        if str(lease.get("installation_id") or "") != self.installation_id:
+            raise ValueError("lease_installation_mismatch")
+        if (
+            str(lease.get("activation_id") or "")
+            != str(self.data.get("activation_id") or "")
+        ):
+            raise ValueError("lease_activation_mismatch")
+        if (
+            str(lease.get("license_id") or "")
+            != str(cp1.get("license_id") or "")
+        ):
+            raise ValueError("lease_license_mismatch")
+        expiry = _parse_dt(lease.get("valid_until"))
+        if expiry is None or expiry <= datetime.now(timezone.utc):
+            raise ValueError("lease_expired")
+        if not isinstance(lease.get("modules"), list):
+            raise ValueError("lease_modules_missing")
+        return lease
 
     def _online_status(self, sku: str) -> dict:
         token = str(self.data.get("license_token") or "").strip()
