@@ -148,6 +148,34 @@ class UpdateManager:
         )
 
 
+    def _commercial_entitled(self, sku):
+        """Customer-facing releases require the same Core entitlement.
+
+        CP-CORE and CP-UPDATER are public infrastructure. A module being
+        installed or present in backup history never grants a license.
+        """
+        meta = COMPONENTS.get(sku) or {}
+        path = str(meta.get("path") or "")
+        if not path.startswith("modules/"):
+            return sku in ("CP-CORE", "CP-UPDATER")
+        platform = self.hass.data.get(PLATFORM_DOMAIN, {})
+        core = platform.get("core", {}) if isinstance(platform, dict) else {}
+        license_manager = (
+            core.get("license_manager") if isinstance(core, dict) else None
+        )
+        control = core.get("control") if isinstance(core, dict) else None
+        if license_manager is None or getattr(control, "mode", None) != "enforce":
+            return False
+        try:
+            return license_manager.status_sync(sku, installed=True).get("allowed") is True
+        except Exception:
+            return False
+
+    def _require_commercial_entitlement(self, sku):
+        """Never install/download/rollback a commercial SKU without license."""
+        if not self._commercial_entitled(sku):
+            raise UpdateError("commercial_license_denied")
+
     def _core_data(self):
 
         path = Path(
@@ -721,6 +749,8 @@ class UpdateManager:
                 "release_not_available"
             )
 
+        self._require_commercial_entitlement(release["sku"])
+
         self._verify_release_signature(
             release
         )
@@ -1012,6 +1042,7 @@ class UpdateManager:
         )
 
         sku = release["sku"]
+        self._require_commercial_entitlement(sku)
 
         meta = COMPONENTS.get(sku)
 
@@ -1277,6 +1308,8 @@ class UpdateManager:
                 "backup_not_found"
             )
 
+        self._require_commercial_entitlement(str(record.get("sku") or ""))
+
         # HACS_BOOTSTRAP_ROLLBACK_GATE
         rollback_meta = COMPONENTS.get(
             str(record.get("sku") or "")
@@ -1460,9 +1493,11 @@ class UpdateManager:
 
     def status(self):
 
-        components = (
-            self.installed_components()
-        )
+        components = {
+            sku: component
+            for sku, component in self.installed_components().items()
+            if self._commercial_entitled(sku)
+        }
 
         releases = []
 
@@ -1470,6 +1505,8 @@ class UpdateManager:
             "releases",
             [],
         ):
+            if not self._commercial_entitled(str(release.get("sku") or "")):
+                continue
 
             item = dict(release)
 
@@ -1550,16 +1587,14 @@ class UpdateManager:
                     "documentation",
                     [],
                 ),
-            "backups":
-                self.data.get(
-                    "backups",
-                    [],
-                ),
-            "history":
-                self.data.get(
-                    "history",
-                    [],
-                ),
+            "backups": [
+                b for b in self.data.get("backups", [])
+                if self._commercial_entitled(str(b.get("sku") or ""))
+            ],
+            "history": [
+                item for item in self.data.get("history", [])
+                if self._commercial_entitled(str(item.get("sku") or ""))
+            ],
             "restart_required":
                 bool(
                     self.data.get(
