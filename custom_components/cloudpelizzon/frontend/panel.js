@@ -264,6 +264,8 @@ class CloudPelizzonPanel extends HTMLElement {
         rights[item.sku]=Boolean(item?.license?.allowed);
       }
 
+      const rightsChanged = !this._moduleRightsLoaded
+        || JSON.stringify(this._moduleRights) !== JSON.stringify(rights);
       this._moduleRights=rights;
       this._moduleRightsLoaded=true;
 
@@ -279,8 +281,12 @@ class CloudPelizzonPanel extends HTMLElement {
         this._view="core";
       }
 
-      this.render();
-      this.propagateHass();
+      // A license poll must not destroy and recreate a working commercial
+      // panel every 30 seconds when nothing actually changed.
+      if(rightsChanged){
+        this.render();
+        this.propagateHass();
+      }
       return true;
     }
     catch(error){
@@ -1662,19 +1668,14 @@ class CloudPelizzonPanel extends HTMLElement {
       "cloudpelizzon-core-panel",
       "cloudpelizzon-module-slot",
       "cloudpelizzon-updater-panel",
-    ]
-      .forEach(selector => {
-
-        const element =
-          this.shadowRoot.querySelector(
-            selector
-          );
-
-        if (element) {
-          element.hass =
-            this._hass;
-        }
+    ].forEach(selector => {
+      // querySelector() updates only the FIRST module slot. With
+      // Maintenance before Energy, Energy never receives Home Assistant
+      // and remains stuck on "Inicializando módulo...".
+      this.shadowRoot.querySelectorAll(selector).forEach(element => {
+        element.hass = this._hass;
       });
+    });
   }
 }
 
