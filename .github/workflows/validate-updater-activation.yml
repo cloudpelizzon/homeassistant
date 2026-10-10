@@ -21,6 +21,7 @@ jobs:
           node --check custom_components/cloudpelizzon/core/frontend/panel.js
           node --check custom_components/cloudpelizzon/frontend/optional-modules.js
           node --input-type=module --check < custom_components/cloudpelizzon/frontend/panel.js
+          node tests/test_frontend_multi_module_hass.cjs
 
       - name: Check licensing guard syntax and revocation
         run: |
