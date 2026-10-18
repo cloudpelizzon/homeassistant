@@ -1,5 +1,5 @@
 const CP_BASE = "/cloudpelizzon-maintenance/frontend";
-const CP_CORE_URL = `${CP_BASE}/legacy-v311-core.js?v=311-notify-ux-r58`;
+const CP_CORE_URL = `${CP_BASE}/legacy-v311-core.js?v=311-finance-r110`;
 const CP_CORE_TAG = "cloudpelizzon-maintenance-v311-core";
 const CP_API_SNAPSHOT = "cloudpelizzon/maintenance/compat/get_snapshot";
 const CP_API_SAVE = "cloudpelizzon/maintenance/compat/save_snapshot";
@@ -141,14 +141,19 @@ function patchLegacyPrototype() {
   };
 
   // Recording a maintenance uses the encapsulated backend instead of input_datetime.
-  p._setMaintenanceExecutionDate = async function (item, date) {
+  p._setMaintenanceExecutionDate = async function (item, date, record = {}) {
     if (!this.__cpRealHass) throw new Error("Backend CloudPelizzon indisponível.");
     const id = String(item?.id || item?.entity || "").replace(/^local_maintenance\./, "");
     if (!id) throw new Error("Identificador da manutenção não encontrado.");
+    // A new/edited item may still be in the debounced snapshot queue.
+    // Persist it before the server tries to locate its maintenance id.
+    if(this.__cpSaveSnapshot) await this.__cpSaveSnapshot();
     const result = await this.__cpRealHass.callWS({
       type: CP_API_COMPLETE,
       maintenance_id: id,
       execution_date: date,
+      executor: record.executor || '', provider: record.provider || '', notes: record.notes || '',
+      material_cost: Number(record.productsCost || 0), labor_cost: Number(record.laborCost || 0),
     });
     const raw = (this.registrationData?.maintenances || []).find(x => String(x.id) === id);
     if (raw) {
@@ -431,7 +436,7 @@ class CloudPelizzonMaintenancePanel extends HTMLElement {
 
   scheduleSave() {
     clearTimeout(this._saveTimer);
-    this._saveTimer = setTimeout(() => this.saveSnapshot(), 350);
+    this._saveTimer = setTimeout(() => this.saveSnapshot().catch(error => { console.error("CloudPelizzon: falha ao salvar manutenção.",error); this._card?.showToast?.("Não foi possível salvar. Confira a conexão e tente novamente."); }), 350);
   }
 
   buildSnapshot() {
@@ -449,23 +454,16 @@ class CloudPelizzonMaintenancePanel extends HTMLElement {
   }
 
   async saveSnapshot() {
-    if (!this._card || !this._hass) return;
-    if (this._saveRunning) {
-      this._saveAgain = true;
-      return;
-    }
-    this._saveRunning = true;
-    try {
-      await this._hass.callWS({ type: CP_API_SAVE, snapshot: this.buildSnapshot() });
-    } catch (error) {
-      console.error("CloudPelizzon: falha ao persistir snapshot V311.", error);
-    } finally {
-      this._saveRunning = false;
-      if (this._saveAgain) {
-        this._saveAgain = false;
-        this.scheduleSave();
-      }
-    }
+    if (!this._card || !this._hass) throw Error("Backend CloudPelizzon indisponível.");
+    clearTimeout(this._saveTimer);
+    const prior=this._savePromise || Promise.resolve();
+    const job=prior.catch(()=>{}).then(async()=>{
+      const result=await this._hass.callWS({ type: CP_API_SAVE, snapshot: this.buildSnapshot() });
+      if(result?.saved!==true) throw Error("O servidor não confirmou o salvamento da manutenção.");
+      return result;
+    });
+    this._savePromise=job;
+    return job;
   }
 
   async refreshBackend() {

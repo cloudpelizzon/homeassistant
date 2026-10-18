@@ -1,0 +1,9 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');const classes=new Map();
+const ctx={HTMLElement:class{},console,window:{},customElements:{get:n=>classes.get(n),define:(n,c)=>classes.set(n,c)},queueMicrotask:f=>f(),setTimeout:()=>0,clearTimeout(){}};
+vm.createContext(ctx);vm.runInContext(fs.readFileSync(process.argv[2],'utf8'),ctx);vm.runInContext(fs.readFileSync(process.argv[3],'utf8'),ctx);vm.runInContext('patchLegacyPrototype()',ctx);
+const card=Object.create(classes.get('cloudpelizzon-maintenance-v311-core').prototype),panel=Object.create(classes.get('cloudpelizzon-maintenance-panel').prototype);let stored=false,calls=[],complete=0;
+panel._card=card;panel.buildSnapshot=()=>({registrationData:{maintenances:[{id:'fixture'}]}});
+panel._hass={callWS:async m=>{calls.push(m.type);if(m.type.endsWith('save_snapshot')){await Promise.resolve();stored=true;return{saved:true}}assert(stored,'Creation must finish before completion');complete++;assert.equal(m.material_cost,20);assert.equal(m.executor,'Responsável / morador');return{execution:{id:'exec-fixture'}}}};
+Object.assign(card,{__cpRealHass:panel._hass,__cpSaveSnapshot:()=>panel.saveSnapshot(),registrationData:{maintenances:[{id:'fixture'}]}});
+(async()=>{const waiting=panel.saveSnapshot();await card._setMaintenanceExecutionDate({id:'fixture'},'2026-10-18',{productsCost:20,executor:'Responsável / morador'});await waiting;assert.equal(complete,1);assert.equal(calls.at(-1),'cloudpelizzon/maintenance/complete');
+panel._hass.callWS=async()=>{throw Error('fixture offline')};await assert.rejects(()=>card._setMaintenanceExecutionDate({id:'fixture'},'2026-10-18'),/offline/);assert.equal(complete,1);console.log(JSON.stringify({save_completion_order_checks:3,real_server_calls:0}));})().catch(e=>{console.error(e);process.exitCode=1});

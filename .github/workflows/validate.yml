@@ -33,6 +33,10 @@ jobs:
         run: node tests/public-client/test_trial_availability.cjs custom_components/cloudpelizzon/ui/core/panel.js
       - name: Verify legacy tabs receive updated trial and portal actions
         run: node tests/public-client/test_legacy_compat.cjs custom_components/cloudpelizzon/ui/core/hacs-brand-compat.js
+      - name: Verify maintenance savings, financial retry and XLSX export
+        run: node tests/public-client/test_finance.cjs custom_components/cloudpelizzon/ui/maintenance/legacy-v311-core.js /tmp/maintenance-test.xlsx
+      - name: Verify maintenance waits for server persistence
+        run: node tests/public-client/test_order.cjs custom_components/cloudpelizzon/ui/maintenance/legacy-v311-core.js custom_components/cloudpelizzon/ui/maintenance/panel.js
       - name: Validate the candidate integration with official hassfest
         run: docker run --rm -v "$PWD/.:/github/workspace:ro" ghcr.io/home-assistant/hassfest
       - name: Pull pinned Home Assistant runtime
