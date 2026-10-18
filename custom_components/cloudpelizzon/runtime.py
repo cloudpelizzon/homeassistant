@@ -59,6 +59,7 @@ class Runtime:
         self.closers = []
         self.closed = False
         self.sensor_forwarded = False
+        self.stage = 'created'
 
     async def start(self):
         if (self.entry.domain != DOMAIN or DOMAIN in self.hass.data
@@ -68,25 +69,34 @@ class Runtime:
         if not isinstance(delivery, Mapping) or delivery.get('enabled', False) is not False:
             # Cutover must not turn on notification effects from old options.
             raise ValueError('delivery_requires_separate_review')
+        self.stage = 'load_identity'
         context = await load_context(self.hass)
+        self.stage = 'core_bridge'
         self.bridge = CoreBridge.from_client(self.hass, context['client'],
             core_id=context['core_id'], installed=set(self.factories)|{'CP-AUTOMATION','CP-SECURITY'})
         self.state['core']['status_transport'] = self.bridge
         self.hass.data[DOMAIN] = self.state
         try:
+            self.stage = 'core_websocket'
             self.closers.append(api.register(self.hass, self.bridge))
+            self.stage = 'trial_websocket'
             self.closers.append(public_trials.register(self.hass, context['client']))
+            self.stage = 'portal_fleet'
             handoff = await onboarding(self.hass, self.entry, context)
             self.closers.append(handoff.close)
             self.closers.append(handoff_api.register(self.hass, handoff))
+            self.stage = 'automation'
             self.closers.append(await automation_ui(self.hass, self.entry, context))
+            self.stage = 'security'
             self.closers.append(await security_ui(self.hass, self.entry, context))
+            self.stage = 'frontend'
             self.closers.append(await frontend.register(self.hass, self.root))
             # Register public transports independently of display permission.
             # Their SDK operations reauthorize on the server on every attempt.
             # An offline/expired display claim cannot start a local engine; nor
             # must a later legitimate grant require reinstalling its transport.
             for sku, factory in self.factories.items():
+                self.stage = 'solar' if sku == 'CP-SOLAR' else 'maintenance'
                 module = await factory(self.hass, self.entry)
                 module_controllers = controllers(module)
                 if not module_controllers:
@@ -95,6 +105,7 @@ class Runtime:
                 self.state['energy' if sku == 'CP-SOLAR' else 'maintenance'] = module
             if 'energy' in self.state:
                 self.sensor_forwarded = True
+                self.stage = 'sensor_platform'
                 await self.hass.config_entries.async_forward_entry_setups(self.entry, ['sensor'])
             self.entry.async_on_unload(self.close)
             return self
