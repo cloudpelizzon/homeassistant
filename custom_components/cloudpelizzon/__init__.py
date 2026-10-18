@@ -3,6 +3,7 @@ import logging
 from pathlib import Path
 from homeassistant.exceptions import ConfigEntryNotReady
 from .runtime import DOMAIN, OWNER, Runtime
+from .ui_inventory import PublicInventoryMismatch
 from homeassistant.helpers import config_validation as cv
 
 LOGGER = logging.getLogger(__name__)
@@ -33,6 +34,8 @@ async def async_setup_entry(hass, entry):
             tb = tb.tb_next
         location = ' > '.join(frames) or 'external_dependency'
         detail = f'{manager.stage}; {type(error).__name__}; {location}'
+        if type(error) is PublicInventoryMismatch:
+            detail += f'; unexpected_public_file={error.public_detail}'
         LOGGER.error('CloudPelizzon initialization failed: %s', detail)
         raise ConfigEntryNotReady(f'CloudPelizzon initialization failed: {detail}') from None
     return True

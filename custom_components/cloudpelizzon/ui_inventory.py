@@ -4,6 +4,7 @@ import json
 import os
 from pathlib import Path, PurePosixPath
 import stat
+import re
 
 ROUTES = {
     '/cloudpelizzon/frontend': 'ui/shell',
@@ -15,6 +16,13 @@ ROUTES = {
     '/cloudpelizzon-security/frontend': 'ui/security',
     '/cloudpelizzon-automation/frontend': 'ui/automation',
 }
+class PublicInventoryMismatch(ValueError):
+    def __init__(self, relative):
+        # Only a bounded public UI filename; never file contents or exception text.
+        self.public_detail = re.sub(r'[^a-zA-Z0-9_./ -]', '?', relative)[:160]
+        super().__init__('unexpected_public_file')
+
+
 SUFFIXES = {'.js', '.css', '.html', '.svg', '.png', '.jpg', '.jpeg', '.webp', '.ico', '.woff', '.woff2', '.ttf'}
 
 
@@ -88,7 +96,7 @@ def verify(root):
             asset = Path(folder)/name
             relative = asset.relative_to(root).as_posix()
             if relative not in expected:
-                raise ValueError('unexpected_public_file')
+                raise PublicInventoryMismatch(relative)
             data = regular(asset, 8*1024*1024)
             total += len(data)
             if total > 96*1024*1024 or hashlib.sha256(data).hexdigest() != expected[relative]:
