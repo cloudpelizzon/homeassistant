@@ -4,7 +4,8 @@ from datetime import datetime, timezone
 import re
 import time
 from .metadata import MODULES
-from .projection import project, validate_claim
+from .projection import project, validate_claim, unavailable_catalog
+from ..adapters.solar.sdk.client import ClientError
 
 STATUS = 'cloudpelizzon/core/status'
 LICENSE = 'cloudpelizzon/core/license/status'
@@ -53,7 +54,22 @@ class CoreBridge:
         if self.last_mono is not None and (before_mono < self.last_mono or before_wall < self.last_wall):
             raise PermissionError('clock_regressed')
         self.last_wall, self.last_mono = before_wall, before_mono
-        claim = await self.fetch_verified()
+        try:
+            claim = await self.fetch_verified()
+        except ClientError as error:
+            # Only the audited SDK's fixed error codes may enter a public DTO.
+            # HTTP denial is not proof of enrollment state, absence of a paid
+            # license or a new trial; never fabricate a lifecycle claim here.
+            if command != STATUS or self.closed:
+                raise
+            code = str(error)
+            if code not in ('request_denied_http_401', 'request_denied_http_403',
+                            'request_denied_http_429', 'request_denied_http_500',
+                            'request_denied_http_502', 'request_denied_http_503',
+                            'transport_failed', 'status_not_verified', 'response_invalid'):
+                code = 'access_not_verified'
+            return unavailable_catalog(core_id=self.core_id, installed=self.installed,
+                                       version=self.version, reason=code)
         now, elapsed = self.clock(), self.monotonic() - before_mono
         if self.closed or elapsed < 0 or elapsed >= 5 or now < before_wall:
             raise PermissionError('status_no_longer_fresh')

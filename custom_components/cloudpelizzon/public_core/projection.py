@@ -73,3 +73,18 @@ def project(claim, *, core_id, installed, now, version):
                         'lease_valid_until': None, 'license_revision': 0,
                         'server_url': 'https://api.cloudpelizzon.com.br'},
             'modules': rows}
+
+
+def unavailable_catalog(*, core_id, installed, version, reason):
+    """Public presentation only: no signed status, trial or license assertion."""
+    return {'core_version': version, 'installation_id': core_id, 'created_at': None,
+            'status_verified': False, 'access_error': reason,
+            'license': {'present': False, 'license_id': None, 'customer': None,
+                        'expires_at': None, 'modules': [], 'activation_id': None,
+                        'online_status': 'unavailable', 'last_checkin_at': None,
+                        'last_checkin_error': reason, 'lease_valid_until': None,
+                        'license_revision': 0, 'server_url': 'https://api.cloudpelizzon.com.br'},
+            'modules': [{'sku': sku, **metadata, 'installed': sku in installed,
+                         'license': {'sku': sku, 'allowed': False, 'status': 'unverified',
+                                     'reason': 'online_access_not_verified'}}
+                        for sku, metadata in MODULES.items()]}
