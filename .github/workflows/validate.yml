@@ -25,6 +25,8 @@ jobs:
         run: python3 tools/verify_public_tree.py
       - name: Verify browser export without network or devices
         run: node tests/public-client/test_export.cjs custom_components/cloudpelizzon/ui/automation/panel.js
+      - name: Verify active trial navigation without browser reload
+        run: node tests/public-client/test_navigation.cjs custom_components/cloudpelizzon/ui/shell/panel.js custom_components/cloudpelizzon/ui/core/panel.js
       - name: Validate the candidate integration with official hassfest
         run: docker run --rm -v "$PWD/.:/github/workspace:ro" ghcr.io/home-assistant/hassfest
       - name: Pull pinned Home Assistant runtime
