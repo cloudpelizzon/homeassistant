@@ -10,13 +10,14 @@ CONTRACTS = frozenset((STATUS, REGISTER, PAIR))
 
 class Bridge:
     def __init__(self, *, core_id, trial_id, entry_data, persist, post,
-                 portal_signer, executor, version, ha_version):
+                 portal_signer, executor, version, ha_version, portal_enrollment=None):
         self.core_id, self.trial_id = core_id, trial_id
         if (type(core_id) is not str or not CORE_ID.fullmatch(core_id)
                 or type(trial_id) is not str or not trial_id or core_id == trial_id):
             raise ValueError('separate_identities_required')
         self.entry_data, self.persist, self.post = entry_data, persist, post
         self.portal_signer, self.executor = portal_signer, executor
+        self.portal_enrollment = portal_enrollment
         self.version, self.ha_version = version, ha_version
         self.lock = asyncio.Lock()
         self.closed = False
@@ -47,6 +48,9 @@ class Bridge:
         if command == PAIR:
             if self.portal_signer is None:
                 raise PermissionError('approved_portal_signer_required')
+            if self.portal_enrollment is not None:
+                await self.portal_enrollment()
+                self.check(authorized)
             result = await self.executor(portal_assertion, self.core_id, self.portal_signer)
             self.check(authorized)
             return result

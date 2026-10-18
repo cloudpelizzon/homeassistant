@@ -6,7 +6,7 @@ from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 
 
-def sign_existing(folder, message):
+def _existing_key(folder):
     try:
         folder = Path(folder).absolute()
         if folder.resolve() != folder:
@@ -32,6 +32,15 @@ def sign_existing(folder, message):
         key = serialization.load_pem_private_key(raw, password=None)
         if not isinstance(key, Ed25519PrivateKey):
             raise ValueError()
-        return key.sign(message)
+        return key
     except Exception:
         raise PermissionError('portal_signer_missing_or_untrusted') from None
+
+
+def sign_existing(folder,message):
+    return _existing_key(folder).sign(message)
+
+
+def public_existing(folder):
+    return _existing_key(folder).public_key().public_bytes(
+        serialization.Encoding.Raw,serialization.PublicFormat.Raw).hex()

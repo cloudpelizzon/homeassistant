@@ -6,7 +6,7 @@
     "ui/automation/panel.js": "c67b9d3d1d5ec5cf7d43eed2b8a4141a6578f31c0f62351f5b87ebb398bde59b",
     "ui/core/cloudpelizzon-logo.png": "09589abe9aab02e51543e959be9b492073febf2a38a864dbe624911bcb85b9ac",
     "ui/core/fleet-registration.js": "08f47ffbccc114015a163866a3afd8574c60a693b433caa0188e7e1eaea7ffb5",
-    "ui/core/panel.js": "b147caa482f6a63caaccc43a098acada88c037413c87e25ebdf06ad4056b8360",
+    "ui/core/panel.js": "318f3efff5de733c274f4f7dd7468a6dbb1ece51987d541cd162b944b3e47859",
     "ui/core/previews/alexa.svg": "8a93776cbd685ec63457f13fe7c4fb9588df8f574f548a12c45e56f1a0db2370",
     "ui/core/previews/ambiente.svg": "9d78524c4ce12e77489fa245c69b0017d103bc493c2da2364fdf20faa9b2106b",
     "ui/core/previews/automation.svg": "0408c3f935c081752344c46f3bcd4dafb1ef5ceacff0dd1f392d5e917f2af054",
@@ -59,9 +59,11 @@
     "ui/security/panel.js": "ace0ded0d79e630a7d648c0fc7f568041fd93373767fc38e576005d6f1203166",
     "ui/shell/date-format-r51.js": "86319cce81b733583b633114e5c1f0ed431caa591f3f29cc5dc3e72106586e47",
     "ui/shell/optional-modules.js": "c5ad72b95fbd9708a48c915de50040bd239fd803a0c7c7e903b31b43550a47a2",
-    "ui/shell/panel.js": "d7378f13bc1a08fe71e227e448e8369d0e792975e5a46fe63596f7f3cc1acb8e",
+    "ui/shell/panel.js": "39b29c80c9cbb4e8054decaf0bd58ba10e8a21ce49d5ef36b4094cea96a3eb7b",
     "ui/solar/energy-card.js": "14d311b1b29ebf5749f6f2fa5601809d89f799ba24649484a82c7d0825c2d71e",
     "ui/solar/panel.js": "aad57ae5617d766ba2cc64123a50551e0cd2b01fc0fd88d65b7fe3c5160297bd",
-    "ui/updater/panel.js": "e1ec03718ec046c3146ec268e0b5955e00690d0ca9ef4f96d62c86e293c7c6cd"
+    "ui/updater/panel.js": "e1ec03718ec046c3146ec268e0b5955e00690d0ca9ef4f96d62c86e293c7c6cd",
+    "ui/core/hacs-brand-compat.js": "ea81a29b64391c92d06416c4593a58dc14afef250ccc9dedfd340bf57d2cee5b",
+    "ui/core/hacs-icon.png": "01bec3858428b8fd2fbe4fc1593e715220e5d27e43b5396c532eaaf7f8cd5bc5"
   }
 }
