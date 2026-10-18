@@ -1,0 +1,152 @@
+seguranca_armar_parcial:
+  name: "Armar parcialmente"
+  description: "Controle da configuração de Segurança desta instalação."
+  fields:
+    motivo:
+      name: Motivo
+      description: "Motivo apresentado no evento de segurança."
+      selector:
+        text: {}
+    origem:
+      name: Origem
+      description: "Identificação da origem da solicitação."
+      selector:
+        text: {}
+seguranca_armar_total:
+  name: "Armar totalmente"
+  description: "Controle da configuração de Segurança desta instalação."
+  fields:
+    motivo:
+      name: Motivo
+      description: "Motivo apresentado no evento de segurança."
+      selector:
+        text: {}
+    origem:
+      name: Origem
+      description: "Identificação da origem da solicitação."
+      selector:
+        text: {}
+seguranca_desarmar:
+  name: "Desarmar"
+  description: "Controle da configuração de Segurança desta instalação."
+  fields:
+    motivo:
+      name: Motivo
+      description: "Motivo apresentado no evento de segurança."
+      selector:
+        text: {}
+    origem:
+      name: Origem
+      description: "Identificação da origem da solicitação."
+      selector:
+        text: {}
+seguranca_disparar:
+  name: "Disparar alarme"
+  description: "Controle da configuração de Segurança desta instalação."
+  fields:
+    motivo:
+      name: Motivo
+      description: "Motivo apresentado no evento de segurança."
+      selector:
+        text: {}
+    origem:
+      name: Origem
+      description: "Identificação da origem da solicitação."
+      selector:
+        text: {}
+    imediato:
+      name: Imediato
+      description: "Solicitar disparo imediato."
+      default: false
+      selector:
+        boolean: {}
+seguranca_panico:
+  name: "Acionar pânico"
+  description: "Controle da configuração de Segurança desta instalação."
+  fields:
+    motivo:
+      name: Motivo
+      description: "Motivo apresentado no evento de segurança."
+      selector:
+        text: {}
+    origem:
+      name: Origem
+      description: "Identificação da origem da solicitação."
+      selector:
+        text: {}
+security_arm_home:
+  name: "Armar parcialmente"
+  description: "Controle da configuração de Segurança desta instalação."
+  fields:
+    motivo:
+      name: Motivo
+      description: "Motivo apresentado no evento de segurança."
+      selector:
+        text: {}
+    origem:
+      name: Origem
+      description: "Identificação da origem da solicitação."
+      selector:
+        text: {}
+security_arm_away:
+  name: "Armar totalmente"
+  description: "Controle da configuração de Segurança desta instalação."
+  fields:
+    motivo:
+      name: Motivo
+      description: "Motivo apresentado no evento de segurança."
+      selector:
+        text: {}
+    origem:
+      name: Origem
+      description: "Identificação da origem da solicitação."
+      selector:
+        text: {}
+security_disarm:
+  name: "Desarmar"
+  description: "Controle da configuração de Segurança desta instalação."
+  fields:
+    motivo:
+      name: Motivo
+      description: "Motivo apresentado no evento de segurança."
+      selector:
+        text: {}
+    origem:
+      name: Origem
+      description: "Identificação da origem da solicitação."
+      selector:
+        text: {}
+security_trigger:
+  name: "Disparar alarme"
+  description: "Controle da configuração de Segurança desta instalação."
+  fields:
+    motivo:
+      name: Motivo
+      description: "Motivo apresentado no evento de segurança."
+      selector:
+        text: {}
+    origem:
+      name: Origem
+      description: "Identificação da origem da solicitação."
+      selector:
+        text: {}
+    imediato:
+      name: Imediato
+      description: "Solicitar disparo imediato."
+      default: false
+      selector:
+        boolean: {}
+security_panic:
+  name: "Acionar pânico"
+  description: "Controle da configuração de Segurança desta instalação."
+  fields:
+    motivo:
+      name: Motivo
+      description: "Motivo apresentado no evento de segurança."
+      selector:
+        text: {}
+    origem:
+      name: Origem
+      description: "Identificação da origem da solicitação."
+      selector:
+        text: {}

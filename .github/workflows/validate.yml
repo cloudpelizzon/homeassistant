@@ -1,0 +1,40 @@
+name: Public client native setup
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: public-client-native-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  public-client:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout reviewed PR sources
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify browser export without network or devices
+        run: node tests/public-client/test_export.cjs custom_components/cloudpelizzon/ui/automation/panel.js
+      - name: Validate the candidate integration with official hassfest
+        run: docker run --rm -v "$PWD/.:/github/workspace:ro" ghcr.io/home-assistant/hassfest
+      - name: Pull pinned Home Assistant runtime
+        run: docker pull ghcr.io/home-assistant/home-assistant@sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0
+      - name: Test native flow manager and private local identity storage
+        run: |
+          docker run --rm --entrypoint python --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --memory 1024m --cpus 2 --pids-limit 128 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=536870912,mode=1777 \
+            -e PYTHONDONTWRITEBYTECODE=1 \
+            -v "$PWD/.:/candidate:ro" \
+            -v "$PWD/tests/public-client:/checks:ro" \
+            ghcr.io/home-assistant/home-assistant@sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0 \
+            -B /checks/run.py

@@ -1,0 +1,43 @@
+"""Public Maintenance transport candidate; calculations and storage are private."""
+import asyncio,copy,functools,json,uuid
+CONTRACTS={'cloudpelizzon/maintenance/get_state': {'operation': 'maintenance.records.read', 'allowed': [], 'required': [], 'defaults': {}, 'admin': False}, 'cloudpelizzon/maintenance/create': {'operation': 'maintenance.records.create', 'allowed': ['name', 'category', 'cycle_days', 'priority', 'criticality', 'estimated_material', 'estimated_labor', 'image'], 'required': ['name'], 'defaults': {'category': 'Outros', 'priority': 'Importante', 'estimated_material': 0, 'estimated_labor': 0, 'image': ''}, 'admin': True}, 'cloudpelizzon/maintenance/update': {'operation': 'maintenance.records.update', 'allowed': ['maintenance_id', 'name', 'category', 'cycle_days', 'priority', 'criticality', 'estimated_material', 'estimated_labor', 'image', 'enabled', 'last_execution'], 'required': ['maintenance_id'], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/complete': {'operation': 'maintenance.records.complete', 'allowed': ['maintenance_id', 'execution_date', 'executor', 'provider', 'notes', 'material_cost', 'labor_cost'], 'required': ['maintenance_id'], 'defaults': {'execution_date': '', 'executor': '', 'provider': '', 'notes': '', 'material_cost': 0, 'labor_cost': 0}, 'admin': True}, 'cloudpelizzon/maintenance/undo_execution': {'operation': 'maintenance.records.undo', 'allowed': ['execution_id'], 'required': ['execution_id'], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/delete': {'operation': 'maintenance.records.delete', 'allowed': ['maintenance_id'], 'required': ['maintenance_id'], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/compat/get_snapshot': {'operation': 'maintenance.compat.snapshot.read', 'allowed': [], 'required': [], 'defaults': {}, 'admin': False}, 'cloudpelizzon/maintenance/compat/save_snapshot': {'operation': 'maintenance.compat.snapshot.write', 'allowed': ['snapshot'], 'required': ['snapshot'], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/category/create': {'operation': 'maintenance.category.create', 'allowed': ['name', 'icon', 'color', 'header_image'], 'required': ['name'], 'defaults': {'icon': '🛠️', 'color': '#35b9ff', 'header_image': ''}, 'admin': True}, 'cloudpelizzon/maintenance/category/update': {'operation': 'maintenance.category.update', 'allowed': ['category_id', 'name', 'icon', 'color', 'header_image'], 'required': ['category_id'], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/category/delete': {'operation': 'maintenance.category.delete', 'allowed': ['category_id'], 'required': ['category_id'], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/profile/get': {'operation': 'maintenance.profile.read', 'allowed': [], 'required': [], 'defaults': {}, 'admin': False}, 'cloudpelizzon/maintenance/profile/update': {'operation': 'maintenance.profile.update', 'allowed': ['profile_type', 'name', 'logo', 'address', 'cityState', 'document', 'contact', 'phone', 'email', 'additional'], 'required': [], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/favorite/toggle': {'operation': 'maintenance.favorite.toggle', 'allowed': ['maintenance_id'], 'required': ['maintenance_id'], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/finance/create': {'operation': 'maintenance.finance.create', 'allowed': ['maintenance_id', 'name', 'category', 'date', 'executor', 'provider', 'products', 'products_cost', 'labor_cost', 'market_labor', 'saving', 'notes'], 'required': ['name', 'category', 'date'], 'defaults': {'maintenance_id': '', 'executor': '', 'provider': '', 'products': '', 'products_cost': 0, 'labor_cost': 0, 'market_labor': 0, 'saving': 0, 'notes': ''}, 'admin': True}, 'cloudpelizzon/maintenance/finance/update': {'operation': 'maintenance.finance.update', 'allowed': ['record_id', 'name', 'category', 'date', 'executor', 'provider', 'products', 'products_cost', 'labor_cost', 'market_labor', 'saving', 'notes'], 'required': ['record_id'], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/finance/delete': {'operation': 'maintenance.finance.delete', 'allowed': ['record_id'], 'required': ['record_id'], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/history/import_legacy': {'operation': 'maintenance.history.import_legacy', 'allowed': [], 'required': [], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/notifications/status': {'operation': 'maintenance.notifications.status', 'allowed': [], 'required': [], 'defaults': {}, 'admin': False}, 'cloudpelizzon/maintenance/notifications/test': {'operation': 'maintenance.notifications.test', 'allowed': ['title', 'message', 'criticality'], 'required': [], 'defaults': {'title': '🛠️ Teste CloudPelizzon Manutenção', 'message': 'Os avisos automáticos de manutenção estão funcionando corretamente.', 'criticality': 'Importante'}, 'admin': True}, 'cloudpelizzon/maintenance/notifications/check_now': {'operation': 'maintenance.notifications.manual_check', 'allowed': [], 'required': [], 'defaults': {}, 'admin': True}, 'cloudpelizzon/maintenance/settings/update': {'operation': 'maintenance.settings.update', 'allowed': ['title', 'subtitle', 'warning_days', 'history_months', 'auto_refresh_seconds', 'notifications'], 'required': [], 'defaults': {}, 'admin': True}}
+VERSION='1.5.3-criticality-policy-ui-premium'
+def detached(value):
+    raw=json.dumps(value,ensure_ascii=False,allow_nan=False,separators=(',',':'))
+    if len(raw.encode())>60000:raise ValueError('maintenance_payload_too_large')
+    return json.loads(raw)
+def public_item(item):
+    item=copy.deepcopy(item);item.pop('legacy',None);item.pop('legacy_next_execution',None);return item
+def read_view(data):
+    lists={k:copy.deepcopy(data.get(k,[])) for k in ('categories','executions','finance_records','favorites','notification_log')}
+    lists['maintenances']=[public_item(x) for x in data.get('maintenances',[]) if isinstance(x,dict)]
+    objects={k:copy.deepcopy(data.get(k,{})) for k in ('profile','finance_estimates','finance_period','settings','migration')}
+    return {'api_version':6,'module':{'sku':'CP-MAINTENANCE','version':VERSION},'summary':{k:len((lists|objects)[k]) for k in ('maintenances','categories','executions','finance_records','finance_estimates','favorites')},**lists,**objects}
+class MaintenanceBridge:
+    def __init__(self,execute):self.execute=execute;self.closed=False;self.lock=asyncio.Lock()
+    @classmethod
+    def from_client(cls,hass,client):
+        async def execute(operation,args,rid):return await hass.async_add_executor_job(functools.partial(client.execute,'CP-MAINTENANCE',operation,args,request_id=rid))
+        return cls(execute)
+    def close(self):self.closed=True
+    async def handle(self,command,payload=None,*,admin=False):
+        if self.closed or command not in CONTRACTS:raise PermissionError('maintenance_command_denied')
+        spec=CONTRACTS[command]
+        if spec['admin'] and admin is not True:raise PermissionError('admin_required')
+        payload={} if payload is None else detached(payload)
+        if not isinstance(payload,dict) or set(payload)-set(spec['allowed']) or not set(spec['required'])<=payload.keys():raise ValueError('maintenance_arguments')
+        args={**copy.deepcopy(spec['defaults']),**payload};operation=spec['operation']
+        # Never silently gather customer recorder history or device inventory.
+        if operation=='maintenance.history.import_legacy':raise PermissionError('explicit_history_source_permission_required')
+        if operation=='maintenance.records.update':args={'maintenance_id':args['maintenance_id'],'changes':{k:v for k,v in args.items() if k!='maintenance_id'}}
+        if operation=='maintenance.records.complete' and not args.get('execution_date'):args['execution_date']=None
+        async with self.lock:
+            result=await self.execute(operation,detached(args),uuid.uuid4().hex)
+            if self.closed:raise PermissionError('maintenance_unloaded')
+            result=detached(result)
+            if operation=='maintenance.records.read':return read_view(result)
+            if operation=='maintenance.records.create':return {'created':True,'maintenance':public_item(result)}
+            if operation=='maintenance.records.update':return {'updated':True,'maintenance':public_item(result)}
+            if operation=='maintenance.records.complete':return {'completed':True,'execution':result['execution'],'maintenance':public_item(result['maintenance'])}
+            if operation=='maintenance.records.delete':return {'deleted':True,'maintenance_id':args['maintenance_id']}
+            return result

@@ -1,0 +1,24 @@
+{
+  "title": "CloudPelizzon",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect CloudPelizzon",
+        "description": "Register this installation with Fleet for free. This does not start module trials or issue a commercial license.",
+        "data": {
+          "consent": "Allow technical registration of this installation with Fleet",
+          "share_owner_name": "Also share the HA owner display name (optional)"
+        }
+      }
+    },
+    "error": {
+      "consent_required": "Technical registration consent is required.",
+      "registration_rejected": "Fleet did not confirm registration. Check this installation registration.",
+      "identity_invalid": "The existing local identity could not be validated. No key was replaced.",
+      "cannot_connect": "Unable to connect to Fleet. Retry with the same preserved identity."
+    },
+    "abort": {
+      "already_configured": "CloudPelizzon is already configured."
+    }
+  }
+}

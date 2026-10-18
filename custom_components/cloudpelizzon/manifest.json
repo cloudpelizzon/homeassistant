@@ -1,0 +1,19 @@
+{
+  "domain": "cloudpelizzon",
+  "name": "CloudPelizzon",
+  "codeowners": [
+    "@cloudpelizzon"
+  ],
+  "config_flow": true,
+  "dependencies": [
+    "frontend",
+    "http",
+    "panel_custom"
+  ],
+  "documentation": "https://cloudpelizzon.com.br",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "single_config_entry": true,
+  "version": "7.0.0-alpha.6"
+}

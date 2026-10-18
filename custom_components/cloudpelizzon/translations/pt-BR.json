@@ -1,0 +1,24 @@
+{
+  "title": "CloudPelizzon",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Conectar a CloudPelizzon",
+        "description": "Cadastre gratuitamente esta instalação no Fleet. Isso não inicia testes de módulos nem concede licença comercial.",
+        "data": {
+          "consent": "Autorizo o cadastro técnico desta instalação no Fleet",
+          "share_owner_name": "Compartilhar também o nome de exibição do proprietário do HA (opcional)"
+        }
+      }
+    },
+    "error": {
+      "consent_required": "É necessário autorizar o cadastro técnico.",
+      "registration_rejected": "O Fleet não confirmou o cadastro. Verifique o registro da instalação.",
+      "identity_invalid": "A identidade local existente não pôde ser validada. Nenhuma chave foi substituída.",
+      "cannot_connect": "Não foi possível conectar ao Fleet. Tente novamente; a identidade será preservada."
+    },
+    "abort": {
+      "already_configured": "A CloudPelizzon já está configurada."
+    }
+  }
+}
