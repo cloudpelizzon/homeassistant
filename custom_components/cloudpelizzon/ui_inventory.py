@@ -1,4 +1,6 @@
 """Verify a closed public asset tree before handing it to HA's static server."""
+import gzip
+import io
 import hashlib
 import json
 import os
@@ -96,7 +98,24 @@ def verify(root):
             asset = Path(folder)/name
             relative = asset.relative_to(root).as_posix()
             if relative not in expected:
-                raise PublicInventoryMismatch(relative)
+                # Installers may create gzip siblings for HTTP static serving.
+                # Accept only a bounded, exact copy of a reviewed original.
+                source = relative[:-3] if relative.endswith('.gz') else None
+                if source not in expected:
+                    raise PublicInventoryMismatch(relative)
+                compressed = regular(asset, 8*1024*1024)
+                try:
+                    with gzip.GzipFile(fileobj=io.BytesIO(compressed)) as stream:
+                        expanded = stream.read(8*1024*1024+1)
+                except (OSError, EOFError) as error:
+                    raise ValueError('invalid_public_gzip') from None
+                if (len(expanded) > 8*1024*1024 or
+                        hashlib.sha256(expanded).hexdigest() != expected[source]):
+                    raise ValueError('public_gzip_integrity')
+                total += len(compressed) + len(expanded)
+                if total > 96*1024*1024:
+                    raise ValueError('public_asset_size')
+                continue
             data = regular(asset, 8*1024*1024)
             total += len(data)
             if total > 96*1024*1024 or hashlib.sha256(data).hexdigest() != expected[relative]:
