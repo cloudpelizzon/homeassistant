@@ -1,8 +1,8 @@
 {
-  "schema": "cp.clean.source89.inventory.v1",
+  "schema": "cp.clean.source90.inventory.v1",
   "files": {
     ".github/workflows/hacs.yml": "6b737ea63358b22f7812bab3bfb323e3ca8b4cf143a41f9ead748adaab226150",
-    ".github/workflows/validate.yml": "aeb2e69e126328218c40a5a9c3bbfb04b466b1f4c571e7cf96ef664b9dcfdc87",
+    ".github/workflows/validate.yml": "750bfdf1b165880d11e115ae55af5995b376a7703fd1f1e6dd3dd729794649a3",
     ".gitignore": "d4c6c5d0f925d1dee7cf69cb2672dbaf7d14bf236f37d64116336f9aa0d1702f",
     "LICENSE": "c1d1a38c99c48ccad170890ade6066e2e240bb6ce59861d4eb7f672eddd2a4c6",
     "README.md": "a6a9e1a3e89d296084b81012cace1318db49b376478d324a399f9d119218f98c",
@@ -51,9 +51,10 @@
     "custom_components/cloudpelizzon/adapters/solar/sdk/activation83.py": "f83699265e121c8393689ce96b1914a9ba30fafe11b65c386fd80181451fbca1",
     "custom_components/cloudpelizzon/adapters/solar/sdk/client.py": "9cd732c6933195c878b15f199d48a2c870d71faafca54757153355012c6cc8e7",
     "custom_components/cloudpelizzon/adapters/solar/sensor.py": "9b2f0d13c1b6da0b723d3e4117d84c17e517d9b915c07e38234d98dfcf7b02e9",
+    "custom_components/cloudpelizzon/brand/icon.png": "09589abe9aab02e51543e959be9b492073febf2a38a864dbe624911bcb85b9ac",
     "custom_components/cloudpelizzon/config_flow.py": "ce03b4f0b79c41b69e399e1c787d8571c1d307c2e73ce657623c20ecc04d9543",
     "custom_components/cloudpelizzon/frontend.py": "fdfebd229e9c3e39790640ef00260b4d12a422a7c9f4028b995e83e242cd8506",
-    "custom_components/cloudpelizzon/manifest.json": "e8cf7d882e5464a9d6ca4502a07ee4af59986c3b3fa7d893269c1188227c6b4c",
+    "custom_components/cloudpelizzon/manifest.json": "5b0110f2adf42cafdaeeb002acb1e884170fe19ab9ca0bb8b5429561ecca447a",
     "custom_components/cloudpelizzon/provision.py": "a4425295636ae33810780b96f227a8090764084b932512daa1cc45b23c82c2a9",
     "custom_components/cloudpelizzon/public_automation/__init__.py": "68140614e527aec7864ec321354d325d10e105287241d1e26a97a24e36597c2a",
     "custom_components/cloudpelizzon/public_automation/api.py": "fc939a9357fd25cc65cc34037be65ec53f8f17a11d73f26a56c9ab96323b052c",
@@ -148,7 +149,8 @@
     "tests/public-client/native_trial83.py": "e426733c2eed3f8d69c23efd129ba3c5fdf55d5a975ba5cf47873b947b1af004",
     "tests/public-client/public_transport87.py": "ec00ad94067f984637ae4e309a92c73d78b4879ec29d7652817808e5c551aa16",
     "tests/public-client/run.py": "fbb70d18f1d00e58d980eec04a801295f7bf6df31a37a901953e4a0ecd133025",
-    "tests/public-client/test_export.cjs": "0cf31ad50fb716a51e2e9f209a7eceda953d22f78dbdc9a8ef6ab79882b39881"
+    "tests/public-client/test_export.cjs": "0cf31ad50fb716a51e2e9f209a7eceda953d22f78dbdc9a8ef6ab79882b39881",
+    "tools/verify_public_tree.py": "f59655cdff6ba01c4ec5b5702257ad21bea3949ad13c7922bebd3312a56dec59"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,

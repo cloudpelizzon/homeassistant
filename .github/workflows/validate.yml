@@ -21,6 +21,8 @@ jobs:
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+      - name: Verify reviewed public hashes and reject sensitive artifacts
+        run: python3 tools/verify_public_tree.py
       - name: Verify browser export without network or devices
         run: node tests/public-client/test_export.cjs custom_components/cloudpelizzon/ui/automation/panel.js
       - name: Validate the candidate integration with official hassfest
