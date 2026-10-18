@@ -7,7 +7,7 @@ from .ui_inventory import ROUTES, verify
 STATIC_KEY = 'cloudpelizzon_public_static73'
 PANEL_KEY = 'cloudpelizzon_public_panel73'
 URL = 'cloudpelizzon'
-EXTRA_BRAND_URL = '/cloudpelizzon-core/frontend/hacs-brand-compat.js?v=ea81a29b6439'
+EXTRA_BRAND_URL = '/cloudpelizzon-core/frontend/hacs-brand-compat.js?v=d0988805eeae'
 
 
 def marker(hass):

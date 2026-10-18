@@ -2,10 +2,11 @@
  * Changes only this integration's icon inside HACS. No HACS files, tokens or settings.
  */
 (() => {
-  if(window.__cpLocalHacsBrand106)return;
-  window.__cpLocalHacsBrand106=true;
+  if(window.__cpLocalHacsBrand108)return;
+  window.__cpLocalHacsBrand108=true;
   const image='/cloudpelizzon-core/frontend/hacs-icon.png';
   const observed=new WeakSet(),frames=new WeakSet(),queued=new Map();
+  const patched=new WeakSet();
   let timer;
   function isLegacyIcon(raw,base){
     try{
@@ -32,6 +33,7 @@
         {subtree:true,childList:true,attributes:true,attributeFilter:['src']});
     }
     for(const node of root.querySelectorAll('*')){
+      if(node.localName==='cloudpelizzon-core-panel')upgradeLegacyPanel(node);
       const scoped=inHacs||node.localName?.startsWith('hacs-');
       if(inHacs&&node.localName==='img'&&isLegacyIcon(node.getAttribute('src'),node.ownerDocument.baseURI)){
         node.setAttribute('src',image);
@@ -44,6 +46,52 @@
         read();
       }
     }
+  }
+  function upgradeLegacyPanel(panel){
+    const prototype=Object.getPrototypeOf(panel);
+    if(patched.has(prototype)||typeof prototype.v2TrialButton!=='function'
+      ||typeof prototype.cpModuleStatus!=='function'||typeof prototype.v2StartTrial!=='function'||typeof panel.render!=='function')return;
+    const oldPortal=prototype.cpOpenSecurePortal;
+    const legacy=prototype.v2TrialButton.toString().includes('CP-SECURITY')
+      ||(typeof oldPortal==='function'&&oldPortal.toString().includes('/portal/pair/start'));
+    if(!legacy)return;
+    patched.add(prototype);
+    const ready=sku=>['CP-MAINTENANCE','CP-SOLAR'].includes(sku);
+    const oldButton=prototype.v2TrialButton,oldStatus=prototype.cpModuleStatus,oldStart=prototype.v2StartTrial;
+    prototype.v2TrialButton=function(module){
+      if(!ready(module?.sku)&&module?.trial?.verified===true&&module.trial.phase==='not_started'&&!module?.license?.allowed)
+        return '<p role="status">Teste ainda indisponível nesta versão.</p>';
+      return oldButton.call(this,module);
+    };
+    prototype.cpModuleStatus=function(module){
+      if(!ready(module?.sku)&&module?.trial?.verified===true&&module.trial.phase==='not_started'&&!module?.license?.allowed)
+        return 'Teste ainda indisponível';
+      return oldStatus.call(this,module);
+    };
+    prototype.v2StartTrial=function(sku){
+      if(!ready(sku)){this.toast('O teste deste módulo ainda não está disponível nesta versão.','error');return;}
+      return oldStart.call(this,sku);
+    };
+    prototype.cpOpenSecurePortal=async function(event){
+      event.preventDefault();event.stopPropagation();
+      const view=this.ownerDocument.defaultView;
+      const opened=view.open('about:blank','_blank');
+      if(!opened){this.toast('Permita a abertura do Portal do Cliente.','error');return;}
+      try{
+        opened.opener=null;
+        opened.document.body.textContent='Validando instalação CloudPelizzon...';
+        const result=await this._hass.callWS({type:'cloudpelizzon/core/portal/pair'});
+        if(!result||typeof result.assertion!=='string'||!/^[A-Za-z0-9_-]{100,3000}$/.test(result.assertion))throw Error('invalid_handoff');
+        const form=opened.document.createElement('form');form.method='POST';form.action='https://cliente.cloudpelizzon.com.br/login';
+        const input=opened.document.createElement('input');input.type='hidden';input.name='assertion';input.value=result.assertion;
+        form.append(input);opened.document.body.append(form);form.submit();
+      }catch{opened.location.replace('https://cliente.cloudpelizzon.com.br/login');}
+    };
+    // Preserve any form currently being edited; the next normal render picks up
+    // the upgraded methods. Detail/catalog pages can be redrawn immediately.
+    const shadow=panel.shadowRoot;
+    if(shadow&&!shadow.querySelector('.modal.show')&&!shadow.activeElement?.matches('input,textarea,select,[contenteditable="true"]'))
+      panel.render();
   }
   scan(document);
 })();
