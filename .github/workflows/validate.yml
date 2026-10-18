@@ -29,6 +29,8 @@ jobs:
         run: node tests/public-client/test_navigation.cjs custom_components/cloudpelizzon/ui/shell/panel.js custom_components/cloudpelizzon/ui/core/panel.js
       - name: Verify consented Fleet metadata lifecycle
         run: python3 tests/public-client/test_fleet_reporter.py custom_components/cloudpelizzon
+      - name: Verify trial offers match available modules
+        run: node tests/public-client/test_trial_availability.cjs custom_components/cloudpelizzon/ui/core/panel.js
       - name: Validate the candidate integration with official hassfest
         run: docker run --rm -v "$PWD/.:/github/workspace:ro" ghcr.io/home-assistant/hassfest
       - name: Pull pinned Home Assistant runtime

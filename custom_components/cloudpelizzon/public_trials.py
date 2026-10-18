@@ -7,6 +7,8 @@ from homeassistant.components import websocket_api
 COMMAND='cloudpelizzon/core/trial/v2/start'
 KEY='cloudpelizzon_public_trial83'
 SKUS=frozenset(('CP-MAINTENANCE','CP-SOLAR','CP-SECURITY','CP-AUTOMATION'))
+# Match the deployed gateway's readiness gate; never consume time on partial modules.
+ACTIVATION_READY=frozenset(('CP-MAINTENANCE','CP-SOLAR'))
 
 
 async def dispatch(hass,connection,msg):
@@ -21,6 +23,10 @@ async def dispatch(hass,connection,msg):
     try:
         if set(msg)!={'id','type','sku'} or msg['type']!=COMMAND or msg['sku'] not in SKUS or not await authorized():
             raise PermissionError('active_administrator_required')
+        if msg['sku'] not in ACTIVATION_READY:
+            connection.send_error(msg['id'],'trial_module_not_ready',
+                'O teste deste módulo ainda não está disponível nesta versão. Nenhuma ativação foi enviada por esta solicitação.')
+            return
         # An RPC sent by the original UI's explicit confirmation is the only
         # entry point. Startup, status reads and pairing never call activate.
         result=await hass.async_add_executor_job(partial(state['client'].activate,msg['sku'],confirmed=True))
