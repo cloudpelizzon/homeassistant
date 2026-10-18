@@ -63,7 +63,7 @@
     "ui/solar/energy-card.js": "14d311b1b29ebf5749f6f2fa5601809d89f799ba24649484a82c7d0825c2d71e",
     "ui/solar/panel.js": "aad57ae5617d766ba2cc64123a50551e0cd2b01fc0fd88d65b7fe3c5160297bd",
     "ui/updater/panel.js": "e1ec03718ec046c3146ec268e0b5955e00690d0ca9ef4f96d62c86e293c7c6cd",
-    "ui/core/hacs-brand-compat.js": "d0988805eeae9318ad3c91e817abb9bf77012d2d96034770b080251da87e16c9",
+    "ui/core/hacs-brand-compat.js": "d56cf9022b4492116f00ac00a459fefbd41da492cc0ec8813ff3564e3f61c74b",
     "ui/core/hacs-icon.png": "01bec3858428b8fd2fbe4fc1593e715220e5d27e43b5396c532eaaf7f8cd5bc5"
   }
 }

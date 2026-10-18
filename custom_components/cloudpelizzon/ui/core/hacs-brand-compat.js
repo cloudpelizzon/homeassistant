@@ -2,11 +2,12 @@
  * Changes only this integration's icon inside HACS. No HACS files, tokens or settings.
  */
 (() => {
-  if(window.__cpLocalHacsBrand108)return;
-  window.__cpLocalHacsBrand108=true;
+  if(window.__cpLocalHacsBrand109)return;
+  window.__cpLocalHacsBrand109=true;
   const image='/cloudpelizzon-core/frontend/hacs-icon.png';
   const observed=new WeakSet(),frames=new WeakSet(),queued=new Map();
   const patched=new WeakSet();
+  const wiredLinks=new WeakSet();
   let timer;
   function isLegacyIcon(raw,base){
     try{
@@ -27,6 +28,7 @@
   }
   function scan(root,inHacs=false){
     if(!root?.querySelectorAll)return;
+    if(root.host?.localName==='cloudpelizzon-core-panel')upgradeLegacyPanel(root.host);
     if(!observed.has(root)){
       observed.add(root);
       new MutationObserver(()=>queue(root,inHacs)).observe(root,
@@ -49,11 +51,11 @@
   }
   function upgradeLegacyPanel(panel){
     const prototype=Object.getPrototypeOf(panel);
-    if(patched.has(prototype)||typeof prototype.v2TrialButton!=='function'
+    if(patched.has(prototype)){wireLegacyPortal(panel);return;}
+    if(typeof prototype.v2TrialButton!=='function'
       ||typeof prototype.cpModuleStatus!=='function'||typeof prototype.v2StartTrial!=='function'||typeof panel.render!=='function')return;
     const oldPortal=prototype.cpOpenSecurePortal;
-    const legacy=prototype.v2TrialButton.toString().includes('CP-SECURITY')
-      ||(typeof oldPortal==='function'&&oldPortal.toString().includes('/portal/pair/start'));
+    const legacy=typeof oldPortal==='function'&&oldPortal.toString().includes('/portal/pair/start');
     if(!legacy)return;
     patched.add(prototype);
     const ready=sku=>['CP-MAINTENANCE','CP-SOLAR'].includes(sku);
@@ -92,6 +94,17 @@
     const shadow=panel.shadowRoot;
     if(shadow&&!shadow.querySelector('.modal.show')&&!shadow.activeElement?.matches('input,textarea,select,[contenteditable="true"]'))
       panel.render();
+    wireLegacyPortal(panel);
+  }
+  function wireLegacyPortal(panel){
+    for(const link of panel.shadowRoot?.querySelectorAll('a[href]')||[]){
+      let url;
+      try{url=new URL(link.getAttribute('href'),panel.ownerDocument.baseURI);}catch{continue;}
+      if(url.origin!=='https://cliente.cloudpelizzon.com.br'||url.pathname!=='/login'
+        ||link.hasAttribute('data-portal-pair')||wiredLinks.has(link))continue;
+      wiredLinks.add(link);link.setAttribute('data-cloudpelizzon-legacy-portal','109');
+      link.addEventListener('click',event=>panel.cpOpenSecurePortal(event));
+    }
   }
   scan(document);
 })();
