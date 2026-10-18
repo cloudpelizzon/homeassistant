@@ -1,10 +1,11 @@
 {
-  "schema": "cp.clean.source88.inventory.v1",
+  "schema": "cp.clean.source89.inventory.v1",
   "files": {
+    ".github/workflows/hacs.yml": "6b737ea63358b22f7812bab3bfb323e3ca8b4cf143a41f9ead748adaab226150",
     ".github/workflows/validate.yml": "aeb2e69e126328218c40a5a9c3bbfb04b466b1f4c571e7cf96ef664b9dcfdc87",
     ".gitignore": "d4c6c5d0f925d1dee7cf69cb2672dbaf7d14bf236f37d64116336f9aa0d1702f",
     "LICENSE": "c1d1a38c99c48ccad170890ade6066e2e240bb6ce59861d4eb7f672eddd2a4c6",
-    "README.md": "a901dfdc1a302edc9c3883ba9fefa940fd69a872e4affb30fb5d522d52227f65",
+    "README.md": "a6a9e1a3e89d296084b81012cace1318db49b376478d324a399f9d119218f98c",
     "custom_components/cloudpelizzon/__init__.py": "96467a00ca604d166ba38c0fd650ebaa7a08ab892b30198c1434e2339086cf76",
     "custom_components/cloudpelizzon/adapters/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "custom_components/cloudpelizzon/adapters/automation/__init__.py": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",

@@ -1,5 +1,7 @@
 # CloudPelizzon para Home Assistant
 
+![CloudPelizzon](custom_components/cloudpelizzon/ui/core/cloudpelizzon-logo.png)
+
 Cliente público da CloudPelizzon, com a interface e as imagens originais dos módulos.
 
 O cliente conecta o Home Assistant aos serviços CloudPelizzon. Durante o trial, os motores comerciais executam nos servidores privados; este repositório contém a interface, os transportes e os adaptadores públicos. As chaves privadas da instalação permanecem no Home Assistant.
