@@ -7,7 +7,7 @@ from .adapters.solar.identity import load_identity
 from .adapters.solar.sdk import Client
 from .public_core.bridge import CoreBridge
 from .public_core import api
-from . import frontend, public_trials
+from . import frontend, public_trials, fleet_reporter
 from .security import create as security_ui
 from .public_automation import create as automation_ui
 from .public_onboarding import api as handoff_api
@@ -107,6 +107,7 @@ class Runtime:
                 self.sensor_forwarded = True
                 self.stage = 'sensor_platform'
                 await self.hass.config_entries.async_forward_entry_setups(self.entry, ['sensor'])
+            self.closers.append(fleet_reporter.start(self.hass, self.entry))
             self.entry.async_on_unload(self.close)
             return self
         except BaseException:
