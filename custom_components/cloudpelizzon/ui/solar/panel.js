@@ -170,6 +170,10 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
       }
       if(role==='grid_import'&&!this._hasAny(text,['import','importacao','importada']))return -100;
       if(role==='grid_export'&&!this._hasAny(text,['export','exportacao','exportada','injecao']))return -100;
+      if(role==='load'){
+        const tokens=base.split(' ').filter(x=>x.length>2&&!['sensor','power','potencia','energy','energia','total','today','hoje','consumo'].includes(x));
+        if(!tokens.length||!tokens.some(token=>text.split(' ').includes(token)))return -100;
+      }
       let score=0;
 
       for(const token of base.split(" ").filter(x=>x.length>2)){
@@ -480,6 +484,24 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     };
 
     if(render)this._render();
+  }
+
+  _detectedLoads(){
+    const used=new Set([...(this._cfg?.generation||[]),...(this._cfg?.boards||[])].map(row=>row.power_entity));used.add(this._cfg?.site?.house_power_entity);for(const key of ['net_power_entity','import_power_entity','export_power_entity'])used.add(this._cfg?.grid?.[key]);
+    return (this._discovery?.power||[]).filter(row=>!used.has(row.entity_id)&&/\b(tomada|plug|socket|disjuntor|breaker)\b/.test(this._rowText(row)));
+  }
+  _assignDetectedLoad(entityId,board){
+    this._syncDraft();const row=this._detectedLoads().find(x=>x.entity_id===entityId);if(!row)return;
+    for(const item of this._cfg.boards)item.loads=(item.loads||[]).filter(x=>x.power_entity!==entityId);
+    if(board!==''&&this._cfg.boards[Number(board)])this._cfg.boards[Number(board)].loads.push({id:'load_'+entityId.split('.')[1],name:row.name||entityId,power_entity:entityId,energy_entity:this._matchEnergy(entityId,'load'),power_transform:'positive'});
+    this._render();
+  }
+  _detectedLoadsMarkup(){
+    const rows=this._detectedLoads();if(!rows.length)return '';
+    return `<section class="panel"><h2>Tomadas e disjuntores encontrados (${rows.length})</h2><p>Associe cada medição ao seu quadro. Quando essa associação não existe na origem, ela precisa ser confirmada para evitar somar a mesma carga no quadro errado.</p><div class="simple-grid two">${rows.map(row=>{
+      const linked=(this._cfg.boards||[]).findIndex(board=>(board.loads||[]).some(load=>load.power_entity===row.entity_id));
+      return `<label>${this._esc(row.name||row.entity_id)}<small>${this._esc(row.entity_id)}</small><select data-detected-load="${this._esc(row.entity_id)}"><option value="">Selecionar quadro</option>${this._cfg.boards.map((b,i)=>`<option value="${i}" ${linked===i?'selected':''}>${this._esc(b.name||'Quadro '+(i+1))}</option>`).join('')}</select></label>`;
+    }).join('')}</div></section>`;
   }
 
   _options(kind,current=""){
@@ -1305,6 +1327,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
           </div>
         </details>
 
+        ${this._detectedLoadsMarkup()}
         <section class="savebar easy-save">
           <div>
             <b>Pronto para usar</b>
@@ -1320,6 +1343,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     this.shadowRoot.querySelector("#add-source")?.addEventListener("click",()=>this._addSource());
     this.shadowRoot.querySelector("#add-board")?.addEventListener("click",()=>this._addBoard());
     this.shadowRoot.querySelector("#save")?.addEventListener("click",()=>this._save());
+    this.shadowRoot.querySelectorAll("[data-detected-load]").forEach(select=>select.addEventListener("change",()=>this._assignDetectedLoad(select.dataset.detectedLoad,select.value)));
 
     this.shadowRoot.querySelector("#back-dashboard")?.addEventListener("click",()=>{
       this._syncDraft();

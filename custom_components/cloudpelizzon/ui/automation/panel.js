@@ -77,7 +77,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     const selected=native.filter(n=>n.selected&&this._inCountScope(n));
     const message=this.shadowRoot.getElementById('cp-source-note');
     if(message){
-      message.textContent=`Monitoramento local do Home Assistant: ${native.length} automações encontradas • ${selected.length} selecionadas. ${this._daily?.complete?'Contagem por contexto único de execução em '+this._daily.time_zone+' ('+this._daily.day+'). Diagnósticos NOC/DIA: '+native.filter(n=>['NOC','DIA'].includes(n.category)).reduce((sum,n)=>sum+(this._daily.counts[n.entity_id]||0),0).toLocaleString('pt-BR')+' disparos. Em exibição: '+selected.length+' automações.':'Contagem diária indisponível: '+(this._dailyError||'consultando registro de atividades…')}`;
+      message.textContent=`Monitoramento local do Home Assistant: ${native.length} automações encontradas • ${selected.length} nesta visão. ${this._daily?.complete?'Contagem por contexto único de execução em '+this._daily.time_zone+' ('+this._daily.day+'). Diagnósticos NOC/DIA: '+native.filter(n=>['NOC','DIA'].includes(n.category)).reduce((sum,n)=>sum+(this._daily.counts[n.entity_id]||0),0).toLocaleString('pt-BR')+' disparos. Em exibição: '+selected.length+' automações.':'Contagem diária indisponível: '+(this._dailyError||'consultando registro de atividades…')}`;
     }
     const empty=this.shadowRoot.getElementById('cp-no-native');
     const box=this.shadowRoot.getElementById('legacy');
