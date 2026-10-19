@@ -11281,7 +11281,7 @@ radial-gradient(ellipse at 89% 96%,rgba(8,42,39,.30),transparent 28%)}
 :host([viewport-fit]) .energy-v54 .period-active{min-width:0!important;text-align:right!important;display:flex!important;flex-direction:column!important;gap:0!important;justify-content:center!important;height:33px!important;overflow:visible!important}
 :host([viewport-fit]) .energy-v54 .period-active span,:host([viewport-fit]) .energy-v54 .period-active small{font-size:8px!important;line-height:10px!important;margin:0!important;white-space:nowrap!important}
 :host([viewport-fit]) .energy-v54 .period-active strong{font-size:11px!important;line-height:13px!important;margin:0!important}
-:host([viewport-fit]) .energy-v54 .v26-source,:host([viewport-fit]) .energy-v54 .v26-grid-meter,:host([viewport-fit]) .energy-v54 .v26-solar-total{width:11%!important;max-width:140px!important;height:23%!important;max-height:54px!important;padding:3px 5px!important;gap:3px!important}
+:host([viewport-fit]) .energy-v54 .v26-source,:host([viewport-fit]) .energy-v54 .v26-grid-meter,:host([viewport-fit]) .energy-v54 .v26-solar-total{width:11%!important;max-width:140px!important;height:clamp(46px,23%,54px)!important;max-height:54px!important;padding:3px 5px!important;gap:3px!important}
 :host([viewport-fit]) .energy-v54 .v26-inverter,:host([viewport-fit]) .energy-v54 .v26-micro{left:14%!important}
 :host([viewport-fit]) .energy-v54 .v26-solar-total{left:27%!important;top:36%!important}
 :host([viewport-fit]) .energy-v54 .v26-grid-meter{right:15%!important}
@@ -11320,3 +11320,4 @@ if (!window.customCards.some(c=>c.type === "casa-pelizzon-energy-ops-card")) {
 }
 
 console.info("%c MALHA ENERGÉTICA V54.0.0 ","background:#020914;color:#35c8ff;padding:5px 8px;border:1px solid #1d6aa5;border-radius:4px;font-weight:bold;");
+

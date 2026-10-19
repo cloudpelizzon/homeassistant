@@ -1,4 +1,4 @@
-import "/cloudpelizzon-energy/frontend/energy-card.js?v=0c12ba07f117";
+import "/cloudpelizzon-energy/frontend/energy-card.js?v=2e47a15dd3d9";
 
 class CloudPelizzonEnergyPanel extends HTMLElement {
   constructor() {
