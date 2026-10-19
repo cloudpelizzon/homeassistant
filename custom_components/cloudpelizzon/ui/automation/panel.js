@@ -2,7 +2,7 @@
  * Every customer-facing editor control is visual: no JSON/YAML editing.
  * Selection is monitoring scope, NOT automatic engine activation.
  */
-import './legacy-v1044.js?v=20699430ac6d';
+import './legacy-v1044.js?v=967b3151b3a6';
 
 // CP_CLIENT_EXPERIENCE_V025 — default immersive panel; no misleading demo KPIs.
 // CP_AUTO_CLIENT_NATIVE_V026 — client reads automation.* from current Home Assistant only.
@@ -46,8 +46,8 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
   constructor(){super();this.attachShadow({mode:'open'});this._hass=null;this._status=null;this._dataSource='ha';this._overviewExpanded=false;try{this._overviewExpanded=window.localStorage.getItem('cp_auto_overview_expanded')==='1'}catch(_e){};this._view='overview';this._loading=false;this._initialized=false;this._last=0;this._editor=null;this._editCode='';this._blocks={triggers:[],conditions:[],actions:[]};this._readOnlyComplex=false;this._filter='';}
   set hass(value){this._hass=value;if(this._initialized&&Date.now()-this._last>30000)this.refresh();else if(this._cockpit&&this._status)this._updateCockpitSource(false)}
   get hass(){return this._hass}
-  connectedCallback(){if(!this._initialized){this._initialized=true;this._build();this.refresh()}this._timer??=setInterval(()=>this.refresh(false),45000)}
-  disconnectedCallback(){if(this._timer)clearInterval(this._timer);this._timer=null;}
+  connectedCallback(){this._resize147=()=>this._fitCockpit147();window.addEventListener('resize',this._resize147);if(!this._initialized){this._initialized=true;this._build();this.refresh()}this._timer??=setInterval(()=>this.refresh(false),45000)}
+  disconnectedCallback(){window.removeEventListener('resize',this._resize147);if(this._timer)clearInterval(this._timer);this._timer=null;}
   async ws(type,data={}){if(!this._hass)throw Error('Home Assistant não conectado.');return this._hass.callWS({type,...data})}
   _build(){this.shadowRoot.innerHTML=`<style>${STYLES}
 :host{zoom:0.67!important;width:100%!important}</style><header class="top"><div><div class="brand">◉ CLOUDPELIZZON · AUTOMATION</div><div class="subbrand">CENTRAL INTELIGENTE · CLOUDPELIZZON</div></div><nav class="tabs">${[['overview','Visão geral'],['categories','Categorias'],['rules','Automações'],['builder','Criar e editar'],['settings','Preferências']].map(([v,t])=>`<button data-tab="${v}" class="${v==='overview'?'active':''}">${t}</button>`).join('')}</nav><span class="statusbar" id="online">Carregando...</span></header><main>
@@ -93,6 +93,12 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     this._cockpit.config.category_registry_sensor='';
     if(force)this._cockpit._last=0;
     this._cockpit.hass=this._observedHass();
+    if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>this._fitCockpit147());
+  }
+  _fitCockpit147(){
+    const app=this._cockpit?.shadowRoot?.querySelector('.app');if(!app)return;
+    const available=Math.max(360,window.innerHeight-app.getBoundingClientRect().top-4);
+    app.style.height=(available/0.67)+'px';app.style.minHeight='0';
   }
   _inCountScope(n){const technical=['NOC','DIA'].includes(n.category);return this._countScope==='home'?!technical:this._countScope==='technical'?technical:true;}
   _observedHass(){
