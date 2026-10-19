@@ -5,7 +5,7 @@ const OPTIONAL_MODULES = {
   "CP-MAINTENANCE": {
     tag: "cloudpelizzon-maintenance-panel",
     title: "Manutenção",
-    url: "/cloudpelizzon-maintenance/frontend/panel.js?v=4d942e19ed3f",
+    url: "/cloudpelizzon-maintenance/frontend/panel.js?v=bd1508aa6a9c",
   },
   // CP-SOLAR reuses the private energy/ folder and registered panel tag.
   // The SKU must always be CP-SOLAR (never an implicit CP-ENERGY grant).

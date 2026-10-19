@@ -37,6 +37,10 @@ jobs:
         run: node tests/public-client/test_finance.cjs custom_components/cloudpelizzon/ui/maintenance/legacy-v311-core.js /tmp/maintenance-test.xlsx
       - name: Verify maintenance waits for server persistence
         run: node tests/public-client/test_order.cjs custom_components/cloudpelizzon/ui/maintenance/legacy-v311-core.js custom_components/cloudpelizzon/ui/maintenance/panel.js
+      - name: Verify formatted Excel workbook and numeric round trip
+        run: node tests/public-client/test_writer.cjs custom_components/cloudpelizzon/ui/maintenance/exceljs-4.4.0.min.js custom_components/cloudpelizzon/ui/maintenance/finance-excel111.js /tmp/report111.xlsx
+      - name: Verify PDF and Excel share identical report content
+        run: node tests/public-client/test_pdf_parity.cjs custom_components/cloudpelizzon/ui/maintenance/legacy-v311-core.js custom_components/cloudpelizzon/ui/maintenance/legacy-v311-core.js /tmp/report111.html /tmp/history111.html
       - name: Validate the candidate integration with official hassfest
         run: docker run --rm -v "$PWD/.:/github/workspace:ro" ghcr.io/home-assistant/hassfest
       - name: Pull pinned Home Assistant runtime

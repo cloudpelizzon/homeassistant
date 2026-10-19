@@ -1,0 +1,23 @@
+const fs=require('fs'),vm=require('vm'),assert=require('assert');
+const ExcelJS=require(require('path').resolve(process.argv[2]));
+const ctx={Date,console};vm.createContext(ctx);vm.runInContext(fs.readFileSync(process.argv[3],'utf8').replace(/^export /gm,''),ctx);
+const titles=['Lançamentos realizados','Comparativo das últimas manutenções','Comparativo por empresa / profissional','Provisão no período','Fechamento mensal','Resumo por categoria'];
+const table=(title)=>({title,rows:[{kind:'head',cells:[{text:'Data',span:1},{text:'Manutenção',span:1},{text:'Economia',span:1}]},{kind:'body',cells:[{text:'18/10/2026',span:1},{text:'Serviço de exemplo',span:1},{text:'R$ 100,00',span:1}]},{kind:'total',cells:[{text:'TOTAL',span:2},{text:'R$ 100,00',span:1}]}]});
+const model={title:'Relatório Financeiro de Manutenções — Residência de teste',identity:'Casa • Endereço fictício',meta:'Período: 01-01-2026 a 31-12-2026',kind:'Relatório completo',kpis:['Gasto realizado','Economia realizada','Materiais realizados','Mão de obra realizada','Saldo econômico','Provisão no período'].map((label,i)=>({label,value:i===0?'R$ 0,00':'R$ 100,00'})),sections:titles.map(table),footer:'CloudPelizzon — teste sintético'};
+const extra={...model,kind:'Histórico financeiro detalhado',sections:[table('Histórico financeiro detalhado')]};
+(async()=>{
+ const w=ctx.buildWorkbook(model,ExcelJS,null,[extra]);assert.equal(w.worksheets.length,8);
+ const first=w.worksheets[0];assert.equal(first.name,'Resumo');assert.equal(first.getCell('A1').value,model.title);
+ assert.equal(first.getCell('K8').value,100);assert(first.getCell('K8').numFmt.includes('R$'));
+ for(const title of titles)assert(first.getSheetValues().some(row=>row?.includes(title)));
+ assert(first.model.merges.includes('A1:BH1'));assert.equal(first.getColumn(60).width,3.2);
+ assert.equal(first.pageSetup.fitToWidth,1);assert.equal(first.pageSetup.orientation,'landscape');
+ const buffer=await w.xlsx.writeBuffer();fs.writeFileSync(process.argv[4],Buffer.from(buffer));
+ const again=new ExcelJS.Workbook();await again.xlsx.load(buffer);assert.equal(again.worksheets.length,8);
+ assert.equal(again.getWorksheet('Resumo').getCell('K8').value,100);
+ assert.equal(again.getWorksheet('Resumo').getCell('A1').value,model.title);
+ assert(again.getWorksheet('Resumo').model.merges.includes('A1:BH1'));
+ const only=ctx.buildWorkbook({...model,kind:'Lançamentos realizados',sections:[table('Lançamentos realizados')]},ExcelJS);
+ assert.equal(only.worksheets.length,1);
+ console.log(JSON.stringify({excel_tabs:8,shared_report_sections:6,round_trip:true,numeric_currency:true,individual_export:true}));
+})().catch(error=>{console.error(error);process.exitCode=1});

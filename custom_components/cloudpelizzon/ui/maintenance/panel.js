@@ -1,5 +1,5 @@
 const CP_BASE = "/cloudpelizzon-maintenance/frontend";
-const CP_CORE_URL = `${CP_BASE}/legacy-v311-core.js?v=311-finance-r110`;
+const CP_CORE_URL = `${CP_BASE}/legacy-v311-core.js?v=311-excel-r111`;
 const CP_CORE_TAG = "cloudpelizzon-maintenance-v311-core";
 const CP_API_SNAPSHOT = "cloudpelizzon/maintenance/compat/get_snapshot";
 const CP_API_SAVE = "cloudpelizzon/maintenance/compat/save_snapshot";

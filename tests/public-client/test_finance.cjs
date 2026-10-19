@@ -24,10 +24,5 @@ let calls=[];Object.assign(card,{financeEstimates:{},financeRecords:[],recommend
  card.openFinanceEntry({name:'Synthetic retry',category:'Casa'});
  await nodes.get('[data-save]').onclick();assert.equal(completions,1);
  await nodes.get('[data-save]').onclick();assert.equal(completions,1);
- // Exercise original XLSX writer, not a separate workbook builder.
- const x=Object.create(P);Object.assign(x,{houseProfile:()=>({name:'Synthetic'}),normalizeFinanceRecords:r=>r,
- financeStartDate:'2026-01-01',financeEndDate:'2026-12-31',financeCategory:'Todas',financeRecords:[],
- financeProvisionEntries:()=>[],items:()=>[],financeRecordsForItem:()=>[],financePeriodMonths:()=>[],categoryDefinitions:()=>[],fmt:v=>v,money:v=>String(v),showToast(){}});
- await x.exportFinanceExcel([]);assert.equal(downloads.length,1);fs.writeFileSync(process.argv[3],Buffer.from(await downloads[0].arrayBuffer()));
- console.log(JSON.stringify({finance_input_checks:4,completion_finance_checks:3,excel_generated:true}));
+ console.log(JSON.stringify({finance_input_checks:4,completion_finance_checks:3,finance_retry_does_not_repeat_execution:true}));
 })().catch(e=>{console.error(e);process.exitCode=1});

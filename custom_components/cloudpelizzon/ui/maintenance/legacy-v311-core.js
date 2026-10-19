@@ -3176,7 +3176,7 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
     cards.querySelectorAll('[data-delete-fin]').forEach(b=>b.onclick=()=>{if(confirm('Excluir este lançamento?')){this.financeRecords=this.financeRecords.filter(r=>r.id!==b.dataset.deleteFin);this.saveFinanceRecords();rerender()}});
   }
 
-  exportFinanceReport(rows, reportType="complete") {
+  exportFinanceReport(rows, reportType="complete", returnHtml=false) {
     const normalizedRows=(rows||[]).map(record=>this.normalizedFinanceRecord(record));
     const profile=this.houseProfile();
     const total=normalizedRows.reduce((s,r)=>s+Number(r.paid||0),0);
@@ -3241,12 +3241,14 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
     const reportNames={complete:'Relatório completo',history:'Histórico financeiro detalhado',launches:'Lançamentos realizados',comparison:'Comparativo das últimas manutenções',providers:'Comparativo por empresa / profissional',provisions:'Provisão no período',monthly:'Fechamento mensal',categories:'Resumo por categoria'};
     const selected=reportType==='complete'?['launches','comparison','providers','provisions','monthly','categories']:[sections[reportType]?reportType:'launches'];
     const reportContent=selected.map(key=>sections[key]).join('');
-    const w=window.open("","_blank","width=1300,height=900"); if(!w)return alert("O navegador bloqueou a abertura do relatório.");
-    w.document.write(`<!doctype html><html><head><meta charset="utf-8"><title>${this.escapeHtml(reportNames[reportType]||reportNames.complete)} — ${this.escapeHtml(profile.name)}</title><style>
+    const w=returnHtml?null:window.open("","_blank","width=1300,height=900"); if(!returnHtml&&!w)return alert("O navegador bloqueou a abertura do relatório.");
+    const reportHtml=`<!doctype html><html><head><meta charset="utf-8"><title>${this.escapeHtml(reportNames[reportType]||reportNames.complete)} — ${this.escapeHtml(profile.name)}</title><style>
       @page{size:A4 landscape;margin:9mm}html,body,*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}body{font:12px Arial;color:#17202a;margin:24px;background:#fff}h1{margin:0;font-size:22px}.report-brand{display:flex;align-items:center;gap:14px}.report-logo{width:58px;height:58px;border:1px solid #cbd7df;border-radius:10px;display:grid;place-items:center;overflow:hidden;background:#f8fbfc}.report-logo img{width:100%;height:100%;object-fit:contain}.report-logo span{font-size:28px}.brand-details{display:flex;flex-direction:column;gap:3px}.brand-details small{color:#65727c}h2{margin-top:24px;border-bottom:2px solid #149454;padding-bottom:6px;font-size:18px}header{border-bottom:3px solid #149454;padding-bottom:15px;margin-bottom:18px}.meta{color:#667;margin-top:7px}.report-kind{display:inline-block;margin-top:6px;padding:4px 8px;background:#eef8f2;border:1px solid #9ac7aa;border-radius:6px;color:#17683a;font-weight:700}.kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px;margin:14px 0}.kpis div{border:1px solid #d7e0e6;border-left:5px solid #8796a3;border-radius:8px;padding:8px 9px;min-width:0}.kpis small{display:block;color:#53606b;font-size:8px}.kpis b{font-size:14px;display:block;margin-top:4px;white-space:nowrap}.kpi-gasto{background:#fff1f1!important;border-left-color:#dc6b72!important}.kpi-economia{background:#eefcf4!important;border-left-color:#55ad7a!important}.kpi-materiais{background:#edf8ff!important;border-left-color:#55a9d8!important}.kpi-maoobra{background:#f6f0ff!important;border-left-color:#9270c7!important}.kpi-saldo{background:#fff7ea!important;border-left-color:#d69b52!important}.kpi-provisao{background:#fffbe8!important;border-left-color:#cfb333!important}.report-section{page-break-before:auto}.table-wrap{overflow-x:auto;margin-bottom:18px}table{width:100%;border-collapse:collapse;page-break-inside:auto}tr{page-break-inside:avoid}th,td{padding:7px;border-bottom:1px solid #dce3e8;text-align:left;vertical-align:top}th{background:#eef4f6!important;white-space:nowrap}tfoot th,tfoot td{background:#eaf4ef!important;font-weight:700;border-top:2px solid #79a98d}.signal-dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;border:1px solid #9aa7af}.signal-up{background:#fff4f1!important}.signal-up .signal-dot{background:#d99a86}.signal-down{background:#f1faf5!important}.signal-down .signal-dot{background:#8ebda2}.signal-stable{background:#fffbea!important}.signal-stable .signal-dot{background:#cab86e}.signal-none{background:#f3f5f7!important}.signal-none .signal-dot{background:#b7c0c7}footer{margin-top:24px;color:#667;font-size:11px}@media print{html,body,*{-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important}button{display:none}body{margin:0;font-size:8.5px;background:#fff!important}h2{page-break-after:avoid}.table-wrap{overflow:visible}.kpis{grid-template-columns:repeat(6,minmax(0,1fr));gap:4px}.kpis div{padding:6px}.kpis b{font-size:11px}}
     </style></head><body><header><div class="report-brand"><div class="report-logo">${profile.logo?`<img src="${this.escapeHtml(profile.logo)}" alt="Logo">`:`<span>🏠</span>`}</div><div class="brand-details"><h1>Relatório Financeiro de Manutenções — ${this.escapeHtml(profile.name)}</h1><small>${this.escapeHtml(profile.type||'Casa')}${profile.address?` • ${this.escapeHtml(profile.address)}`:''}${profile.cityState?` • ${this.escapeHtml(profile.cityState)}`:''}</small><div class="meta">Período: ${formatDateHyphen(this.financeStartDate)} a ${formatDateHyphen(this.financeEndDate)} • Categoria: ${this.escapeHtml(this.financeCategory)} • Emitido em ${new Date().toLocaleString('pt-BR')}</div><span class="report-kind">${this.escapeHtml(reportNames[reportType]||reportNames.complete)}</span></div></div></header>
     <div class="kpis"><div class="kpi-gasto"><small>Gasto realizado</small><b>${this.money(total)}</b></div><div class="kpi-economia"><small>Economia realizada</small><b>${this.money(saving)}</b></div><div class="kpi-materiais"><small>Materiais realizados</small><b>${this.money(materialsTotal)}</b></div><div class="kpi-maoobra"><small>Mão de obra realizada</small><b>${this.money(laborTotal)}</b></div><div class="kpi-saldo"><small>Saldo econômico</small><b>${this.money(saving-total)}</b></div><div class="kpi-provisao"><small>Provisão no período</small><b>${this.money(provisionTotal)}</b></div></div>
-    ${reportContent}<footer>${this.escapeHtml(profile.name)} • Gerado pelo Sistema de Manutenções Preventivas.${profile.additional?` • ${this.escapeHtml(profile.additional)}`:''}</footer><script>setTimeout(()=>window.print(),300)<\/script></body></html>`);w.document.close();
+    ${reportContent}<footer>${this.escapeHtml(profile.name)} • Gerado pelo Sistema de Manutenções Preventivas.${profile.additional?` • ${this.escapeHtml(profile.additional)}`:''}</footer><script>setTimeout(()=>window.print(),300)<\/script></body></html>`;
+    if(returnHtml)return reportHtml;
+    w.document.write(reportHtml);w.document.close();
   }
 
   exportFinanceBackup() {
@@ -3268,205 +3270,16 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
 
   async exportFinanceExcel(rows, reportType="complete", triggerButton=null) {
     const button=triggerButton || this.shadowRoot?.querySelector('[data-export-excel]');
-    const original=button?.innerHTML;
-    if(button){button.disabled=true;button.innerHTML='<ha-icon icon="mdi:loading" class="spin"></ha-icon>Gerando XLSX';}
-    try {
-      const p=this.houseProfile();
-      const normalized=(rows||[]).map(r=>this.normalizedFinanceRecord(r));
-      const provisions=this.provisionSchedule(this.items(),this.financeStartDate,this.financeEndDate,this.financeCategory);
-      const total=normalized.reduce((s,r)=>s+Number(r.paid||0),0);
-      const saving=normalized.reduce((s,r)=>s+Number(r.saving||0),0);
-      const materialsTotal=normalized.reduce((s,r)=>s+Number(r.productsCost||0),0);
-      const laborTotal=normalized.reduce((s,r)=>s+Number(r.laborCost||0),0);
-      const provisionMaterial=provisions.reduce((s,x)=>s+Number(x.estimate?.material||0),0);
-      const provisionLabor=provisions.reduce((s,x)=>s+Number(x.estimate?.labor||0),0);
-      const provisionTotal=provisions.reduce((s,x)=>s+Number(x.estimate?.total||0),0);
-      const period=`${this.fmt(this.financeStartDate)} a ${this.fmt(this.financeEndDate)}`;
-      const category=this.financeCategory||'Todas';
-      const emitted=new Date().toLocaleString('pt-BR');
-      const scopeItems=this.items().filter(item=>category==='Todas'||item.category===category);
-
-      const comparisons=scopeItems.map(item=>{
-        const history=this.financeRecordsForItem(item).filter(record=>!this.financeEndDate||String(record.date||'')<=this.financeEndDate);
-        const last=history.length?history[history.length-1]:null;
-        const previous=history.length>1?history[history.length-2]:null;
-        const estimate=this.estimateFor(item);
-        const previousValue=Number(previous?.paid||0),lastValue=Number(last?.paid||0),nextValue=Number(estimate?.total||0);
-        return {item,previous,last,previousValue,lastValue,nextValue,lastDifference:previous?lastValue-previousValue:null,nextDifference:last?nextValue-lastValue:null};
-      }).filter(r=>r.last||r.nextValue>0).sort((a,b)=>String(a.item.name).localeCompare(String(b.item.name),'pt-BR'));
-
-      const providerRows=normalized.map(record=>({
-        ...record,
-        providerLabel:(record.provider||'').trim()||(((record.executor||'').trim() && !['Empresa / profissional','Misto'].includes((record.executor||'').trim()))?'Execução própria':((record.executor||'').trim()||'Não informado'))
-      })).sort((a,b)=>String(a.providerLabel).localeCompare(String(b.providerLabel),'pt-BR')||String(b.date||'').localeCompare(String(a.date||'')));
-
-      const months=this.financePeriodMonths();
-      const monthMap=new Map(months.map((m,i)=>[m.key,i]));
-      const monthly=months.map(m=>({label:m.fullLabel,count:0,materials:0,labor:0,paid:0,saving:0,provision:0}));
-      normalized.forEach(r=>{const i=monthMap.get(String(r.date||'').slice(0,7));if(i!==undefined){monthly[i].count++;monthly[i].materials+=Number(r.productsCost||0);monthly[i].labor+=Number(r.laborCost||0);monthly[i].paid+=Number(r.paid||0);monthly[i].saving+=Number(r.saving||0)}});
-      provisions.forEach(x=>{const i=monthMap.get(String(x.date||'').slice(0,7));if(i!==undefined)monthly[i].provision+=Number(x.estimate?.total||0)});
-
-      const categories=this.categoryDefinitions().map(d=>d.name).filter(c=>category==='Todas'||c===category).map(cat=>{
-        const realized=normalized.filter(r=>r.category===cat),planned=provisions.filter(x=>x.item?.category===cat);
-        return {category:cat,count:realized.length,materials:realized.reduce((s,r)=>s+Number(r.productsCost||0),0),labor:realized.reduce((s,r)=>s+Number(r.laborCost||0),0),paid:realized.reduce((s,r)=>s+Number(r.paid||0),0),saving:realized.reduce((s,r)=>s+Number(r.saving||0),0),provision:planned.reduce((s,x)=>s+Number(x.estimate?.total||0),0)};
-      });
-
-      const moneyStyle=4,totalStyle=6;
-      const signal=(difference,first=false)=>{
-        if(first||difference==null)return {text:'○ Primeiro registro',style:10};
-        if(Math.abs(difference)<.01)return {text:'● Estável',style:9};
-        if(difference>0)return {text:'▲ Aumento',style:7};
-        return {text:'▼ Redução',style:8};
-      };
-      const money=v=>({v:Number(v||0),style:moneyStyle});
-      const totalMoney=v=>({v:Number(v||0),style:totalStyle});
-      const sum=(arr,key)=>arr.reduce((s,r)=>s+Number(r[key]||0),0);
-
-      const sheetSpecs=[];
-      sheetSpecs.push({name:'Resumo',title:'Resumo financeiro executivo',headers:['Indicador','Valor','Observação'],rows:[
-        ['Gasto realizado',money(total),`${normalized.length} lançamento(s)`],
-        ['Economia realizada',money(saving),'Economia comprovada'],
-        ['Materiais realizados',money(materialsTotal),'Produtos e peças'],
-        ['Mão de obra realizada',money(laborTotal),'Serviços contratados'],
-        ['Saldo econômico',money(saving-total),'Economia menos gasto'],
-        ['Provisão no período',money(provisionTotal),`${provisions.length} ocorrência(s)`],
-        ['Materiais provisionados',money(provisionMaterial),'Previsão do período'],
-        ['Mão de obra provisionada',money(provisionLabor),'Previsão do período'],
-      ],totals:null,widths:[28,18,42]});
-
-      const launchRows=normalized.map(r=>[this.fmt(r.date),r.name,r.category,r.executor||'—',r.provider||'—',r.products||'—',money(r.productsCost),money(r.laborCost),money(r.paid),money(r.saving),money(r.marketLabor||r.market||0),r.notes||'—']);
-      sheetSpecs.push({name:'Lançamentos',title:'Lançamentos realizados',headers:['Data','Manutenção','Categoria','Executor','Empresa / profissional','Produtos / peças','Materiais','Mão de obra','Total','Economia','Preço de mercado','Observações'],rows:launchRows,totals:['TOTAL',`${normalized.length} lançamento(s)`,'','','','',totalMoney(materialsTotal),totalMoney(laborTotal),totalMoney(total),totalMoney(saving),'',''],widths:[14,28,16,18,25,28,15,15,15,15,17,38]});
-
-      const monthlyRows=monthly.map(m=>[m.label,m.count,money(m.materials),money(m.labor),money(m.paid),money(m.saving),money(m.provision),money(m.saving-m.paid)]);
-      sheetSpecs.push({name:'Fechamento Mensal',title:'Fechamento mensal',headers:['Mês','Eventos','Materiais','Mão de obra','Pago','Economia','Provisão','Resultado'],rows:monthlyRows,totals:['TOTAL',sum(monthly,'count'),totalMoney(sum(monthly,'materials')),totalMoney(sum(monthly,'labor')),totalMoney(sum(monthly,'paid')),totalMoney(sum(monthly,'saving')),totalMoney(sum(monthly,'provision')),totalMoney(sum(monthly,'saving')-sum(monthly,'paid'))],widths:[22,12,16,16,16,16,16,16]});
-
-      const categoryRows=categories.map(r=>[r.category,r.count,money(r.materials),money(r.labor),money(r.paid),money(r.saving),money(r.provision),money(r.saving-r.paid)]);
-      sheetSpecs.push({name:'Por Categoria',title:'Resumo financeiro por categoria',headers:['Categoria','Serviços','Materiais','Mão de obra','Pago','Economia','Provisão','Saldo'],rows:categoryRows,totals:['TOTAL',sum(categories,'count'),totalMoney(sum(categories,'materials')),totalMoney(sum(categories,'labor')),totalMoney(sum(categories,'paid')),totalMoney(sum(categories,'saving')),totalMoney(sum(categories,'provision')),totalMoney(sum(categories,'saving')-sum(categories,'paid'))],widths:[22,12,16,16,16,16,16,16]});
-
-      const comparisonRows=comparisons.map(r=>{
-        const hs=signal(r.lastDifference,!r.previous),fs=signal(r.nextDifference,!r.last);
-        return [r.item.name,r.previous?this.fmt(r.previous.date):'—',r.previous?.provider||r.previous?.executor||'—',r.previous?money(r.previousValue):'—',r.last?this.fmt(r.last.date):'—',r.last?.provider||r.last?.executor||'—',r.last?money(r.lastValue):'—',{v:hs.text,style:hs.style},r.nextValue?money(r.nextValue):'—',{v:fs.text,style:fs.style}];
-      });
-      sheetSpecs.push({name:'Comparativo',title:'Comparativo das últimas manutenções',headers:['Manutenção','Penúltima data','Responsável anterior','Valor anterior','Última data','Último responsável','Último valor','Variação histórica','Próxima previsão','Variação prevista'],rows:comparisonRows,totals:['TOTAL','','',totalMoney(comparisons.reduce((s,r)=>s+(r.previous?r.previousValue:0),0)),'','',totalMoney(comparisons.reduce((s,r)=>s+(r.last?r.lastValue:0),0)),'',totalMoney(comparisons.reduce((s,r)=>s+r.nextValue,0)),''],widths:[28,15,24,16,15,24,16,20,18,20]});
-
-      const providerData=providerRows.map(r=>[r.providerLabel,this.fmt(r.date),r.name,r.category,r.executor||'—',money(r.productsCost),money(r.laborCost),money(r.paid),money(r.saving)]);
-      sheetSpecs.push({name:'Empresas',title:'Comparativo por empresa / profissional',headers:['Empresa / responsável','Data','Manutenção','Categoria','Executor','Materiais','Mão de obra','Total pago','Economia'],rows:providerData,totals:['TOTAL',`${providerRows.length} serviço(s)`,'','','',totalMoney(sum(providerRows,'productsCost')),totalMoney(sum(providerRows,'laborCost')),totalMoney(sum(providerRows,'paid')),totalMoney(sum(providerRows,'saving'))],widths:[28,14,30,16,18,16,16,16,16]});
-
-      const provisionRows=provisions.map(x=>[this.fmt(x.date),x.item?.name||'',x.item?.category||'',money(x.estimate?.material),money(x.estimate?.labor),money(x.estimate?.total)]);
-      sheetSpecs.push({name:'Provisão',title:'Provisão no período selecionado',headers:['Data prevista','Manutenção','Categoria','Materiais','Mão de obra','Total previsto'],rows:provisionRows,totals:['TOTAL',`${provisions.length} ocorrência(s)`,'',totalMoney(provisionMaterial),totalMoney(provisionLabor),totalMoney(provisionTotal)],widths:[16,30,18,18,18,18]});
-
-      const historyRows=normalized.map(r=>[this.fmt(r.date),r.name,r.category,r.executor||'—',r.provider||'—',r.products||'—',money(r.productsCost),money(r.laborCost),money(r.paid),money(r.saving),money(r.marketLabor||r.market||0),r.notes||'—']);
-      sheetSpecs.push({name:'Histórico',title:'Histórico financeiro detalhado',headers:['Data','Manutenção','Categoria','Executor','Empresa / profissional','Produtos / peças','Materiais','Mão de obra','Total','Economia','Preço de mercado','Observações'],rows:historyRows,totals:['TOTAL',`${normalized.length} lançamento(s)`,'','','','',totalMoney(materialsTotal),totalMoney(laborTotal),totalMoney(total),totalMoney(saving),'',''],widths:[14,28,16,18,25,28,15,15,15,15,17,38]});
-
-      const individualSheetMap={
-        launches:'Lançamentos',
-        monthly:'Fechamento Mensal',
-        categories:'Por Categoria',
-        comparison:'Comparativo',
-        providers:'Empresas',
-        provisions:'Provisão',
-        history:'Histórico'
-      };
-      if(reportType && reportType!=='complete'){
-        const requestedName=individualSheetMap[reportType];
-        const selected=sheetSpecs.find(spec=>spec.name===requestedName);
-        if(!selected) throw new Error(`Relatório Excel não encontrado: ${reportType}`);
-        sheetSpecs.splice(0,sheetSpecs.length,selected);
-      }
-
-      const encoder=new TextEncoder();
-      const xmlEscape=s=>String(s??'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
-      const colName=n=>{let s='';while(n){n--;s=String.fromCharCode(65+n%26)+s;n=Math.floor(n/26)}return s};
-      const cellXml=(r,c,value,defaultStyle=0)=>{
-        const ref=`${colName(c)}${r}`;
-        const obj=value&&typeof value==='object'&&!Array.isArray(value)&&Object.prototype.hasOwnProperty.call(value,'v')?value:{v:value,style:defaultStyle};
-        const style=Number(obj.style??defaultStyle);
-        if(typeof obj.v==='number'&&Number.isFinite(obj.v))return `<c r="${ref}" s="${style}"><v>${obj.v}</v></c>`;
-        const text=String(obj.v??'');
-        return `<c r="${ref}" s="${style}" t="inlineStr"><is><t xml:space="preserve">${xmlEscape(text)}</t></is></c>`;
-      };
-      const mergeRange=(a,b,c,d)=>`${colName(b)}${a}:${colName(d)}${c}`;
-
-      const styleXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><numFmts count="1"><numFmt numFmtId="164" formatCode='R$ #,##0.00;[Red]-R$ #,##0.00'/></numFmts><fonts count="5"><font><sz val="10"/><name val="Calibri"/><family val="2"/><charset val="0"/><color rgb="FF172033"/></font><font><b/><sz val="18"/><name val="Calibri"/><family val="2"/><charset val="0"/><color rgb="FF0B1F33"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/><charset val="0"/><color rgb="FFFFFFFF"/></font><font><b/><sz val="10"/><name val="Calibri"/><family val="2"/><charset val="0"/><color rgb="FF0B1F33"/></font><font><b/><sz val="13"/><name val="Calibri"/><family val="2"/><charset val="0"/><color rgb="FF0B1F33"/></font></fonts><fills count="13"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEAF2F6"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0E8F55"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEAF5EE"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFE6E6"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE4F5EA"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF4D6"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF0F2F4"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFEDED"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE8F7EE"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEAF5FF"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2EBFF"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="3"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FFCDD8E0"/></left><right style="thin"><color rgb="FFCDD8E0"/></right><top style="thin"><color rgb="FFCDD8E0"/></top><bottom style="thin"><color rgb="FFCDD8E0"/></bottom><diagonal/></border><border><left/><right/><top style="medium"><color rgb="FF70A887"/></top><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="17"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyAlignment="1"><alignment vertical="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="2" fillId="3" borderId="1" xfId="0" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf><xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf><xf numFmtId="164" fontId="3" fillId="4" borderId="2" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="3" fillId="5" borderId="1" xfId="0" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="3" fillId="6" borderId="1" xfId="0" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="3" fillId="7" borderId="1" xfId="0" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="0" fontId="3" fillId="8" borderId="1" xfId="0" applyAlignment="1"><alignment horizontal="center"/></xf><xf numFmtId="164" fontId="4" fillId="5" borderId="1" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="4" fillId="6" borderId="1" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="4" fillId="11" borderId="1" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="4" fillId="12" borderId="1" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="4" fillId="7" borderId="1" xfId="0" applyNumberFormat="1"/><xf numFmtId="164" fontId="4" fillId="4" borderId="1" xfId="0" applyNumberFormat="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`;
-
-      async function logoBytes(source){
-        if(!source)return null;
-        try{
-          const img=new Image();img.crossOrigin='anonymous';
-          await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject;img.src=source});
-          const canvas=document.createElement('canvas');const maxW=260,maxH=150,ratio=Math.min(maxW/img.naturalWidth,maxH/img.naturalHeight,1);
-          canvas.width=Math.max(1,Math.round(img.naturalWidth*ratio));canvas.height=Math.max(1,Math.round(img.naturalHeight*ratio));
-          canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
-          const data=canvas.toDataURL('image/png').split(',')[1];const bin=atob(data);const out=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;
-        }catch(error){console.warn('Não foi possível incorporar a logo no XLSX.',error);return null}
-      }
-      const logo=await logoBytes(p.logo||'');
-      const files={};
-      const sheetXmls=[],sheetRels=[],drawingXmls=[],drawingRels=[];
-      const kpis=[['Gasto realizado',total,11],['Economia realizada',saving,12],['Materiais realizados',materialsTotal,13],['Mão de obra realizada',laborTotal,14],['Saldo econômico',saving-total,15],['Provisão no período',provisionTotal,16]];
-
-      sheetSpecs.forEach((spec,index)=>{
-        const maxCols=Math.max(spec.headers.length,12),merges=[];let rowsXml=[];
-        rowsXml.push(`<row r="1" ht="27" customHeight="1">${cellXml(1,logo?3:1,`Relatório Financeiro de Manutenções — ${p.name||'Casa/Empresa'}`,1)}</row>`);
-        merges.push(mergeRange(1,logo?3:1,1,maxCols));
-        rowsXml.push(`<row r="2" ht="20" customHeight="1">${cellXml(2,logo?3:1,`${p.type||''} • ${[p.address,p.cityState].filter(Boolean).join(' • ')}`,2)}</row>`);merges.push(mergeRange(2,logo?3:1,2,maxCols));
-        rowsXml.push(`<row r="3" ht="20" customHeight="1">${cellXml(3,logo?3:1,`Responsável: ${p.contact||'—'} • ${[p.phone,p.email].filter(Boolean).join(' • ')}`,2)}</row>`);merges.push(mergeRange(3,logo?3:1,3,maxCols));
-        rowsXml.push(`<row r="4" ht="20" customHeight="1">${cellXml(4,logo?3:1,`Período: ${period} • Categoria: ${category} • Emitido em ${emitted}`,2)}</row>`);merges.push(mergeRange(4,logo?3:1,4,maxCols));
-        if(logo){merges.push('A1:B4')}
-        const kpiCells=[];for(let i=0;i<6;i++){const c1=i*2+1,c2=c1+1;kpiCells.push(cellXml(6,c1,`${kpis[i][0]}\n${this.money(kpis[i][1])}`,kpis[i][2]));merges.push(mergeRange(6,c1,7,c2))}
-        rowsXml.push(`<row r="6" ht="25" customHeight="1">${kpiCells.join('')}</row><row r="7" ht="25" customHeight="1"></row>`);
-        rowsXml.push(`<row r="9" ht="24" customHeight="1">${cellXml(9,1,spec.title,1)}</row>`);merges.push(mergeRange(9,1,9,maxCols));
-        rowsXml.push(`<row r="10" ht="24" customHeight="1">${spec.headers.map((h,i)=>cellXml(10,i+1,h,3)).join('')}</row>`);
-        spec.rows.forEach((data,ri)=>{const r=11+ri;rowsXml.push(`<row r="${r}" ht="22" customHeight="1">${data.map((v,ci)=>cellXml(r,ci+1,v,5)).join('')}</row>`)});
-        if(spec.totals){const r=11+spec.rows.length;rowsXml.push(`<row r="${r}" ht="24" customHeight="1">${spec.totals.map((v,ci)=>cellXml(r,ci+1,v,6)).join('')}</row>`)}
-        const cols=Array.from({length:maxCols},(_,i)=>`<col min="${i+1}" max="${i+1}" width="${spec.widths[i]||14}" customWidth="1"/>`).join('');
-        const lastRow=10+spec.rows.length+(spec.totals?1:0);
-        const drawing=logo?'<drawing r:id="rId1"/>':'';
-        const sheetXml=`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheetPr><tabColor rgb="FF0E8F55"/><pageSetUpPr fitToPage="1"/></sheetPr><dimension ref="A1:${colName(maxCols)}${lastRow}"/><sheetViews><sheetView workbookViewId="0" view="normal" zoomScale="100" showGridLines="0" showRowColHeaders="1"><pane ySplit="10" topLeftCell="A11" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A11" sqref="A11"/></sheetView></sheetViews><sheetFormatPr baseColWidth="10" defaultColWidth="18" defaultRowHeight="18"/><cols>${cols}</cols><sheetData>${rowsXml.join('')}</sheetData><autoFilter ref="A10:${colName(spec.headers.length)}${Math.max(10,lastRow)}"/><mergeCells count="${merges.length}">${merges.map(m=>`<mergeCell ref="${m}"/>`).join('')}</mergeCells><pageMargins left="0.25" right="0.25" top="0.4" bottom="0.4" header="0.2" footer="0.2"/><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0" paperSize="9"/>${drawing}</worksheet>`;
-        sheetXmls.push(sheetXml);
-        if(logo){sheetRels.push(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/drawing" Target="../drawings/drawing${index+1}.xml"/></Relationships>`);drawingXmls.push(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><xdr:wsDr xmlns:xdr="http://schemas.openxmlformats.org/drawingml/2006/spreadsheetDrawing" xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><xdr:twoCellAnchor editAs="oneCell"><xdr:from><xdr:col>0</xdr:col><xdr:colOff>50000</xdr:colOff><xdr:row>0</xdr:row><xdr:rowOff>50000</xdr:rowOff></xdr:from><xdr:to><xdr:col>2</xdr:col><xdr:colOff>0</xdr:colOff><xdr:row>4</xdr:row><xdr:rowOff>0</xdr:rowOff></xdr:to><xdr:pic><xdr:nvPicPr><xdr:cNvPr id="${index+1}" name="Logo"/><xdr:cNvPicPr/></xdr:nvPicPr><xdr:blipFill><a:blip xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships" r:embed="rId1"/><a:stretch><a:fillRect/></a:stretch></xdr:blipFill><xdr:spPr><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></xdr:spPr></xdr:pic><xdr:clientData/></xdr:twoCellAnchor></xdr:wsDr>`);drawingRels.push(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="../media/logo.png"/></Relationships>`)}
-      });
-
-      const workbookSheets=sheetSpecs.map((s,i)=>`<sheet name="${xmlEscape(s.name.slice(0,31))}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join('');
-      const workbookRels=sheetSpecs.map((s,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join('')+`<Relationship Id="rId${sheetSpecs.length+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>`;
-      const overrides=sheetSpecs.map((s,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')+(logo?sheetSpecs.map((s,i)=>`<Override PartName="/xl/drawings/drawing${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.drawing+xml"/>`).join(''):'');
-      files['[Content_Types].xml']=encoder.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="png" ContentType="image/png"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${overrides}<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/><Override PartName="/docProps/app.xml" ContentType="application/vnd.openxmlformats-officedocument.extended-properties+xml"/></Types>`);
-      files['_rels/.rels']=encoder.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/><Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/extended-properties" Target="docProps/app.xml"/></Relationships>`);
-      files['xl/workbook.xml']=encoder.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView xWindow="0" yWindow="0" windowWidth="24000" windowHeight="14000"/></bookViews><sheets>${workbookSheets}</sheets><calcPr calcId="171027"/></workbook>`);
-      files['xl/_rels/workbook.xml.rels']=encoder.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${workbookRels}</Relationships>`);
-      files['xl/styles.xml']=encoder.encode(styleXml);
-      sheetXmls.forEach((xml,i)=>{files[`xl/worksheets/sheet${i+1}.xml`]=encoder.encode(xml);if(logo){files[`xl/worksheets/_rels/sheet${i+1}.xml.rels`]=encoder.encode(sheetRels[i]);files[`xl/drawings/drawing${i+1}.xml`]=encoder.encode(drawingXmls[i]);files[`xl/drawings/_rels/drawing${i+1}.xml.rels`]=encoder.encode(drawingRels[i])}});
-      if(logo)files['xl/media/logo.png']=logo;
-      const nowIso=new Date().toISOString();
-      files['docProps/core.xml']=encoder.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:dcmitype="http://purl.org/dc/dcmitype/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>Relatório Financeiro de Manutenções — ${xmlEscape(p.name||'Casa/Empresa')}</dc:title><dc:creator>Sistema de Manutenções Preventivas</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${nowIso}</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">${nowIso}</dcterms:modified></cp:coreProperties>`);
-      files['docProps/app.xml']=encoder.encode(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Properties xmlns="http://schemas.openxmlformats.org/officeDocument/2006/extended-properties" xmlns:vt="http://schemas.openxmlformats.org/officeDocument/2006/docPropsVTypes"><Application>Sistema de Manutenções Preventivas</Application><DocSecurity>0</DocSecurity><ScaleCrop>false</ScaleCrop><HeadingPairs><vt:vector size="2" baseType="variant"><vt:variant><vt:lpstr>Planilhas</vt:lpstr></vt:variant><vt:variant><vt:i4>${sheetSpecs.length}</vt:i4></vt:variant></vt:vector></HeadingPairs><TitlesOfParts><vt:vector size="${sheetSpecs.length}" baseType="lpstr">${sheetSpecs.map(s=>`<vt:lpstr>${xmlEscape(s.name)}</vt:lpstr>`).join('')}</vt:vector></TitlesOfParts><Company>${xmlEscape(p.name||'')}</Company></Properties>`);
-
-      const crcTable=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=(c&1)?0xedb88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
-      const crc32=data=>{let c=0xffffffff;for(const b of data)c=crcTable[(c^b)&255]^(c>>>8);return(c^0xffffffff)>>>0};
-      const u16=(v,a,o)=>{a[o]=v&255;a[o+1]=(v>>>8)&255};const u32=(v,a,o)=>{a[o]=v&255;a[o+1]=(v>>>8)&255;a[o+2]=(v>>>16)&255;a[o+3]=(v>>>24)&255};
-      const entries=[];let offset=0;const localParts=[];
-      for(const [name,data] of Object.entries(files)){const nameBytes=encoder.encode(name),crc=crc32(data),header=new Uint8Array(30+nameBytes.length);u32(0x04034b50,header,0);u16(20,header,4);u16(0x0800,header,6);u16(0,header,8);u16(0,header,10);u16(0,header,12);u32(crc,header,14);u32(data.length,header,18);u32(data.length,header,22);u16(nameBytes.length,header,26);u16(0,header,28);header.set(nameBytes,30);localParts.push(header,data);entries.push({nameBytes,crc,size:data.length,offset});offset+=header.length+data.length}
-      const centralParts=[];let centralSize=0;for(const e of entries){const h=new Uint8Array(46+e.nameBytes.length);u32(0x02014b50,h,0);u16(20,h,4);u16(20,h,6);u16(0x0800,h,8);u16(0,h,10);u16(0,h,12);u16(0,h,14);u32(e.crc,h,16);u32(e.size,h,20);u32(e.size,h,24);u16(e.nameBytes.length,h,28);u16(0,h,30);u16(0,h,32);u16(0,h,34);u16(0,h,36);u32(0,h,38);u32(e.offset,h,42);h.set(e.nameBytes,46);centralParts.push(h);centralSize+=h.length}
-      const endRecord=new Uint8Array(22);u32(0x06054b50,endRecord,0);u16(0,endRecord,4);u16(0,endRecord,6);u16(entries.length,endRecord,8);u16(entries.length,endRecord,10);u32(centralSize,endRecord,12);u32(offset,endRecord,16);u16(0,endRecord,20);
-      const blob=new Blob([...localParts,...centralParts,endRecord],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-      const reportFileNames={
-        complete:'relatorio_completo',
-        launches:'lancamentos_realizados',
-        monthly:'fechamento_mensal',
-        categories:'resumo_por_categoria',
-        comparison:'comparativo_manutencoes',
-        providers:'comparativo_empresas',
-        provisions:'provisao_periodo',
-        history:'historico_financeiro'
-      };
-      const filePrefix=reportFileNames[reportType]||'relatorio_manutencoes';
-      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`${filePrefix}_${this.financeStartDate}_a_${this.financeEndDate}.xlsx`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);
-    } catch(error) {
-      console.error('Falha ao gerar XLSX:',error);
-      alert(`Não foi possível gerar o arquivo XLSX: ${error?.message||error}`);
-    } finally {
-      if(button){button.disabled=false;button.innerHTML=original||'<ha-icon icon="mdi:file-excel-outline"></ha-icon>Excel';}
-    }
+    const previous=button?.innerHTML;
+    if(button){button.disabled=true;button.textContent='Gerando Excel...'}
+    try{
+      const writer=await import('/cloudpelizzon-maintenance/frontend/finance-excel111.js?v=111');
+      const html=this.exportFinanceReport(rows,reportType,true);
+      const names={complete:'relatorio_completo',launches:'lancamentos_realizados',monthly:'fechamento_mensal',categories:'resumo_por_categoria',comparison:'comparativo_manutencoes',providers:'comparativo_empresas',provisions:'provisao_periodo',history:'historico_financeiro'};
+      const extra=reportType==='complete'?[this.exportFinanceReport(rows,'history',true)]:[];
+      await writer.exportReport(html,`${names[reportType]||'relatorio'}_${this.financeStartDate}_a_${this.financeEndDate}.xlsx`,extra);
+    }catch(error){console.error('CloudPelizzon: falha no Excel.',error);alert(`Não foi possível gerar o Excel: ${error?.message||error}`)}
+    finally{if(button){button.disabled=false;button.innerHTML=previous}}
   }
 
   addDaysIso(iso, days) {
