@@ -1,4 +1,4 @@
-import "/cloudpelizzon-energy/frontend/energy-card.js?v=2a9a012aec3d";
+import "/cloudpelizzon-energy/frontend/energy-card.js?v=08f98577b618";
 
 class CloudPelizzonEnergyPanel extends HTMLElement {
   constructor() {
@@ -810,7 +810,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     );
 
     return {
-      unassigned_loads:this._detectedLoads().filter(row=>!(cfg.boards||[]).some(b=>(b.loads||[]).some(x=>x.power_entity===row.entity_id))).map(row=>({name:row.name||row.entity_id,power:row.entity_id})),
+      unassigned_loads:this._detectedLoads().filter(row=>!(cfg.boards||[]).some(b=>(b.loads||[]).some(x=>x.power_entity===row.entity_id))).map(row=>({name:row.name||row.entity_id,power:row.entity_id,energy:this._historyEnergyEntity(this._matchEnergy(row.entity_id,'load'),'')})),
       solar_power:n.generation_power,
       sofar_power:n.generation_primary_power,
       sofar_power_fallback:n.generation_primary_power,

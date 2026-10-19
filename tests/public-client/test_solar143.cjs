@@ -6,5 +6,5 @@ card._config={unassigned_loads:[{name:'Tomada da sala',power:'sensor.plug'}],clo
 const live={qd1Devices:[],qd2Devices:[],qd1:300,qd2:200};const period={qd1Devices:[],qd2Devices:[],qd1:6,qd2:4,house:10,solar:15,imp:3,exp:8,qd1Other:6,qd2Other:4,housePeak:{value:1200,time:Date.now()}};
 const rows=card._deviceRows(period,live);assert(rows.includes('Tomada da sala'));assert(rows.includes('25 W'));assert(rows.includes('Associar tomadas'));
 const boards=card._boards(live,period);assert.equal((boards.match(/fixture-chart/g)||[]).length,2);
-const analysis=card._analytics(live,period);assert(analysis.includes('O que os números indicam'));assert(analysis.includes('horários de maior geração'));assert(!analysis.includes('MAIOR CONSUMIDOR MONITORADO'));
+const analysis=card._analytics(live,period);for(const label of ['AUTOCONSUMO','AUTOSSUFICIÊNCIA','GERAÇÃO × CONSUMO','DEPENDÊNCIA DA COPEL','MAIOR PICO DE GERAÇÃO','MAIOR CONSUMO MONITORADO'])assert(analysis.includes(label));assert.equal((analysis.match(/class="pie-card144"/g)||[]).length,3);
 console.log('SOLAR143=unassigned_loads_visible; two_board_charts; concise_actionable_analysis');

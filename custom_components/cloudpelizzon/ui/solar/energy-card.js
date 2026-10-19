@@ -474,6 +474,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
       e.solarEnergy,e.solarEnergyFallback,e.importEnergy,e.importEnergyFallback,e.exportEnergy,e.exportEnergyFallback
     ]);
     for (const d of [...e.devices.qd1,...e.devices.qd2]) { ids.add(d.power); ids.add(d.energy); }
+    for(const row of this._config.unassigned_loads||[]){if(row.power)ids.add(row.power);if(row.energy)ids.add(row.energy);}
     return [...ids].filter(id=>id&&id!=='sensor.cloudpelizzon_energy_not_configured');
   }
 
@@ -984,7 +985,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
     if(!rows.length){
       const pending=qd?[]:(this._config.unassigned_loads||[]);
       return `<div class="loads-empty143"><p>${pending.length?`${pending.length} medições encontradas, ainda sem vínculo com um quadro.`:'Nenhum dispositivo individual associado. Os totais dos quadros continuam disponíveis.'}</p>
-        ${pending.map(row=>`<div class="pending-load143"><span>${this._esc(row.name)}</span><strong>${this._valid(row.power)?this._fmtW(this._num(row.power,0)):'Sem leitura'}</strong></div>`).join('')}
+        ${pending.map(row=>`<div class="pending-load143"><span>${this._esc(row.name)}</span><strong>${this._rawPower144(row.power)!==null?this._fmtW(this._rawPower144(row.power)):'Sem leitura'}</strong></div>`).join('')}
         <button class="configure-loads143">Associar tomadas e disjuntores</button><small>O consumo individual em kWh será exibido após configurar a medição de cada carga.</small></div>`;
     }
     return `<div class="device-table">${rows.map((d,i)=>`<div class="device-row clickable" data-entity="${this._esc(d.energy)}">
@@ -1318,6 +1319,35 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
     </section>`;
   }
 
+
+  _rawPower144(id){const row=this._hass?.states?.[id];if(!row||!this._valid(id))return null;const unit=String(row.attributes?.unit_of_measurement||'').toLowerCase();const factor={w:1,kw:1000,mw:1000000}[unit];return factor?Number(row.state)*factor:null;}
+  _monitoredLoads144(period){
+    const assigned=[...(period.qd1Devices||[]),...(period.qd2Devices||[])];
+    const seen=new Set(assigned.map(d=>d.power));
+    const pending=(this._config.unassigned_loads||[]).filter(d=>!seen.has(d.power)).map(d=>{
+      const series=d.energy?this._series(d.energy):[];
+      const daily=/(?:^|_)(hoje|today|daily|diaria|diario)(?:_|$)/.test(d.energy||'');
+      const known=d.energy&&(series.length>=2||(daily&&this._valid(d.energy)));
+      return {...d,icon:'flash',energyPeriod:known?this._periodEnergy(d.energy):null,powerNow:this._rawPower144(d.power),qd:'Quadro não associado'};
+    });
+    const rows=[...assigned,...pending].map(d=>({...d,powerNow:d.powerNow??this._rawPower144(d.power)}));
+    const energy=rows.filter(d=>d.energyPeriod!==null&&Number.isFinite(d.energyPeriod));
+    return (energy.length?energy:rows.filter(d=>d.powerNow!==null)).sort((a,b)=>(b.energyPeriod??b.powerNow??0)-(a.energyPeriod??a.powerNow??0));
+  }
+
+  _pie144(title,items){
+    const colors=['#62e89f','#50bfff','#c093ff','#ffbf62'];
+    const rows=items.map((row,index)=>({...row,value:Math.max(0,Number(row.value)||0),color:colors[index%colors.length]}));
+    const total=rows.reduce((sum,row)=>sum+row.value,0);let angle=-Math.PI/2;
+    const wedges=rows.map(row=>{if(!total||!row.value)return '';const start=angle,end=angle+row.value/total*Math.PI*2;angle=end;
+      const point=a=>[100+84*Math.cos(a),100+84*Math.sin(a)];const a=point(start),b=point(end),mid=(start+end)/2;
+      const shape=row.value===total?`<circle cx="100" cy="100" r="84" fill="${row.color}"/>`:`<path d="M100 100 L${a[0]} ${a[1]} A84 84 0 ${end-start>Math.PI?1:0} 1 ${b[0]} ${b[1]} Z" fill="${row.color}"/>`;
+      const pct=Math.round(row.value/total*100);
+      return shape+(pct>=8?`<text x="${100+51*Math.cos(mid)}" y="${105+51*Math.sin(mid)}" text-anchor="middle" fill="#03121b" font-size="17" font-weight="900">${pct}%</text>`:'');
+    }).join('');
+    return `<article class="pie-card144"><h3>${title}</h3><div class="pie-content144"><svg viewBox="0 0 200 200" role="img" aria-label="${this._esc(title)}">${total?wedges:'<circle cx="100" cy="100" r="84" fill="#173443"/><text x="100" y="104" text-anchor="middle" fill="#ecf7ff" font-size="12">Sem dados</text>'}</svg><div class="pie-legend144">${rows.map(row=>`<div><i style="background:${row.color}"></i><span>${this._esc(row.name)}</span><strong>${total?Math.round(row.value/total*100)+'%':'—'}</strong><small>${this._fmtK(row.value)}</small></div>`).join('')}</div></div></article>`;
+  }
+
   _overview(live,period) {
     const sofarShare=period.solar>0?period.sofar/period.solar*100:0;
     const deyeShare=period.solar>0?period.deye/period.solar*100:0;
@@ -1325,8 +1355,8 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
     const exportShare=period.solar>0?period.exp/period.solar*100:0;
     const qd1Share=period.house>0?period.qd1/period.house*100:0;
     const qd2Share=period.house>0?period.qd2/period.house*100:0;
-    const all=[...period.qd1Devices.map(d=>({...d,qd:"QUADRO A"})),...period.qd2Devices.map(d=>({...d,qd:"QUADRO B / DEMAIS"}))].sort((a,b)=>b.energyPeriod-a.energyPeriod);
-    const maxDevice=Math.max(.001,...all.map(d=>d.energyPeriod));
+    const all=this._monitoredLoads144(period);
+    const maxDevice=Math.max(.001,...all.map(d=>d.energyPeriod??d.powerNow??0));
     const statusItems=[
       ["Inversor Solar",[this.entities.sofarPower,this.entities.sofarEnergyTotal],"inverter"],
       ["Microinversor",[this.entities.deyePower,this.entities.deyeEnergyTotal],"micro"],
@@ -1375,7 +1405,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
       <section class="v26-lower">
         <article class="v26-lower-card consumers">
           <header><strong>MAIORES CONSUMIDORES ${this._periodCardSuffix()}</strong><button data-tab="consumption">Ver todos</button></header>
-          <div>${all.slice(0,5).map(d=>`<div class="v26-consumer clickable" data-entity="${this._esc(d.energy)}"><i>${this._svgIcon(d.icon)}</i><span>${this._esc(d.name)}</span><b><u style="width:${d.energyPeriod/maxDevice*100}%"></u></b><strong>${this._fmtK(d.energyPeriod)}</strong><em>${period.house>0?(d.energyPeriod/period.house*100).toFixed(0):0}%</em></div>`).join("")}</div>
+          <div>${all.slice(0,5).map(d=>`<div class="v26-consumer clickable" data-entity="${this._esc(d.energy)}"><i>${this._svgIcon(d.icon)}</i><span>${this._esc(d.name)}</span><b><u style="width:${(d.energyPeriod??d.powerNow??0)/maxDevice*100}%"></u></b><strong>${d.energyPeriod===null?this._fmtW(d.powerNow):this._fmtK(d.energyPeriod)}</strong><em>${d.energyPeriod===null?"agora":period.house>0?(d.energyPeriod/period.house*100).toFixed(0)+"%":"—"}</em></div>`).join("")||`<p class="empty-consumers144">Sem medição individual disponível. <button class="configure-loads143">Associar medições</button></p>`}</div>
         </article>
 
         <article class="v26-lower-card boards">
@@ -1597,77 +1627,39 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
     </section>`;
   }
 
-  _analytics(live,period) {
-    const p=period||{};
-    const house=Math.max(0,Number(p.house)||0);
-    const solar=Math.max(0,Number(p.solar)||0);
-    const imp=Math.max(0,Number(p.imp)||0);
-    const exp=Math.max(0,Number(p.exp)||0);
-    const qd1=Math.max(0,Number(p.qd1)||0);
-    const qd2=Math.max(0,Number(p.qd2)||0);
 
-    const selfUse=Math.max(0,solar-exp);
-    const selfConsumption=solar>0?Math.min(100,selfUse/solar*100):0;
-    const selfSufficiency=house>0?Math.min(100,selfUse/house*100):0;
-    const solarVsConsumption=house>0?Math.min(999,solar/house*100):0;
-    const gridDependency=house>0?Math.min(100,imp/house*100):0;
-    const exportRate=solar>0?Math.min(100,exp/solar*100):0;
-    const balance=exp-imp;
-    const qdTotal=Math.max(.0001,qd1+qd2);
-    const qd1Pct=qd1/qdTotal*100;
-    const qd2Pct=qd2/qdTotal*100;
-    const monitored=[
-      ...(Array.isArray(p.qd1Devices)?p.qd1Devices:[]),
-      ...(Array.isArray(p.qd2Devices)?p.qd2Devices:[])
-    ].sort((a,b)=>(b.energyPeriod||0)-(a.energyPeriod||0));
-    const top=monitored[0]||null;
-
-    const gauge=(value,label,cls,sub="")=>{
-      const pct=Math.max(0,Math.min(100,value));
-      const r=42,c=2*Math.PI*r,off=c*(1-pct/100);
-      const icon=cls==="cyan"?"↺":cls==="purple"?"⌂":"⚡";
-      return `<div class="analysis-orb-card ${cls}">
-        <div class="analysis-orb">
-          <svg viewBox="0 0 112 112">
-            <circle cx="56" cy="56" r="48" class="orbit-outer"></circle>
-            <circle cx="56" cy="56" r="${r}" class="d-bg"></circle>
-            <circle cx="56" cy="56" r="${r}" class="d-fg" stroke-dasharray="${c}" stroke-dashoffset="${off}"></circle>
-          </svg>
-          <i>${icon}</i>
-          <strong>${Math.round(value)}%</strong>
-        </div>
-        <div class="analysis-orb-copy">
-          <span>${label}</span>
-          <small>${sub}</small>
-          <b><u style="width:${pct}%"></u></b>
-        </div>
-      </div>`;
-    };
-
-    const metric=(title,value,sub,cls="")=>`
-      <div class="analysis-metric ${cls}">
-        <span>${title}</span>
-        <strong>${value}</strong>
-        <small>${sub}</small>
-      </div>`;
-
-
-    const enough=solar>0&&house>0;
-    const inconsistent=Math.abs(solar+imp-house-exp)>Math.max(.1,house*.05);
-    const recommendation=inconsistent?'As medições do período ainda não fecham o balanço entre geração, consumo e rede. Confira a cobertura do histórico antes de concluir sobre eficiência.':!enough?'Ainda não há dados suficientes para avaliar este período.':exportRate>50&&imp>0?'Há energia solar enviada à rede e consumo vindo da rede em outros horários. Se for conveniente, programe cargas flexíveis para os horários de maior geração.':imp>exp?'A casa recebeu mais energia da rede do que enviou. Confira os horários de maior consumo no gráfico.':'A casa enviou mais energia à rede do que recebeu neste período.';
-    return `<section class="screen analysis143">
-      ${this._tabIntro("analytics","ANÁLISES","Como sua energia foi utilizada",this._range.label,"purple")}
-      <div class="insight-grid143">
-        ${metric("SEU SOL ABASTECEU A CASA",inconsistent?"Conferir leituras":enough?`${Math.round(selfSufficiency)}%`:"Sem dados",`${this._fmtK(selfUse)} de energia solar usada localmente`,"green")}
-        ${metric("ENERGIA RECEBIDA DA REDE",this._fmtK(imp),house>0?`${Math.round(gridDependency)}% do consumo da casa`:"Consumo ainda indisponível","cyan")}
-        ${metric("ENERGIA ENVIADA À REDE",this._fmtK(exp),solar>0?`${Math.round(exportRate)}% da geração solar`:"Geração ainda indisponível","purple")}
-        ${metric("MAIOR DEMANDA DA CASA",p.housePeak?.time?this._fmtW(p.housePeak.value):"Sem histórico",p.housePeak?.time?this._fmtTime(p.housePeak.time):"Aguardando medições","red")}
+  _analytics(live,p) {
+    const generation=Math.max(0,p.solar||0),house=Math.max(0,p.house||0),imported=Math.max(0,p.imp||0),exported=Math.max(0,p.exp||0);
+    const direct=Math.max(0,generation-exported),ratio=(v,total)=>total>0?v/total*100:0;
+    const selfConsumption=ratio(direct,generation),selfSufficiency=ratio(direct,house),dependency=ratio(imported,house),generationRatio=ratio(generation,house);
+    const top=this._monitoredLoads144(p).find(d=>d.energyPeriod!==null);
+    const metric=(title,value,detail,cls='')=>`<article class="metric144 ${cls}"><span>${title}</span><strong>${value}</strong><small>${detail}</small></article>`;
+    const peak=value=>value?.time?this._fmtTime(value.time):'Histórico indisponível';
+    const balance=exported-imported;
+    return `<section class="analysis144">
+      <header class="analysis-title144"><h2>Inteligência energética</h2><span>${this._esc(this._range.label)} · energia e potência do período selecionado</span></header>
+      <div class="analysis-metrics144">
+        ${metric('GERAÇÃO SOLAR',this._fmtK(generation),'Total produzido','green')}
+        ${metric('CONSUMO DA CASA',this._fmtK(house),'Total consumido','red')}
+        ${metric('CONSUMIDO DA COPEL',this._fmtK(imported),'Energia recebida da rede','cyan')}
+        ${metric('SOLAR CONSUMIDO DIRETAMENTE',this._fmtK(direct),'Geração − exportação; sem passar pela Copel','green')}
+        ${metric('MAIOR PICO DE CONSUMO',p.housePeak?.time?this._fmtW(p.housePeak.value):'Sem histórico',peak(p.housePeak),'red')}
+        ${metric('MAIOR PICO DE GERAÇÃO',p.solarPeak?.time?this._fmtW(p.solarPeak.value):'Sem histórico',peak(p.solarPeak),'green')}
+        ${metric('SALDO COPEL',`${balance>=0?'+':''}${this._fmtK(balance)}`,balance>=0?'Exportação maior que importação':'Importação maior que exportação','purple')}
+        ${metric('MAIOR CONSUMO MONITORADO',top?this._esc(top.name):'Sem medição individual',top?this._fmtK(top.energyPeriod):'Associe ou aguarde o histórico das cargas','orange')}
       </div>
-      <article class="panel insight143"><h3>O que os números indicam</h3><p>${recommendation}</p>
-        <div class="insight-split143"><div><b>De onde veio o consumo</b><p>Solar usado na casa: ${this._fmtK(selfUse)} · Rede: ${this._fmtK(imp)}</p></div><div><b>Distribuição entre quadros</b><p>Quadro A: ${this._fmtK(qd1)} (${Math.round(qd1Pct)}%) · Demais: ${this._fmtK(qd2)} (${Math.round(qd2Pct)}%)</p></div></div>
-        <small>Valores de energia do período. Enviar energia à rede não significa que a casa ficou independente dela em todos os horários. Diferenças entre medições podem ocorrer por cobertura de histórico e atualização dos medidores.</small>
-      </article>
-      <article class="panel insight143"><h3>Geração e consumo ao longo do período</h3>${this._chart([{entity:this.entities.solarPower,label:"Geração solar",cls:"green"},{entity:this.entities.housePower,label:"Consumo da casa",cls:"red"}],{buckets:96})}</article>
+      <div class="analysis-pies144">
+        ${this._pie144('Origem da energia consumida',[{name:'Solar direto',value:direct},{name:'Copel',value:imported}])}
+        ${this._pie144('Destino da geração solar',[{name:'Usada na casa',value:direct},{name:'Enviada à Copel',value:exported}])}
+        ${this._pie144('Consumo por quadro',[{name:'Quadro A',value:p.qd1},{name:'Quadro B / demais',value:p.qd2}])}
+      </div>
+      <div class="analysis-ratios144">
+        ${metric('AUTOSSUFICIÊNCIA',house?this._fmtPct(selfSufficiency):'—','Quanto do consumo foi coberto pelo solar','green')}
+        ${metric('AUTOCONSUMO',generation?this._fmtPct(selfConsumption):'—','Quanto da geração foi usado na casa','cyan')}
+        ${metric('GERAÇÃO × CONSUMO',house?this._fmtPct(generationRatio):'—','Produção solar em relação ao consumo','purple')}
+        ${metric('DEPENDÊNCIA DA COPEL',house?this._fmtPct(dependency):'—','Parcela do consumo recebida da rede','orange')}
+      </div>
+      <p class="analysis-note144">As pizzas usam a soma das fatias como base. Os indicadores usam os totais medidos; pequenas diferenças podem ocorrer por cobertura do histórico e atualização dos medidores. O saldo é energético, em kWh.</p>
     </section>`;
   }
 
@@ -11223,6 +11215,48 @@ radial-gradient(ellipse at 89% 96%,rgba(8,42,39,.30),transparent 28%)}
 :host([viewport-fit]) .energy-v54 .dates-v14 input{min-height:0!important;height:23px!important;padding:2px!important}
 :host([viewport-fit]) .energy-v54 .dates-v14 label{min-height:0!important;margin:0!important}
 
+/* Final viewport layer: prevent the legacy fixed minimums and root rem scale
+   from determining scene geometry on high-DPI Windows displays. */
+:host([viewport-fit]) .energy-v54 .master-header,:host([viewport-fit]) .energy-v54 .filter-v14{box-sizing:border-box!important;overflow:hidden!important}
+:host([viewport-fit]) .energy-v54 .master-tabs button{box-sizing:border-box!important;min-height:0!important;font-size:9px!important;line-height:1.1!important;display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;padding:3px!important}
+:host([viewport-fit]) .energy-v54 .master-tabs button i{width:16px!important;height:16px!important;min-height:0!important}
+:host([viewport-fit]) .energy-v54 .master-tabs button svg{width:16px!important;height:16px!important}
+:host([viewport-fit]) .energy-v54 .filter-v14 label{font-size:8px!important;line-height:1!important;min-height:0!important}
+:host([viewport-fit]) .energy-v54 .filter-v14 input,:host([viewport-fit]) .energy-v54 .filter-v14 button{box-sizing:border-box!important;min-height:0!important;height:23px!important;line-height:1!important;padding:2px 5px!important}
+:host([viewport-fit]) .energy-v54 .v26-source,:host([viewport-fit]) .energy-v54 .v26-grid-meter,:host([viewport-fit]) .energy-v54 .v26-solar-total{box-sizing:border-box!important;min-height:0!important;min-width:0!important;max-width:155px!important;width:14%!important;height:27%!important;max-height:62px!important;margin:0!important;display:flex!important;align-items:center!important;justify-content:center!important;gap:5px!important;padding:4px 6px!important;transform:none!important}
+:host([viewport-fit]) .energy-v54 .v26-source>i{width:17px!important;height:17px!important;flex:0 0 17px!important;padding:0!important}
+:host([viewport-fit]) .energy-v54 .v26-source>div{min-width:0!important}
+:host([viewport-fit]) .energy-v54 .v26-source span,:host([viewport-fit]) .energy-v54 .v26-grid-meter span{font-size:8px!important;line-height:1.15!important;white-space:nowrap!important}
+:host([viewport-fit]) .energy-v54 .v26-source small{font-size:8px!important;line-height:1.15!important}
+:host([viewport-fit]) .energy-v54 .v26-source strong,:host([viewport-fit]) .energy-v54 .v26-grid-meter strong{font-size:clamp(13px,2.3cqh,20px)!important;line-height:1.1!important;margin:1px 0!important}
+:host([viewport-fit]) .energy-v54 .v26-inverter{top:13%!important;left:17%!important}
+:host([viewport-fit]) .energy-v54 .v26-micro{top:57%!important;left:17%!important}
+:host([viewport-fit]) .energy-v54 .v26-solar-total{left:33%!important;top:36%!important;width:12%!important;flex-direction:column!important}
+:host([viewport-fit]) .energy-v54 .v26-grid-meter{right:14%!important;flex-direction:column!important;gap:2px!important}
+:host([viewport-fit]) .energy-v54 .v26-grid-meter.import{top:18%!important}
+:host([viewport-fit]) .energy-v54 .v26-grid-meter.export{top:58%!important}
+:host([viewport-fit]) .energy-v54 .v26-grid-label{bottom:1%!important;right:3%!important;font-size:8px!important;width:12%!important}
+:host([viewport-fit]) .energy-v54 .v26-house-meter{box-sizing:border-box!important;min-height:0!important;max-height:30%!important;height:27%!important;min-width:0!important;width:17%!important;padding:3px!important;display:flex!important;flex-direction:column!important;justify-content:center!important}
+:host([viewport-fit]) .energy-v54 .v26-house-meter div{font-size:8px!important;line-height:1!important}
+:host([viewport-fit]) .energy-v54 .v26-house-meter svg{width:12px!important;height:12px!important}
+:host([viewport-fit]) .energy-v54 .v26-house-meter strong{font-size:clamp(14px,2.6cqh,23px)!important;line-height:1.1!important}
+:host([viewport-fit]) .energy-v54 .v26-summary header button{font-size:9px!important;min-height:0!important;line-height:1!important;padding:4px!important}
+:host([viewport-fit]) .energy-v54 .v26-summary-list>div>i{display:flex!important;align-items:center!important;justify-content:center!important;margin:0!important;padding:0!important;width:12px!important;height:12px!important}
+:host([viewport-fit]) .energy-v54 .v26-summary-list>div>i svg{width:12px!important;height:12px!important;max-width:100%!important;max-height:100%!important;position:static!important}
+:host([viewport-fit]) .energy-v54 .v26-summary-list>div{font-size:8px!important;line-height:1!important;min-height:0!important;gap:3px!important;grid-template-columns:12px minmax(0,1fr) auto!important}
+:host([viewport-fit]) .energy-v54 .v26-summary-list span,:host([viewport-fit]) .energy-v54 .v26-summary-list strong{font-size:8px!important;line-height:1.2!important}
+:host([viewport-fit]) .energy-v54 .v26-peak small,:host([viewport-fit]) .energy-v54 .v26-kpis article.peak small{font-size:10px!important;color:#fff!important;line-height:1.2!important;font-weight:700!important;background:#281a24!important;opacity:1!important;padding:1px 3px!important;border-radius:3px!important;white-space:nowrap!important}
+:host([viewport-fit]) .energy-v54 .v26-legend{font-size:8px!important;line-height:1!important;margin:0!important}
+:host([viewport-fit]) .energy-v54 .v26-status-row i,:host([viewport-fit]) .energy-v54 .v26-lower-card.indicators i{height:12px!important;width:12px!important;display:flex!important;align-items:center!important;padding:0!important}
+:host([viewport-fit]) .energy-v54 .v26-status-row svg,:host([viewport-fit]) .energy-v54 .v26-lower-card.indicators svg{height:12px!important;width:12px!important}
+.empty-consumers144{font-size:10px;line-height:1.4;margin:5px}.empty-consumers144 button{font-size:10px;padding:4px}
+.analysis144{height:100%;min-height:0;display:grid;grid-template-rows:30px minmax(105px,.8fr) minmax(155px,1.3fr) minmax(65px,.45fr) 25px;gap:8px;overflow:hidden}
+.analysis-title144{display:flex;align-items:center;justify-content:space-between;gap:12px}.analysis-title144 h2{margin:0;font-size:19px}.analysis-title144 span{font-size:10px;color:#b9d4e2}
+.analysis-metrics144{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));grid-template-rows:1fr 1fr;gap:7px;min-height:0}.metric144{display:flex;flex-direction:column;justify-content:center;gap:3px;padding:7px 10px;background:#04141f;border:1px solid #235066;border-radius:10px;min-width:0;min-height:0}.metric144>span{font-size:10px;font-weight:800;color:#e5f4fd;line-height:1.1}.metric144>strong{font-size:clamp(16px,2.7cqh,25px);line-height:1.1;color:#f5fbff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.metric144.green>strong{color:#69eba6}.metric144.cyan>strong{color:#62d6ff}.metric144.red>strong{color:#ff819b}.metric144.purple>strong{color:#cba9ff}.metric144.orange>strong{color:#ffcb80}.metric144>small{font-size:10px;line-height:1.2;color:#dfebf3}
+.analysis-pies144{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;min-height:0}.pie-card144{padding:10px;background:#04141f;border:1px solid #235066;border-radius:12px;display:grid;grid-template-rows:22px minmax(0,1fr);gap:5px;min-height:0;overflow:hidden}.pie-card144 h3{font-size:13px;margin:0}.pie-content144{display:grid;grid-template-columns:minmax(90px,1fr) minmax(100px,1fr);align-items:center;gap:9px;min-height:0}.pie-content144>svg{width:100%;height:100%;min-height:0;max-height:220px}.pie-legend144{display:grid;gap:12px}.pie-legend144>div{display:grid;grid-template-columns:10px minmax(0,1fr) auto;gap:4px;align-items:center}.pie-legend144 i{height:8px;width:8px;border-radius:3px}.pie-legend144 span{font-size:11px;line-height:1.2}.pie-legend144 strong{font-size:14px}.pie-legend144 small{grid-column:2/4;font-size:12px;color:#d5eaf7}.analysis-ratios144{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;min-height:0}.analysis-note144{font-size:9px;line-height:1.2;color:#b6ccd9;margin:0}
+@media(max-width:900px){.pie-content144{grid-template-columns:1fr}.pie-legend144{gap:4px}.analysis144{grid-template-rows:30px minmax(120px,.8fr) minmax(220px,1.3fr) minmax(80px,.5fr) auto;overflow:auto}.analysis-metrics144{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+.analysis144{grid-template-rows:24px minmax(124px,.85fr) minmax(135px,1.15fr) minmax(56px,.4fr) 20px;gap:6px}.analysis144 .metric144{padding:5px 8px;gap:2px}.analysis144 .metric144>span{font-size:9px;line-height:11px;flex-shrink:0}.analysis144 .metric144>strong{font-size:17px;line-height:20px;flex-shrink:0;min-height:20px}.analysis144 .metric144>small{font-size:9px;line-height:11px;flex-shrink:0}.pie-card144 svg text{fill:#042334!important;font-size:17px!important;font-weight:900!important}.analysis-note144{font-size:8px}.analysis-title144 h2{font-size:17px}.analysis-metrics144{gap:5px}.analysis-pies144{gap:6px}.analysis144 .pie-card144{padding:7px}.analysis-ratios144{gap:6px}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
     `;
   }

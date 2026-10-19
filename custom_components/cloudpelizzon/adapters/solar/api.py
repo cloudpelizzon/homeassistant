@@ -41,6 +41,8 @@ async def dispatch(hass,connection,msg):
                         for item in value:collect(item)
                     elif isinstance(value,str) and value.startswith('sensor.'):allowed.add(value)
                 collect(config)
+                # Admin discovery already scopes these numeric measurement entities.
+                if callable(getattr(bridge,'candidates',None)):allowed.update(bridge.candidates())
                 result=await energy_history(hass,msg['query'],allowed)
         else:
             result=await bridge.handle(msg['type'],{k:v for k,v in msg.items() if k not in ('id','type')},admin=user.is_admin)
