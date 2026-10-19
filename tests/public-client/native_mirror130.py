@@ -113,7 +113,7 @@ class MirrorTests(unittest.IsolatedAsyncioTestCase):
   from client81.public_security import runtime126
   from client81.public_automation import runtime124
   for module in (runtime126,runtime124):
-   with patch.object(module,'Edge') as edge,patch.object(self.hass.services,'async_call',AsyncMock()) as service:
+   with patch.object(module,'Edge') as edge,patch.object(type(self.hass.services),'async_call',AsyncMock()) as service:
     module.create(self.hass,entry,{'client':object(),'trial_id':'synthetic-only'})
     dispatch=edge.call_args.kwargs['service']
     with self.assertRaises(PermissionError):await dispatch('switch','turn_off',{'entity_id':['switch.synthetic_mirror']})
