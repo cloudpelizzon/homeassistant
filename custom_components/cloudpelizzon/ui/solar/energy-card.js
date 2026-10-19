@@ -67,7 +67,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
 
   set hass(hass) {
     this._hass = hass;
-    if (!this._historyKey && !this._historyLoading) this._loadHistory();
+    if (!this._historyLoading && (!this._historyKey || Date.now()-(this._lastHistoryAttempt141||0)>=60000)) this._loadHistory(Boolean(this._historyKey));
 
     const active=this.shadowRoot?.activeElement;
     const editingDate=this._dateEditing || active?.matches?.("#rangeStart,#rangeEnd");
@@ -485,6 +485,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
     const key=`${this._range.start.toISOString()}|${this._range.end.toISOString()}`;
     if (!force && key === this._historyKey) return;
 
+    this._lastHistoryAttempt141=Date.now();
     this._historyLoading=true;
     this._historyError="";
     this._render();
@@ -605,7 +606,18 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
     return Math.max(0,total);
   }
 
-  _periodEnergy(idOrIds) { return this._delta(this._bestSeries(idOrIds)); }
+
+  _periodEnergy(idOrIds) {
+    const ids=Array.isArray(idOrIds)?idOrIds:[idOrIds];
+    if(this._rangeMode==='today'){
+      for(const id of ids){
+        if(!/(?:^|_)(hoje|today|daily|diaria|diario)(?:_|$)/i.test(id||''))continue;
+        const row=this._hass?.states?.[id],v=Number(row?.state);
+        if(row&&row.state!==''&&Number.isFinite(v)&&v>=0&&String(row.attributes?.unit_of_measurement||'').toLowerCase()==='kwh')return v;
+      }
+    }
+    return this._delta(this._bestSeries(idOrIds));
+  }
 
   _peak(idOrIds) {
     const s=this._bestSeries(idOrIds);

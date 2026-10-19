@@ -12,7 +12,7 @@ const OPTIONAL_MODULES = {
   "CP-SOLAR": {
     tag: "cloudpelizzon-energy-panel",
     title: "Inteligência Solar",
-    url: "/cloudpelizzon-solar/frontend/panel.js?v=5f06b471578f",
+    url: "/cloudpelizzon-solar/frontend/panel.js?v=ac295a4bb2e8",
   },
   "CP-SECURITY": {
     tag: "cloudpelizzon-security-panel",

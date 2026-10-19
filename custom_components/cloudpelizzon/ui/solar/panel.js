@@ -1,4 +1,4 @@
-import "/cloudpelizzon-energy/frontend/energy-card.js?v=974f2c679f2d";
+import "/cloudpelizzon-energy/frontend/energy-card.js?v=34c942d03b4a";
 
 class CloudPelizzonEnergyPanel extends HTMLElement {
   constructor() {
@@ -85,7 +85,9 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
       }
 
       this._loaded=true;
-      this._mode=this._cfg?.configured?"dashboard":"config";
+      const issues=this._mappingIssues(this._cfg);
+      this._error=issues.length?"Revise a configuração Solar salva: "+issues.join(" "):"";
+      this._mode=this._cfg?.configured&&!issues.length?"dashboard":"config";
     }catch(error){
       this._error=error?.message||String(error);
     }finally{
@@ -150,6 +152,35 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     return (words||[]).some(word=>base.includes(this._normText(word)));
   }
 
+
+  _boardNumber(value){return this._normText(value).match(/\b(?:qd|quadro|board)\s*(\d+)\b/)?.[1]||"";}
+  _auxiliarySource(value){return /\b(battery|bateria|external|ct|ctl|fase|phase|l1|l2|l3|pv1|pv2|pv3|string)\b/.test(this._normText(value));}
+  _mappingIssues(cfg){
+    const issues=[],sources=cfg?.generation||[],boards=cfg?.boards||[];
+    const all=[...sources,...boards,...boards.flatMap(b=>b.loads||[])];
+    for(const field of ['power_entity','energy_entity']){
+      const used=new Map();
+      for(const row of all){const id=row[field];if(!id)continue;
+        if(used.has(id))issues.push(`A medição ${id} está repetida em ${used.get(id)} e ${row.name||row.id}.`);
+        else used.set(id,row.name||row.id||id);
+      }
+    }
+    if(cfg?.grid?.import_energy_entity&&cfg.grid.import_energy_entity===cfg.grid.export_energy_entity)issues.push('Importação e exportação estão vinculadas ao mesmo sensor de energia.');
+    for(const row of sources){
+      if(this._auxiliarySource(row.power_entity))issues.push(`${row.name||row.power_entity}: bateria, entrada CT ou fase auxiliar não representa a geração total do equipamento.`);
+      if(row.energy_entity&&/\b(tv|tomada|plug|socket|geladeira|roteador)\b/.test(this._normText(row.energy_entity)))issues.push(`${row.name||row.id}: a energia selecionada pertence a uma carga da casa.`);
+    }
+    const numbered=new Map();
+    for(const row of boards){
+      const number=this._boardNumber(row.power_entity)||this._boardNumber(row.name);
+      const energyNumber=this._boardNumber(row.energy_entity);
+      if(number&&numbered.has(number))issues.push(`Quadro ${number}: há mais de uma potência do mesmo quadro na soma do consumo.`);
+      if(number)numbered.set(number,true);
+      if(number&&energyNumber&&number!==energyNumber)issues.push(`Quadro ${number}: energia vinculada ao quadro ${energyNumber}.`);
+    }
+    return issues;
+  }
+
   _matchEnergy(powerEntity, role="generic"){
     if(!powerEntity)return "";
 
@@ -172,8 +203,18 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
       if(role==='grid_export'&&!this._hasAny(text,['export','exportacao','exportada','injecao']))return -100;
       if(role==='load'){
         const tokens=base.split(' ').filter(x=>x.length>2&&!['sensor','power','potencia','energy','energia','total','today','hoje','consumo'].includes(x));
-        if(!tokens.length||!tokens.some(token=>text.split(' ').includes(token)))return -100;
+        const distinctive=tokens.filter(x=>!['tomada','plug','socket','kwh'].includes(x));
+        if(!distinctive.length||!distinctive.every(token=>text.split(' ').includes(token)))return -100;
       }
+
+      if(role==='board'){
+        const sourceNumber=this._boardNumber(base),targetNumber=this._boardNumber(text);
+        if(sourceNumber&&sourceNumber!==targetNumber)return -100;
+      }
+      if(role==='source'&&/\b(tv|tomada|plug|socket|battery|bateria|external|ct|fase|phase)\b/.test(text))return -100;
+      const ignored=new Set(['sensor','power','potencia','energy','energia','total','today','hoje','daily','consumo','consumption','produced','production']);
+      const tokens=base.split(' ').filter(x=>x.length>1&&!ignored.has(x));
+      if(tokens.length&&!tokens.some(token=>text.split(' ').includes(token)))return -100;
       let score=0;
 
       for(const token of base.split(" ").filter(x=>x.length>2)){
@@ -262,7 +303,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
 
   async _importProduction(){
     this._detecting=true;this._detectFeedback='Lendo configuração de medição da produção…';this._render();
-    try{const result=await this._ws('cloudpelizzon/energy/production_config');this._cfg=result.config;this._ensureCfg();this._detectFeedback='Configuração da produção carregada. Revise os sensores e clique em Salvar. Licenças e trials foram preservadas.';}
+    try{const result=await this._ws('cloudpelizzon/energy/production_config');const issues=this._mappingIssues(result.config);if(issues.length)throw Error('Configuração da produção não importada: '+issues.join(' '));this._cfg=result.config;this._ensureCfg();this._detectFeedback='Configuração da produção carregada. Revise os sensores e clique em Salvar. Licenças e trials foram preservadas.';}
     catch(error){this._detectFeedback='Não foi possível importar: '+String(error?.message||error);}
     finally{this._detecting=false;this._render();}
   }
@@ -271,18 +312,19 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     this._syncDraft();this._detecting=true;this._detectFeedback='Consultando sensores de energia do Home Assistant…';this._render();
     try{
       this._discovery=await this._ws('cloudpelizzon/energy/discover');
-      let imported=false;
+      let imported=false,sourceRejected=false;
       if(this._hass?.states?.['sensor.cloudpelizzon_homolog_mirror']){
         try{const source=await this._ws('cloudpelizzon/energy/production_config');
+          if(this._mappingIssues(source.config).length)throw Error('Mapeamento da origem contém vínculos inconsistentes');
           if(source.config?.configured&&((source.config.generation||[]).length||(source.config.boards||[]).length)){
             this._cfg=source.config;this._ensureCfg();imported=true;
           }
-        }catch(_){/* No source configuration: retain normal local discovery. */}
+        }catch(_){sourceRejected=true;/* Detect locally; never copy inconsistent source bindings. */}
       }
       if(!imported)this._autoDetect(false);
       const n=(this._discovery.power||[]).length,e=(this._discovery.energy||[]).length;
       const loads=(this._cfg.boards||[]).reduce((sum,b)=>sum+(b.loads||[]).length,0);
-      this._detectFeedback=`${imported?'Mapeamento da produção recuperado':'Detecção concluída'}: ${this._cfg.generation.length} fontes, ${this._cfg.boards.length} quadros, ${loads} cargas. ${n} sensores de potência e ${e} de energia disponíveis. Revise e salve.`;
+      this._detectFeedback=`${imported?'Mapeamento da produção recuperado':sourceRejected?'Mapeamento da origem não utilizado; detecção local concluída':'Detecção concluída'}: ${this._cfg.generation.length} fontes, ${this._cfg.boards.length} quadros, ${loads} cargas. ${n} sensores de potência e ${e} de energia disponíveis. Revise e salve.`;
     }
     catch(error){this._detectFeedback=`Não foi possível detectar: ${error?.message||String(error)}`;}
     finally{this._detecting=false;this._render();}
@@ -314,7 +356,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     };
 
     const boardKey=text=>{
-      const qd=text.match(/\bqd\s*(\d+)\b/);
+      const qd=text.match(/\b(?:qd|quadro|board)\s*(\d+)\b/);
       if(qd)return `qd_${qd[1]}`;
       const quadro=text.match(/quadro\s*(\d+)/);
       if(quadro)return `quadro_${quadro[1]}`;
@@ -332,6 +374,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     const generationScored=sortScored(power.map(row=>{
       const t=rowText(row);
       let score=0;
+      if(this._auxiliarySource(t))return {row,score:-100,text:t};
       if(/\b(micro|microinversor|microinverter|hoymiles|deye)\b/.test(t)||t.includes("micro inverter"))score+=44;
       if(/^sensor\.(inverter|micro)_power$/.test(row.entity_id))score+=50;
       if(t.includes("inversor")||t.includes("inverter"))score+=38;
@@ -361,6 +404,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     const boardScored=sortScored(power.map(row=>{
       const t=rowText(row);
       let score=0;
+      if(/\b(l1|l2|l3|fase|phase|ct|ctl)\b/.test(t))return {row,score:-100,text:t};
       if(/\bqd ?\d+\b/.test(t))score+=46;
       if(/quadro ?\d+/.test(t))score+=40;
       if(t.includes("potencia consumida")||t.includes("consumo quadro"))score+=28;
@@ -638,6 +682,8 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
 
   async _save(){
     this._syncDraft();
+    const issues=this._mappingIssues(this._cfg);
+    if(issues.length){this._error=issues.join(" ");this._render();return;}
     this._error="";
     this._loading=true;
     this._render();
@@ -1452,13 +1498,27 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     this._renderDashboard();
   }
 
+
+  async _historyRequest(query){
+    const original=this._hass;
+    if(query.type!=='history/history_during_period')return original.callWS(query);
+    const ids=query.entity_ids||[];
+    const source=ids.filter(id=>!id.startsWith('sensor.cloudpelizzon_energy_'));
+    const local=ids.filter(id=>id.startsWith('sensor.cloudpelizzon_energy_'));
+    const parts=await Promise.all([
+      source.length?original.callWS({type:'cloudpelizzon/energy/production_history',query:{...query,entity_ids:source}}):{},
+      local.length?original.callWS({...query,entity_ids:local}):{}
+    ]);
+    return Object.assign({},...parts);
+  }
+
   _propagate(){
     const card=this.shadowRoot?.querySelector("#energy-card");
     if(card&&this._hass){
       const config=this._cardConfig(),signature=JSON.stringify(config);
       if(typeof card.setConfig==="function"&&card.__cpConfig!==signature){card.setConfig(config);card.__cpConfig=signature;}
       const original=this._hass;
-      card.hass=original.states?.['sensor.cloudpelizzon_homolog_mirror']?{...original,callWS:query=>query.type==='history/history_during_period'?original.callWS({type:'cloudpelizzon/energy/production_history',query}):original.callWS(query)}:original;
+      card.hass=original.states?.['sensor.cloudpelizzon_homolog_mirror']?{...original,callWS:query=>this._historyRequest(query)}:original;
     }
   }
 

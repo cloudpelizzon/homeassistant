@@ -75,6 +75,8 @@ class SolarBridge:
             if not isinstance(text,str) or len(text.encode())>32768:raise ValueError('config_json_invalid')
             config=json.loads(text,object_pairs_hook=unique,parse_constant=lambda _:(_ for _ in ()).throw(ValueError('nonfinite_config')))
             if not isinstance(config,dict):raise ValueError('config_object_required')
+            from .config_validation import validate_measurement_bindings
+            validate_measurement_bindings(config)
             extra={'config':config}
         async with self._lock:
             result=await self._request(COMMANDS[command],extra)

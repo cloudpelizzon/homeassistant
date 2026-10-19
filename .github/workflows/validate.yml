@@ -23,6 +23,10 @@ jobs:
           persist-credentials: false
       - name: Verify reviewed public hashes and reject sensitive artifacts
         run: python3 tools/verify_public_tree.py
+      - name: Verify Solar topology, history ownership and daily energy
+        run: |
+          node tests/public-client/test_solar141.cjs custom_components/cloudpelizzon
+          python3 tests/public-client/test_solar_bindings141.py custom_components/cloudpelizzon
       - name: Verify Solar source mapping, microinverter, boards and bundled assets
         run: node tests/public-client/test_repair133.cjs custom_components/cloudpelizzon
       - name: Verify real daily counts and production Solar data routing
