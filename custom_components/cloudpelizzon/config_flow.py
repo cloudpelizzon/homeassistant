@@ -2,12 +2,19 @@
 import asyncio
 import probatio
 from homeassistant import config_entries
+from homeassistant.core import callback
+from .homolog_mirror.options import HomologOptionsFlow
 from .setup import enroll_free
 
 DOMAIN = 'cloudpelizzon'
 
 
 class CloudPelizzonConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
+    @staticmethod
+    @callback
+    def async_get_options_flow(config_entry):
+        return HomologOptionsFlow()
+
     VERSION = 1
     MINOR_VERSION = 0
 

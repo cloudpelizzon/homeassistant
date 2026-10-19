@@ -37,7 +37,7 @@ class SolarBridge:
             or len(set(read_entities))!=len(read_entities)
             or any(not isinstance(e,str) or not re.fullmatch(r'sensor\.[a-z0-9_]+',e) for e in read_entities)):
             raise ValueError('explicit_measurement_allowlist_required')
-        approved=tuple(read_entities)
+        approved=list(read_entities)
         def snapshot():
             result={}
             for eid in approved:
@@ -48,7 +48,8 @@ class SolarBridge:
         async def execute(operation,args,request_id):
             call=functools.partial(client.execute,'CP-SOLAR',operation,args,request_id=request_id)
             return await hass.async_add_executor_job(call)
-        return cls(execute,snapshot)
+        bridge=cls(execute,snapshot);bridge._approved_read_entities=approved
+        return bridge
 
     def close(self):self.closed=True
 

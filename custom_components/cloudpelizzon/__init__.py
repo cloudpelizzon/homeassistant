@@ -38,6 +38,12 @@ async def async_setup_entry(hass, entry):
             detail += f'; unexpected_public_file={error.public_detail}'
         LOGGER.error('CloudPelizzon initialization failed: %s', detail)
         raise ConfigEntryNotReady(f'CloudPelizzon initialization failed: {detail}') from None
+    # Observation failure must never take module access or the Core offline.
+    try:
+        from .homolog_mirror import start_saved
+        await start_saved(hass, entry)
+    except Exception:
+        LOGGER.warning('Production observation setup unavailable; Core remains active')
     return True
 
 
@@ -46,4 +52,6 @@ async def async_unload_entry(hass, entry):
     manager = state.get(OWNER) if isinstance(state, dict) else None
     if not isinstance(manager, Runtime) or manager.entry.entry_id != entry.entry_id:
         return False
+    from .homolog_mirror import stop
+    await stop(hass, entry, unload_platform=True)
     return await manager.unload()

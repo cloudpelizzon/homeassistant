@@ -4026,7 +4026,7 @@ class CloudPelizzonSecurityPanel extends HTMLElement {
           </div>
 
 
-          <div class="hero-status">
+          <div class="hero-status"><button id="cp-back-dashboard" class="secondary"><ha-icon icon="mdi:view-dashboard-outline"></ha-icon>Dashboard</button>
 
             <span class="${
               modoSombra
@@ -5437,7 +5437,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
   'use strict';
   const TAG = 'cloudpelizzon-security-panel';
   const VERSION = '0.6.1';
-  const ASSET = '/cloudpelizzon-security/frontend/assets/security-house-clean-v061.png?v=0610';
+  const ASSET = '/cloudpelizzon-security/frontend/assets/security-house-clean-v061.png?v=eab5163fcbda';
   const CAM_KEY = 'cloudpelizzon.security.v060.sensorview.cameras';
   const VIEW_KEY = 'cloudpelizzon.security.v060.view';
 
@@ -5456,14 +5456,15 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function configuredIds(host, domains=[]) {
     const ids = allEntityStrings(host?._config || {});
-    const filtered = ids.filter(id=>domains.some(d=>id.startsWith(d+'.'))).filter(id=>state(host,id));
+    const ignored=new Set(arr(host?._config?.descoberta?.ignorados?.cameras));
+    const filtered = ids.filter(id=>domains.some(d=>id.startsWith(d+'.'))).filter(id=>!ignored.has(id)&&state(host,id));
     if (filtered.length) return [...new Set(filtered)];
-    return Object.keys(host?._hass?.states || {}).filter(id=>domains.some(d=>id.startsWith(d+'.')));
+    return Object.keys(host?._hass?.states || {}).filter(id=>!ignored.has(id)&&domains.some(d=>id.startsWith(d+'.')));
   }
 
   function cameraIds(host) {
-    const ids = configuredIds(host,['camera']);
-    return ids.filter(id=>state(host,id)).slice(0,12);
+    const ignored=new Set(arr(host?._config?.descoberta?.ignorados?.cameras));
+    return Object.keys(host?._hass?.states||{}).filter(id=>id.startsWith('camera.')&&!ignored.has(id)).sort((a,b)=>String(state(host,a)?.attributes?.friendly_name||a).localeCompare(String(state(host,b)?.attributes?.friendly_name||b),'pt-BR')).slice(0,24);
   }
 
   function batterySensors(host) {
@@ -5551,6 +5552,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
     const cls=raw==='home'?'home':raw==='not_home'?'away':(['unknown','unavailable'].includes(raw)?'unknown':'zone');
     const label=raw==='home'?'Em casa':raw==='not_home'?'Fora de casa':raw==='unknown'?'Desconhecido':raw==='unavailable'?'Indisponível':raw;
     const pic=String(st?.attributes?.entity_picture||'');
+    const picture=pic.startsWith('/api/camera_proxy/')?pic+(pic.includes('?')?'&':'?')+'cp_frame='+Math.floor(Date.now()/15000):pic;
     const ts=new Date(st?.last_changed||0).getTime(); const mins=Number.isFinite(ts)?Math.max(0,Math.floor((Date.now()-ts)/60000)):0;
     const since=mins<1?'agora':mins<60?`há ${mins} min`:`há ${Math.floor(mins/60)}h ${mins%60}min`;
     return {raw,cls,label,pic,since};
@@ -5589,8 +5591,9 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function cameraCard(host,id,small=false){
     const st=state(host,id), name=String(st?.attributes?.friendly_name||fmtName(id)), pic=String(st?.attributes?.entity_picture||'');
+    const picture=pic.startsWith('/api/camera_proxy/')?pic+(pic.includes('?')?'&':'?')+'cp_frame='+Math.floor(Date.now()/15000):pic;
     const raw=String(st?.state||'unknown'); const online=!['unknown','unavailable'].includes(raw);
-    return `<button class="cp60-camera ${small?'small':''}" data-entity="${esc(id)}"><div class="cp60-cam-media">${pic?`<img src="${esc(pic)}" alt="${esc(name)}">`:''}<div class="cp60-cam-fallback" style="display:${pic?'none':'grid'}"><ha-icon icon="mdi:cctv"></ha-icon></div><span class="cp60-live ${online?'on':'off'}">${online?(raw==='recording'?'GRAVANDO':'AO VIVO'):'OFFLINE'}</span></div><div class="cp60-cam-name">${esc(name)}</div></button>`;
+    return `<button class="cp60-camera ${small?'small':''}" data-entity="${esc(id)}"><div class="cp60-cam-media">${pic?`<img src="${esc(picture)}" alt="${esc(name)}">`:''}<div class="cp60-cam-fallback" style="display:${pic?'none':'grid'}"><ha-icon icon="mdi:cctv"></ha-icon></div><span class="cp60-live ${online?'on':'off'}">${online?(!pic?'SEM IMAGEM':st?.attributes?.cloudpelizzon_read_only?'IMAGEM RECENTE':raw==='recording'?'GRAVANDO':'AO VIVO'):'OFFLINE'}</span></div><div class="cp60-cam-name">${esc(name)}</div></button>`;
   }
 
   function personCard(host,r){
@@ -5623,7 +5626,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function overviewView(host,s){
     const imgChips=`<div class="cp60-map-chip win"><ha-icon icon="mdi:window-closed-variant"></ha-icon><span><b>Janelas</b><small>${s.windows.length-s.open.filter(id=>openingType(host,id)==='window').length}/${s.windows.length} protegidas</small></span></div><div class="cp60-map-chip sens"><ha-icon icon="mdi:motion-sensor"></ha-icon><span><b>Sensores internos</b><small>${sensorCandidates(host).filter(x=>x.type==='motion').length} monitorados</small></span></div><div class="cp60-map-chip fence ${s.fenceOn?'ok':'bad'}"><ha-icon icon="mdi:electric-switch"></ha-icon><span><b>Cerca elétrica</b><small>${s.fenceOn?'Ativada':'Desativada'}</small></span></div><div class="cp60-map-chip gate"><ha-icon icon="mdi:garage"></ha-icon><span><b>Portão</b><small>${s.gateRaw==='closed'?'Fechado':s.gateRaw==='open'?'Aberto':esc(s.gateRaw)}</small></span></div>`;
-    return `<div class="cp60-map"><img src="${ASSET}" alt="Residência">${imgChips}<div class="cp60-radar"><i></i><i></i><i></i><ha-icon icon="mdi:home-shield"></ha-icon></div></div>`;
+    return `<div class="cp60-map"><img src="${ASSET}" alt="Residência"><svg class="cp132-light-routes" viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="cp132Route"><stop stop-color="#33eaff"/><stop offset="1" stop-color="#49ffd1"/></linearGradient></defs><path class="edge" d="M35 400 L35 80 L270 25 L750 25 L965 95 L965 425 L730 480 L280 480 Z"/><path class="route one" d="M320 60 L320 160 L500 240 L830 110"/><path class="route two" d="M80 390 L270 390 L500 330 L500 450"/><circle cx="320" cy="160" r="3"/><circle cx="830" cy="110" r="3"/><circle cx="270" cy="390" r="3"/><circle cx="500" cy="450" r="3"/></svg>${imgChips}</div>`;
   }
 
   function camerasView(host,s){ return `<div class="cp60-scroll cp60-camera-grid">${s.cams.map(id=>cameraCard(host,id)).join('')||'<div class="cp60-empty">Nenhuma câmera cadastrada.</div>'}</div>`; }
@@ -5684,9 +5687,9 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
     const people=residents(host); const ev=eventRows(host);
     if(view==='sensorview'){
       const bats=s.bats; const cards=sensorCandidates(host).map(it=>{const si=sensorStateLabel(it),b=batteryFor(host,it,bats);return `<button class="cp60-mini-sensor" data-entity="${esc(it.id)}"><ha-icon icon="${iconForSensor(it.type)}"></ha-icon><span><b>${esc(it.name)}</b><small>${si.label}</small></span><em class="${b&&b.value<15?'red':b&&b.value<30?'amber':'green'}">${b?`${Math.round(b.value)}%`:'—'}</em></button>`}).join('');
-      return `<section class="cp60-bottom-card cp60-sensor-inventory"><header><span><ha-icon icon="mdi:access-point"></ha-icon><b>Sensores físicos</b><small>Estado + bateria em tempo real</small></span></header><div class="cp60-mini-sensor-grid">${cards||'<div class="cp60-empty">Nenhum sensor encontrado.</div>'}</div></section><section class="cp60-bottom-card"><header><span><ha-icon icon="mdi:account-group"></ha-icon><b>Presença</b><small>${people.length} moradores</small></span></header><div class="cp60-people">${people.map(r=>personCard(host,r)).join('')}</div></section><section class="cp60-bottom-card"><header><span><ha-icon icon="mdi:timeline-clock-outline"></ha-icon><b>Eventos recentes</b><small>Atividades da central</small></span></header><div class="cp60-events">${ev.map(e=>`<div><time>${e.time}</time><i class="${e.tone}"></i><span><b>${esc(e.title)}</b><small>${esc(e.cat)}</small></span></div>`).join('')}</div></section>`;
+      return `<section class="cp60-bottom-card cp60-sensor-inventory"><header><ha-icon icon="mdi:access-point"></ha-icon><span><b>Sensores físicos</b><small>Estado + bateria em tempo real</small></span></header><div class="cp60-mini-sensor-grid">${cards||'<div class="cp60-empty">Nenhum sensor encontrado.</div>'}</div></section><section class="cp60-bottom-card"><header><ha-icon icon="mdi:account-group"></ha-icon><span><b>Presença</b><small>${people.length} moradores</small></span></header><div class="cp60-people">${people.map(r=>personCard(host,r)).join('')}</div></section><section class="cp60-bottom-card"><header><ha-icon icon="mdi:timeline-clock-outline"></ha-icon><span><b>Eventos recentes</b><small>Atividades da central</small></span></header><div class="cp60-events">${ev.map(e=>`<div><time>${e.time}</time><i class="${e.tone}"></i><span><b>${esc(e.title)}</b><small>${esc(e.cat)}</small></span></div>`).join('')}</div></section>`;
     }
-    return `<section class="cp60-bottom-card"><header><span><ha-icon icon="mdi:cctv"></ha-icon><b>Câmeras ao vivo</b><small>${s.camOnline.length} online</small></span><button data-view="cameras">Ver todas ›</button></header><div class="cp60-cam-row">${s.cams.slice(0,4).map(id=>cameraCard(host,id,true)).join('')}</div></section><section class="cp60-bottom-card"><header><span><ha-icon icon="mdi:account-group"></ha-icon><b>Presença e eventos</b><small>${people.length} moradores · tempo real</small></span></header><div class="cp60-people">${people.map(r=>personCard(host,r)).join('')||'<div class="cp60-empty">Nenhum morador configurado.</div>'}</div></section><section class="cp60-bottom-card"><header><span><ha-icon icon="mdi:timeline-clock-outline"></ha-icon><b>Eventos recentes</b><small>Atividades da central</small></span></header><div class="cp60-events">${ev.map(e=>`<div><time>${e.time}</time><i class="${e.tone}"></i><span><b>${esc(e.title)}</b><small>${esc(e.cat)}</small></span></div>`).join('')}</div></section>`;
+    return `<section class="cp60-bottom-card"><header><ha-icon icon="mdi:cctv"></ha-icon><span><b>Câmeras ao vivo</b><small>${s.camOnline.length} online</small></span><button data-view="cameras">Ver todas ›</button></header><div class="cp60-cam-row">${s.cams.slice(0,4).map(id=>cameraCard(host,id,true)).join('')}</div></section><section class="cp60-bottom-card"><header><ha-icon icon="mdi:account-group"></ha-icon><span><b>Presença e eventos</b><small>${people.length} moradores · tempo real</small></span></header><div class="cp60-people">${people.map(r=>personCard(host,r)).join('')||'<div class="cp60-empty">Nenhum morador configurado.</div>'}</div></section><section class="cp60-bottom-card"><header><ha-icon icon="mdi:timeline-clock-outline"></ha-icon><span><b>Eventos recentes</b><small>Atividades da central</small></span></header><div class="cp60-events">${ev.map(e=>`<div><time>${e.time}</time><i class="${e.tone}"></i><span><b>${esc(e.title)}</b><small>${esc(e.cat)}</small></span></div>`).join('')}</div></section>`;
   }
 
   function header(host,s){
@@ -5701,12 +5704,54 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
     finally{host.__cp60EngineLoading=false;}
   }
 
+  const permissionServices={light:['turn_on','turn_off','toggle'],switch:['turn_on','turn_off','toggle'],input_boolean:['turn_on','turn_off'],input_select:['select_option'],input_number:['set_value'],cover:['open_cover','close_cover','stop_cover'],alarm_control_panel:['alarm_arm_home','alarm_arm_away','alarm_arm_night','alarm_disarm','alarm_trigger'],siren:['turn_on','turn_off']};
+  function permissionChoices(host){
+    const result=[];
+    for(const id of Object.keys(host._hass.states||{}).sort()){
+      const domain=id.split('.')[0];
+      for(const service of permissionServices[domain]||[])result.push([domain,service,id]);
+    }
+    for(const name of Object.keys(host._hass.services?.notify||{}).sort())result.push(['notify',name,'']);
+    if(host._hass.services?.persistent_notification?.create)result.push(['persistent_notification','create','']);
+    for(const row of host.__cp127Permissions?.effects||[])if(!result.some(x=>JSON.stringify(x)===JSON.stringify(row)))result.push(row);
+    return result;
+  }
+  async function loadPermissions127(host){
+    try{const result=await host._hass.callWS({type:'cloudpelizzon/security/permissions'});host.__cp127Permissions=result.policy;host.__cp127PermissionError='';}
+    catch(error){host.__cp127Permissions=null;host.__cp127PermissionError=String(error?.message||error);}
+  }
+  function permissionMarkup127(host){
+    const p=host.__cp127Permissions;
+    if(!p)return modal('Permissões de Segurança','mdi:shield-key',`<p>${esc(host.__cp127PermissionError||'Carregando permissões...')}</p>`);
+    const ids=[...new Set([...Object.keys(host._hass.states||{}),...p.reads])].sort();
+    const effects=permissionChoices(host);const notify=effects.filter(x=>['notify','persistent_notification'].includes(x[0]));
+    const value=row=>row.join('|');
+    return modal('Permissões de Segurança','mdi:shield-key',`<p>Escolha os sensores que podem enviar estados ao servidor e os comandos permitidos para cada dispositivo. Nenhum dispositivo vem autorizado. Limites: 64 sensores e 200 comandos.</p><div class="cp60-engine-fields"><label><span>Leitura de estados</span><select multiple size="10" data-security-reads>${ids.map(id=>`<option value="${esc(id)}" ${p.reads.includes(id)?'selected':''}>${esc(host._hass.states[id]?.attributes?.friendly_name||id)} · ${esc(id)}</option>`).join('')}</select></label><label><span>Comandos permitidos</span><select multiple size="10" data-security-effects>${effects.map(row=>`<option value="${esc(value(row))}" ${p.effects.some(x=>value(x)===value(row))?'selected':''}>${esc(row[2]||'Notificação')} · ${esc(row[0]+'.'+row[1])}</option>`).join('')}</select></label><label><span>Destino dos avisos</span><select data-security-notification><option value="">Não enviar avisos</option>${notify.map(row=>`<option value="${esc(value(row))}" ${p.notification?.join('|')===row.slice(0,2).join('|')?'selected':''}>${esc(row[0]+'.'+row[1])}</option>`).join('')}</select></label></div><p>Use Ctrl ou Shift para selecionar vários itens. O destino escolhido para avisos também será incluído nos comandos autorizados.</p><p>Após salvar, configure os motores desejados. Para permitir comandos, desative “Modo sombra” nas configurações de Segurança.</p><div class="cp60-modal-actions"><button data-overlay-back="engines">Voltar</button><button class="ok" data-security-permissions-save>Salvar permissões</button></div>`);
+  }
+  function capturePermissions127(host){
+    const root=host.shadowRoot,reads=root.querySelector('[data-security-reads]'),effects=root.querySelector('[data-security-effects]'),notification=root.querySelector('[data-security-notification]');
+    if(!reads||!effects||!notification)return;
+    const rows=[...effects.selectedOptions].map(x=>x.value.split('|'));
+    const destination=notification.value?notification.value.split('|'):null;
+    if(destination&&!rows.some(x=>x.join('|')===destination.join('|')))rows.push(destination);
+    host.__cp127Permissions={reads:[...reads.selectedOptions].map(x=>x.value),effects:rows,notification:destination?.slice(0,2)||null};
+  }
+  async function savePermissions127(host){
+    capturePermissions127(host);
+    const p=host.__cp127Permissions;
+    if(!p||p.reads.length>64||p.effects.length>200){toast(host,'Selecione até 64 sensores e 200 comandos.','error');return;}
+    if(!window.confirm('Autorizar os sensores, comandos e destino de avisos selecionados para Segurança?'))return;
+    try{await host._hass.callWS({type:'cloudpelizzon/security/permissions/save',policy:p,confirmed:true});await loadPermissions127(host);toast(host,'Permissões salvas.','success');}
+    catch(error){toast(host,String(error?.message||error),'error');}
+  }
+
   function overlayMarkup(host,s){
     const kind=host.__cp60Overlay||''; if(!kind)return '';
+    if(kind==='permissions')return permissionMarkup127(host);
     if(kind==='alerts') return modal('Alertas ativos','mdi:shield-alert-outline',`<div class="cp60-modal-list">${s.alerts.map(a=>`<button data-entity="${esc(a.entity||'')}"><ha-icon icon="${a.icon}"></ha-icon><span><b>${esc(a.title)}</b><small>${esc(a.sub)}</small></span></button>`).join('')||'<div class="cp60-empty">Nenhum alerta ativo.</div>'}</div>`);
     if(kind==='offline') return modal('Dispositivos offline','mdi:access-point-network-off',`<div class="cp60-modal-list">${s.offline.map(id=>`<button data-entity="${esc(id)}"><ha-icon icon="mdi:wifi-off"></ha-icon><span><b>${esc(state(host,id)?.attributes?.friendly_name||fmtName(id))}</b><small>${esc(id)}</small></span></button>`).join('')||'<div class="cp60-empty">Nenhum dispositivo offline.</div>'}</div>`);
     if(kind==='camera-select'){const avail=s.cams,sel=selectedCameras(host,avail);return modal('Selecionar 4 câmeras','mdi:cctv',`<p class="cp60-help">Escolha até quatro câmeras para a Visão Sensores.</p><div class="cp60-modal-list">${avail.map(id=>`<button data-cam-pick="${esc(id)}" class="${sel.includes(id)?'selected':''}"><ha-icon icon="${sel.includes(id)?'mdi:checkbox-marked-circle':'mdi:checkbox-blank-circle-outline'}"></ha-icon><span><b>${esc(state(host,id)?.attributes?.friendly_name||fmtName(id))}</b><small>${esc(id)}</small></span></button>`).join('')}</div>`);}
-    if(kind==='engines'){const data=host.__cp60Engines; if(!data && !host.__cp60EngineLoading) setTimeout(()=>{loadEngines(host,true).then(()=>render(host))},0); const rows=arr(data?.engines);return modal('Motores nativos do CP-SECURITY','mdi:brain',`<div class="cp60-engine-summary"><div><small>Motores</small><b>${rows.length}</b></div><div><small>Ativos</small><b>${rows.filter(x=>x.enabled).length}</b></div><div><small>Inativos</small><b>${rows.filter(x=>!x.enabled).length}</b></div><div><small>Execução</small><b>NATIVA</b></div></div>${host.__cp60EngineError?`<div class="cp60-engine-error"><ha-icon icon="mdi:alert-circle"></ha-icon><span><b>Motor não carregado</b><small>${esc(host.__cp60EngineError)}</small></span></div>`:''}<div class="cp60-engine-list">${rows.map(e=>`<div><span class="cp60-code">${esc(e.code)}</span><span><b>${esc(e.name)}</b><small>${esc(e.category)} · ${esc(e.description||'')}</small></span><button data-engine-edit="${esc(e.code)}">Editar</button><button data-engine-toggle="${esc(e.code)}" data-desired="${e.enabled?'0':'1'}" class="${e.enabled?'danger':'ok'}">${e.enabled?'Desativar':'Ativar'}</button></div>`).join('')||(!host.__cp60EngineError?'<div class="cp60-empty">Carregando motores...</div>':'')}</div>`);}
+    if(kind==='engines'){const data=host.__cp60Engines; if(!data && !host.__cp60EngineLoading) setTimeout(()=>{loadEngines(host,true).then(()=>render(host))},0); const rows=arr(data?.engines);return modal('Motores nativos do CP-SECURITY','mdi:brain',`<div class="cp60-modal-actions"><button data-overlay="permissions">Permissões de Segurança</button></div><div class="cp60-engine-summary"><div><small>Motores</small><b>${rows.length}</b></div><div><small>Ativos</small><b>${rows.filter(x=>x.enabled).length}</b></div><div><small>Inativos</small><b>${rows.filter(x=>!x.enabled).length}</b></div><div><small>Execução</small><b>${data?.global?.connected?'CONECTADA':'DESCONECTADA'}</b></div></div>${host.__cp60EngineError?`<div class="cp60-engine-error"><ha-icon icon="mdi:alert-circle"></ha-icon><span><b>Motor não carregado</b><small>${esc(host.__cp60EngineError)}</small></span></div>`:''}<div class="cp60-engine-list">${rows.map(e=>`<div><span class="cp60-code">${esc(e.code)}</span><span><b>${esc(e.name)}</b><small>${esc(e.category)} · ${esc(e.description||'')}</small></span><button data-engine-edit="${esc(e.code)}">Editar</button><button data-engine-toggle="${esc(e.code)}" data-desired="${e.enabled?'0':'1'}" class="${e.enabled?'danger':'ok'}">${e.enabled?'Desativar':'Ativar'}</button></div>`).join('')||(!host.__cp60EngineError?'<div class="cp60-empty">Carregando motores...</div>':'')}</div>`);}
     if(kind==='engine-edit'){const e=arr(host.__cp60Engines?.engines).find(x=>x.code===host.__cp60EditCode); if(!e)return modal('Editar motor','mdi:cog-outline','<div class="cp60-empty">Motor não encontrado.</div>'); const fields=arr(e.fields).map(f=>{const v=e.config?.[f.key]; if(f.type==='list')return `<label><span><b>${esc(f.label)}</b><small>${esc(f.help||'')}</small></span><textarea data-engine-field="${esc(f.key)}" data-type="list">${esc(arr(v).join('\n'))}</textarea></label>`; if(f.type==='number')return `<label><span><b>${esc(f.label)}</b><small>${esc(f.help||'')}</small></span><input type="number" value="${esc(v??'')}" data-engine-field="${esc(f.key)}" data-type="number"></label>`; return `<label><span><b>${esc(f.label)}</b><small>${esc(f.help||'')}</small></span><input value="${esc(v??'')}" data-engine-field="${esc(f.key)}" data-type="text"></label>`}).join(''); return modal(`${e.code} · ${e.name}`,'mdi:cog-outline',`<div class="cp60-engine-fields">${fields}</div><div class="cp60-modal-actions"><button data-overlay-back="engines">Cancelar</button><button class="ok" data-engine-save="${esc(e.code)}">Salvar motor</button></div>`);}
     return '';
   }
@@ -5738,9 +5783,10 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function render(host){
     const root=host?.shadowRoot; if(!root)return; window.__cp60Host=host;
-    let mount=root.querySelector('#cp60-root'); if(!mount){mount=document.createElement('div');mount.id='cp60-root';root.appendChild(mount);mount.addEventListener('click',e=>handleClick(host,e));}
+    let mount=root.querySelector('#cp60-root'); if(!mount){mount=document.createElement('div');mount.id='cp60-root';root.appendChild(mount);mount.addEventListener('click',e=>handleClick(host,e));mount.addEventListener('change',()=>capturePermissions127(host));mount.addEventListener('error',e=>{const img=e.target;if(img?.tagName==='IMG'&&img.parentElement?.classList.contains('cp60-cam-media')){img.style.display='none';const fallback=img.parentElement.querySelector('.cp60-cam-fallback');if(fallback)fallback.style.display='grid';const label=img.parentElement.querySelector('.cp60-live');if(label)label.textContent='SEM IMAGEM';}},true);}
+    let back=root.querySelector('#cp-back-dashboard');if(back&&!back.__cpBound){back.__cpBound=true;back.addEventListener('click',()=>{host.__cp60NativeMode=false;host.__cp60View='overview';try{localStorage.setItem(VIEW_KEY,'overview')}catch(_){};render(host)});}
     if(host.__cp60NativeMode){mount.style.display='none';return;}
-    mount.style.display='block'; mount.innerHTML=mainMarkup(host); fit(host,mount);
+    mount.style.display='block'; const markup=mainMarkup(host);if(mount.__cpMarkup!==markup){mount.innerHTML=markup;mount.__cpMarkup=markup;}fit(host,mount);
   }
 
   function fit(host,mount){
@@ -5763,13 +5809,40 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function toast(host,msg,tone='info'){const el=host.shadowRoot?.querySelector('#cp60-root [data-toast]');if(!el)return;el.textContent=msg;el.className=`cp60-toast show ${tone}`;clearTimeout(host.__cp60Toast);host.__cp60Toast=setTimeout(()=>el.className='cp60-toast',2500);}
 
-  async function service(host,domain,svc,data){try{await host._hass.callService(domain,svc,data||{});return true}catch(e){toast(host,String(e?.message||e),'error');return false}}
+  async function service(host,domain,svc,data){
+    const targets=Array.isArray(data?.entity_id)?data.entity_id:[data?.entity_id],mirrored=targets.some(id=>state(host,id)?.attributes?.mirror_source==='production_observer');
+    if(targets.some(id=>state(host,id)?.attributes?.cloudpelizzon_read_only)){toast(host,'Comandos da produção desativados. Ative “Permitir comandos reais” nas opções da integração CloudPelizzon.','error');return false;}
+    try{
+      if(mirrored){
+        const result=await host._hass.callWS({type:'cloudpelizzon/security/permissions'}),p=result.policy;
+        const missing=targets.filter(id=>!p.effects.some(x=>x[0]===domain&&x[1]===svc&&x[2]===id));
+        if(missing.length||host._config?.geral?.modo_sombra){
+          if(!window.confirm(`Autorizar ${domain}.${svc} em ${targets.join(', ')} na PRODUÇÃO? Esta ação é real. O modo sombra será desativado; as demais permissões serão preservadas.`))return false;
+          const policy={...p,reads:[...new Set([...p.reads,...targets])],effects:[...p.effects,...missing.map(id=>[domain,svc,id])]};
+          if(host._config?.geral?.modo_sombra){
+            const next=JSON.parse(JSON.stringify(host._config));next.geral.modo_sombra=false;
+            const saved=await host._hass.callApi('POST',CP_SEG_API,next);
+            host._config=saved?.configuracao||next;
+          }
+          await host._hass.callWS({type:'cloudpelizzon/security/permissions/save',policy,confirmed:true});
+        }
+      }
+      if(domain==='alarm_control_panel'&&state(host,targets[0])?.attributes?.code_format&&(svc==='alarm_disarm'||state(host,targets[0])?.attributes?.code_arm_required)){
+        const code=window.prompt('Código da central de alarme (usado somente neste comando):');if(code===null)return false;data={...data,code};
+      }
+      const result=await host._hass.callWS({type:'cloudpelizzon/security/command',service:domain+'.'+svc,data:data||{}});
+      if(result.delivered!==true)throw Error('Comando não confirmado. Não será repetido automaticamente.');
+      toast(host,mirrored?'Comando confirmado pelo Home Assistant de produção.':'Comando confirmado.','success');return true;
+    }catch(e){toast(host,String(e?.message||e),'error');return false}
+  }
+
   async function handleClick(host,e){
     const t=e.composedPath().find(n=>n?.dataset && Object.keys(n.dataset).length) || e.target;
     const btn=e.composedPath().find(n=>n?.matches?.('button,[data-entity]')) || e.target.closest?.('button,[data-entity]'); if(!btn)return;
+    if(btn.hasAttribute('data-security-permissions-save')){await savePermissions127(host);return;}
     if(btn.dataset.view){host.__cp60View=btn.dataset.view;try{localStorage.setItem(VIEW_KEY,host.__cp60View)}catch(_){};render(host);return;}
     if(btn.dataset.entity){const id=btn.dataset.entity;if(id){btn.dispatchEvent(new CustomEvent('hass-more-info',{bubbles:true,composed:true,detail:{entityId:id}}));}return;}
-    if(btn.dataset.overlay){host.__cp60Overlay=btn.dataset.overlay;if(host.__cp60Overlay==='engines')await loadEngines(host,true);render(host);return;}
+    if(btn.dataset.overlay){host.__cp60Overlay=btn.dataset.overlay;if(host.__cp60Overlay==='engines')await loadEngines(host,true);if(host.__cp60Overlay==='permissions')await loadPermissions127(host);render(host);return;}
     if(btn.hasAttribute('data-overlay-close')){host.__cp60Overlay='';render(host);return;}
     if(btn.dataset.overlayBack){host.__cp60Overlay=btn.dataset.overlayBack;render(host);return;}
     if(btn.hasAttribute('data-native')){host.__cp60NativeMode=true;render(host);return;}
@@ -5827,7 +5900,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 .cp60-hero{display:grid;grid-template-rows:36px minmax(0,1fr) 50px;overflow:hidden}.cp60-hero>header,.cp60-card>header,.cp60-bottom-card>header{display:flex;align-items:center;gap:8px;padding:5px 9px;border-bottom:1px solid rgba(12,86,109,.82);min-height:0;background:linear-gradient(90deg,rgba(8,52,70,.5),transparent 70%)}
 .cp60-hero>header span,.cp60-card>header span,.cp60-bottom-card>header span{display:flex;flex-direction:column;min-width:0}.cp60-hero>header b,.cp60-card>header b,.cp60-bottom-card>header b{font-size:11.5px;color:#fff}.cp60-hero>header small,.cp60-card>header small,.cp60-bottom-card>header small{font-size:8.5px;color:#b7d5de;line-height:1.15}.cp61-view-pill{margin-left:auto;font-style:normal;font-size:7.5px;letter-spacing:1.2px;font-weight:900;color:#8fe8fb;border:1px solid #0e6c87;border-radius:999px;padding:3px 7px;background:#052633}
 .cp60-hero-body{display:grid;grid-template-columns:146px minmax(0,1fr);min-height:0}.cp60-nav{padding:5px;display:grid;grid-template-rows:repeat(9,minmax(0,1fr));gap:4px;background:linear-gradient(180deg,#03141e,#020e15);border-right:1px solid #084c63;min-height:0}.cp60-nav button{border:1px solid #0b5871;background:linear-gradient(180deg,#052532,#041c27);border-radius:8px;display:flex;align-items:center;gap:8px;padding:4px 8px;font-size:9.5px;font-weight:800;cursor:pointer;min-height:0;transition:.16s ease;position:relative;overflow:hidden}.cp60-nav button:before{content:"";position:absolute;left:0;top:20%;bottom:20%;width:2px;background:transparent;border-radius:2px}.cp60-nav button:hover{border-color:#1595b8;background:#073047;transform:translateX(1px)}.cp60-nav button.active{background:linear-gradient(90deg,#086f92,#0b9dc4);border-color:#3be2ff;box-shadow:0 0 15px rgba(0,191,255,.24),inset 0 0 18px rgba(79,230,255,.08)}.cp60-nav button.active:before{background:#6af2ff;box-shadow:0 0 8px #62ecff}.cp60-nav button ha-icon{--mdc-icon-size:18px}.cp60-stage{min-width:0;min-height:0;overflow:hidden;background:radial-gradient(circle at 55% 42%,#06202b,#010b11 67%);padding:6px}
-.cp60-map{height:100%;position:relative;border-radius:10px;overflow:hidden;border:1px solid #0b536a;background:#010b10;box-shadow:inset 0 0 30px #0008}.cp60-map>img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.08) contrast(1.05) brightness(.94);transform:scale(1.003)}.cp60-map:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(115deg,transparent 0 42%,rgba(45,220,255,.055) 50%,transparent 58%);animation:cp61Scan 8s linear infinite}.cp60-map:after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,183,255,.07),transparent 30%,rgba(0,19,30,.18)),repeating-linear-gradient(90deg,rgba(0,191,255,.05) 0 1px,transparent 1px 72px),repeating-linear-gradient(0deg,rgba(0,191,255,.03) 0 1px,transparent 1px 72px);pointer-events:none}.cp60-map-chip{position:absolute;z-index:3;display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,rgba(5,44,58,.95),rgba(3,28,39,.94));border:1px solid #23cce9;border-radius:9px;padding:6px 9px;box-shadow:0 9px 22px #000a,0 0 16px rgba(0,215,255,.22),inset 0 1px rgba(255,255,255,.05);backdrop-filter:blur(5px)}.cp60-map-chip ha-icon{--mdc-icon-size:23px}.cp60-map-chip span{display:flex;flex-direction:column}.cp60-map-chip b{font-size:10.5px}.cp60-map-chip small{font-size:8.5px;color:#2ff0be;font-weight:800}.cp60-map-chip.win{left:28%;top:7%}.cp60-map-chip.sens{right:4%;top:14%}.cp60-map-chip.fence{left:3%;bottom:11%}.cp60-map-chip.fence.bad{border-color:#ff4b64;box-shadow:0 9px 22px #000a,0 0 18px rgba(255,59,86,.2)}.cp60-map-chip.fence.bad ha-icon,.cp60-map-chip.fence.bad small{color:#ff6176}.cp60-map-chip.gate{left:44%;bottom:5%}.cp60-radar{position:absolute;left:54%;top:43%;width:108px;height:108px;transform:translate(-50%,-50%);border-radius:50%;border:1px solid #17e9c5;display:grid;place-items:center;box-shadow:0 0 34px rgba(0,255,208,.47),inset 0 0 25px rgba(0,255,208,.12);background:rgba(0,255,208,.055);z-index:2}.cp60-radar i{position:absolute;inset:11px;border:1px solid rgba(33,215,255,.58);border-radius:50%;animation:cp60Radar 3.2s ease-out infinite}.cp60-radar i:nth-child(2){animation-delay:1.05s}.cp60-radar i:nth-child(3){animation-delay:2.1s}.cp60-radar ha-icon{--mdc-icon-size:36px;color:#23f0c7}
+.cp60-map{height:100%;position:relative;border-radius:10px;overflow:hidden;border:1px solid #0b536a;background:#010b10;box-shadow:inset 0 0 30px #0008}.cp60-map>img{width:100%;height:100%;object-fit:cover;display:block;filter:saturate(1.08) contrast(1.05) brightness(.94);transform:scale(1.003)}.cp60-map:before{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;background:linear-gradient(115deg,transparent 0 42%,rgba(45,220,255,.055) 50%,transparent 58%);animation:cp61Scan 8s linear infinite}.cp60-map:after{content:"";position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgba(0,183,255,.07),transparent 30%,rgba(0,19,30,.18)),repeating-linear-gradient(90deg,rgba(0,191,255,.05) 0 1px,transparent 1px 72px),repeating-linear-gradient(0deg,rgba(0,191,255,.03) 0 1px,transparent 1px 72px);pointer-events:none}.cp60-map-chip{position:absolute;z-index:3;display:flex;align-items:center;gap:8px;background:linear-gradient(180deg,rgba(5,44,58,.95),rgba(3,28,39,.94));border:1px solid #23cce9;border-radius:9px;padding:6px 9px;box-shadow:0 9px 22px #000a,0 0 16px rgba(0,215,255,.22),inset 0 1px rgba(255,255,255,.05);backdrop-filter:blur(5px)}.cp60-map-chip ha-icon{--mdc-icon-size:23px}.cp60-map-chip span{display:flex;flex-direction:column}.cp60-map-chip b{font-size:10.5px}.cp60-map-chip small{font-size:8.5px;color:#2ff0be;font-weight:800}.cp60-map-chip.win{left:28%;top:7%}.cp60-map-chip.sens{right:4%;top:14%}.cp60-map-chip.fence{left:3%;bottom:11%}.cp60-map-chip.fence.bad{border-color:#ff4b64;box-shadow:0 9px 22px #000a,0 0 18px rgba(255,59,86,.2)}.cp60-map-chip.fence.bad ha-icon,.cp60-map-chip.fence.bad small{color:#ff6176}.cp60-map-chip.gate{left:44%;bottom:5%}
 .cp60-kpis{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px;padding:4px;background:#03131d}.cp60-kpis button{border:1px solid #0b5871;background:linear-gradient(180deg,#052530,#041c26);border-radius:8px;display:grid;grid-template-columns:31px minmax(0,1fr);align-items:center;text-align:left;gap:6px;padding:4px 6px;cursor:pointer;min-width:0;transition:.16s}.cp60-kpis button:hover{border-color:#20bde5;background:#073047;transform:translateY(-1px)}.cp60-kpis button.bad{border-color:#a92e44;background:linear-gradient(180deg,#35131d,#211016)}.cp60-kpis button span{display:flex;flex-direction:column;min-width:0}.cp60-kpis small{font-size:8.5px;color:#c2d9e0}.cp60-kpis b{font-size:14px;line-height:1.02}.cp60-kpis em{font-size:8px;color:#a8cbd6;font-style:normal;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cp60-kpis button.bad b{color:#ff6177}.cp60-kpis ha-icon{--mdc-icon-size:21px}
 .cp60-right{display:grid;grid-template-rows:minmax(95px,1.12fr) minmax(92px,1.08fr) 68px 68px minmax(98px,1.35fr);gap:5px;min-height:0}.cp60-card{overflow:hidden;display:grid;grid-template-rows:32px minmax(0,1fr)}.cp60-card>header{height:32px}.cp60-card>header>strong{margin-left:auto;font-size:8.5px}.cp60-dot{margin-left:auto;width:8px;height:8px;border-radius:50%;background:var(--red)}.cp60-dot.on{background:var(--green);box-shadow:0 0 11px var(--green)}.cp60-mode-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:repeat(2,minmax(0,1fr));gap:3px;padding:4px}.cp60-mode-grid button,.cp60-alarm-grid button{border:1px solid #0b5972;background:#052431;border-radius:8px;display:flex;align-items:center;gap:6px;padding:4px 6px;min-width:0;cursor:pointer;transition:.16s}.cp60-mode-grid button:hover,.cp60-alarm-grid button:hover{border-color:#1797bb;background:#073147}.cp60-mode-grid button.active,.cp60-alarm-grid button.active{border-color:#25e6bd;background:linear-gradient(135deg,#075951,#087a64);box-shadow:0 0 14px rgba(0,255,184,.13),inset 0 0 17px rgba(0,255,174,.08)}.cp60-mode-grid button span,.cp60-alarm-grid button span{display:flex;flex-direction:column;min-width:0}.cp60-mode-grid b,.cp60-alarm-grid b{font-size:9.5px;white-space:nowrap}.cp60-mode-grid small,.cp60-alarm-grid small{font-size:8.5px;color:#d0e3e8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cp60-mode-grid ha-icon,.cp60-alarm-grid ha-icon{--mdc-icon-size:19px}.cp60-alarm-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:3px;padding:4px}.cp60-mini{grid-template-rows:31px minmax(0,1fr)}.cp60-actions{display:grid;grid-template-columns:1fr 1fr;gap:5px;padding:4px;min-height:0}.cp60-actions button{border:1px solid #1486ac;border-radius:7px;background:linear-gradient(180deg,#0a6f96,#063b51);font-size:10px;font-weight:800;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;min-height:28px;transition:.16s}.cp60-actions button:hover{filter:brightness(1.12);border-color:#37d8ff;box-shadow:0 0 14px rgba(0,194,255,.12)}.cp60-actions button.danger{border-color:#aa3247;background:linear-gradient(180deg,#681d31,#38101e)}.cp60-summary{grid-template-rows:32px minmax(0,1fr)}.cp60-alert-count{margin-left:auto;border:1px solid #bf3149;background:#501420;border-radius:7px;padding:2px 7px;font-size:10px}.cp60-summary-list{overflow:auto;padding:1px 7px}.cp60-summary-list button{width:100%;border:0;border-bottom:1px solid #0a3f52;background:transparent;display:grid;grid-template-columns:23px minmax(0,1fr) 34px;gap:6px;align-items:center;text-align:left;padding:4px 0;min-height:30px}.cp60-summary-list button:hover{background:rgba(20,108,138,.09)}.cp60-summary-list button span{display:flex;flex-direction:column;min-width:0}.cp60-summary-list b{font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cp60-summary-list small,.cp60-summary-list em{font-size:8px;color:#b6d2db;font-style:normal}.cp60-ok{height:100%;display:flex;align-items:center;justify-content:center;gap:8px;color:var(--green);font-weight:800;font-size:10px}
 .cp60-bottom{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,.85fr) minmax(0,.75fr);gap:6px;min-height:0}.cp60-bottom.sensor-mode{grid-template-columns:minmax(0,1.58fr) minmax(0,.78fr) minmax(0,.72fr)}.cp60-bottom-card{display:grid;grid-template-rows:31px minmax(0,1fr);overflow:hidden}.cp60-bottom-card>header{height:31px}.cp60-bottom-card>header>span{display:flex;align-items:center;gap:6px;min-width:0}.cp60-bottom-card>header>span b{font-size:10.5px}.cp60-bottom-card>header>span small{margin-left:3px}.cp60-bottom-card>header>button{margin-left:auto;background:none;border:0;color:#d2e7ed;font-size:8.5px;cursor:pointer}.cp60-bottom-card>header>button:hover{color:#4ee7ff}.cp60-cam-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;padding:4px;min-height:0}.cp60-camera{border:1px solid #0b5871;background:#020c12;border-radius:8px;overflow:hidden;padding:0;cursor:pointer;display:grid;grid-template-rows:minmax(0,1fr) 23px;min-width:0;min-height:0;transition:.16s}.cp60-camera:hover{border-color:#21bbe3;box-shadow:0 0 15px rgba(0,191,255,.12);transform:translateY(-1px)}.cp60-cam-media{position:relative;min-height:0;background:#01090e;overflow:hidden}.cp60-cam-media img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .25s ease,filter .25s ease}.cp60-camera:hover img{transform:scale(1.02);filter:contrast(1.04)}.cp60-cam-fallback{position:absolute;inset:0;display:grid;place-items:center}.cp60-live{position:absolute;left:5px;top:4px;border-radius:10px;padding:2px 6px;font-size:7.5px;font-weight:900;background:#06382d;border:1px solid #13ba91;box-shadow:0 0 10px rgba(0,226,171,.16)}.cp60-live.off{background:#441622;border-color:#a62a42}.cp60-cam-name{display:flex;align-items:center;padding:3px 6px;font-size:8.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cp60-people{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding:4px;min-height:0}.cp60-person{border:1px solid #0a677b;background:linear-gradient(180deg,#041e2a,#031720);border-radius:8px;display:grid;grid-template-columns:38px minmax(0,1fr) 13px;gap:6px;align-items:center;padding:5px;min-width:0;cursor:pointer;position:relative;overflow:hidden;transition:.16s}.cp60-person:after{content:"";position:absolute;left:5px;right:5px;bottom:2px;height:2px;border-radius:2px;background:#1495b7;opacity:.65}.cp60-person:hover{transform:translateY(-1px);background:#052331}.cp60-person.home{border-color:#18dba7}.cp60-person.home:after{background:var(--green);box-shadow:0 0 8px var(--green)}.cp60-person.away{border-color:#ff4c64}.cp60-person.away:after{background:var(--red)}.cp60-person.zone{border-color:#30a9ff}.cp60-person.zone:after{background:#30a9ff}.cp60-avatar{width:38px;height:38px;border-radius:50%;border:2px solid currentColor;overflow:hidden;display:grid;place-items:center;color:#1ee2b5;background:#062737;box-shadow:0 0 13px currentColor}.cp60-avatar img{width:100%;height:100%;object-fit:cover}.cp60-person-copy{display:flex;flex-direction:column;min-width:0}.cp60-person-copy b{font-size:9px;color:#fff;line-height:1.15;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cp60-person-copy strong{font-size:8.5px;color:#24e7b6;margin-top:2px}.cp60-person.away strong{color:#ff6377}.cp60-person.zone strong{color:#55bdff}.cp60-person-copy span{font-size:8px;color:#c0d7de;margin-top:2px}.cp60-person>ha-icon{--mdc-icon-size:13px}.cp60-events{overflow:auto;padding:3px 6px}.cp60-events>div{display:grid;grid-template-columns:36px 7px minmax(0,1fr);gap:5px;align-items:center;min-height:25px;border-bottom:1px solid #083647}.cp60-events time{font-size:8px;color:#b4cfd8}.cp60-events i{width:6px;height:6px;border-radius:50%;background:#2ac7ff;box-shadow:0 0 7px currentColor}.cp60-events i.green{background:#16e8ad}.cp60-events i.red{background:#ff4d65}.cp60-events span{display:flex;flex-direction:column;min-width:0}.cp60-events b{font-size:8.8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cp60-events small{font-size:7.8px;color:#acc9d2}
@@ -5840,6 +5913,59 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 #cp60-root.wide .cp60-shell{grid-template-rows:62px minmax(0,1fr) 178px}#cp60-root.wide .cp60-top{grid-template-columns:minmax(330px,1.55fr) minmax(175px,.82fr) repeat(3,minmax(150px,.67fr)) 142px 44px}#cp60-root.wide .cp60-brand b{font-size:23px}#cp60-root.wide .cp60-main{grid-template-columns:minmax(0,2.25fr) minmax(455px,.9fr)}#cp60-root.wide .cp60-hero-body{grid-template-columns:154px minmax(0,1fr)}#cp60-root.wide .cp60-mini-sensor-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
 @media(max-width:1180px){#cp60-root{overflow:auto}.cp60-shell{height:auto;min-height:100%;grid-template-rows:auto auto auto}.cp60-top{grid-template-columns:1fr 1fr}.cp60-brand{grid-column:1/-1}.cp60-menu{justify-self:end}.cp60-main,.cp60-bottom,.cp60-bottom.sensor-mode{grid-template-columns:1fr}.cp60-right{grid-template-rows:auto}.cp60-hero{min-height:620px}.cp60-bottom-card{min-height:175px}.cp60-people{grid-template-columns:repeat(3,minmax(0,1fr))}.cp60-top-status,.cp60-clock{min-height:44px}.cp60-mini-sensor-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:760px){.cp60-top{grid-template-columns:1fr}.cp60-brand{grid-column:auto}.cp60-main{grid-template-columns:1fr}.cp60-hero-body{grid-template-columns:1fr}.cp60-nav{grid-template-columns:repeat(3,1fr);grid-template-rows:none;border-right:0;border-bottom:1px solid #084c63}.cp60-nav button{min-height:42px}.cp60-stage{min-height:420px}.cp60-kpis{grid-template-columns:repeat(2,1fr)}.cp60-stats4,.cp60-per-top{grid-template-columns:repeat(2,1fr)}.cp60-open-list,.cp60-zone-list,.cp60-device-list,.cp60-sensor-list,.cp60-per-list,.cp60-bat-list{grid-template-columns:1fr}.cp60-cam-row,.cp60-people,.cp60-mini-sensor-grid{grid-template-columns:repeat(2,1fr)}.cp60-engine-summary{grid-template-columns:repeat(2,1fr)}.cp60-engine-list>div{grid-template-columns:1fr}.cp60-engine-fields label{grid-template-columns:1fr}}
+/* Security footer: icon beside a two-line heading, independent of legacy CSS. */
+#cp60-root .cp60-bottom-card{grid-template-rows:42px minmax(0,1fr)}
+#cp60-root .cp60-bottom-card>header{height:auto;min-height:42px;display:flex;flex-direction:row;align-items:center;gap:8px;padding:5px 9px;overflow:visible}
+#cp60-root .cp60-bottom-card>header>ha-icon{position:static;inset:auto;display:inline-flex;flex:0 0 20px;width:20px;height:20px;margin:0;--mdc-icon-size:20px;overflow:visible}
+#cp60-root .cp60-bottom-card>header>span{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:2px;min-width:0}
+#cp60-root .cp60-bottom-card>header b{display:block;font-size:11px;line-height:14px;white-space:normal;margin:0}
+#cp60-root .cp60-bottom-card>header small{display:block;font-size:9px;line-height:12px;white-space:normal;margin:0}
+#cp60-root .cp60-bottom-card>header>button{flex-shrink:0;align-self:center}
+#cp60-root .cp60-events{padding:4px 8px;min-height:0;overflow:auto}
+#cp60-root .cp60-events>div{position:relative;display:grid;grid-template-columns:42px 8px minmax(0,1fr);gap:7px;align-items:start;min-height:44px;height:auto;padding:6px 0}
+#cp60-root .cp60-events>div>time,#cp60-root .cp60-events>div>i,#cp60-root .cp60-events>div>span{position:static!important;inset:auto!important;transform:none;min-width:0;margin:0}
+#cp60-root .cp60-events>div>time{font-size:10px;line-height:15px;white-space:nowrap}
+#cp60-root .cp60-events>div>i{margin-top:4px;width:6px;height:6px}
+#cp60-root .cp60-events>div>span{display:flex;flex-direction:column;gap:3px}
+#cp60-root .cp60-events b{display:block;font-size:11px;line-height:15px;white-space:normal;overflow-wrap:anywhere;overflow:visible}
+#cp60-root .cp60-events small{display:block;font-size:9px;line-height:13px;white-space:normal;overflow-wrap:anywhere}
+#cp60-root .cp60-map>img{display:block;max-width:none}
+
+
+/* Architectural edge lighting: no overlay in the centre of the residence. */
+#cp60-root .cp60-map{isolation:isolate;border-color:#20b9db;box-shadow:0 0 0 1px #19bfe52b,0 0 24px #00a9de22,inset 0 0 30px #0008}
+#cp60-root .cp60-map:before{content:"";position:absolute;inset:0;z-index:2;pointer-events:none;border-radius:inherit;background:linear-gradient(90deg,#65eeffbb,transparent) left top/110px 2px no-repeat,linear-gradient(180deg,#65eeffbb,transparent) left top/2px 72px no-repeat,linear-gradient(270deg,#20d8b6aa,transparent) right bottom/110px 2px no-repeat,linear-gradient(0deg,#20d8b6aa,transparent) right bottom/2px 72px no-repeat;animation:cp129Edge 6s ease-in-out infinite;transform:none}
+#cp60-root .cp60-map:after{background:linear-gradient(180deg,#00121d18,transparent 20%,transparent 78%,#00121d44);pointer-events:none}
+@keyframes cp129Edge{0%,100%{opacity:.55}50%{opacity:1}}
+@media(prefers-reduced-motion:reduce){#cp60-root .cp60-map:before{animation:none;opacity:.85}}
+
+
+#cp60-root .cp60-camera-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(190px,1fr);align-content:start;gap:8px;height:100%;padding:3px}
+#cp60-root .cp60-camera{display:grid;grid-template-rows:minmax(0,1fr) 26px;min-width:0;width:100%;min-height:110px;padding:0;overflow:hidden;border:1px solid #087a99;border-radius:10px;background:#020d15;color:#f3fbff;text-align:left}
+#cp60-root .cp60-cam-media{position:relative;min-height:0;height:100%;overflow:hidden}
+#cp60-root .cp60-cam-media img{display:block;width:100%;height:100%;object-fit:cover}
+#cp60-root .cp60-cam-fallback{position:absolute;inset:0;place-items:center;background:radial-gradient(ellipse at center,#073142,#020d15)}
+#cp60-root .cp60-cam-fallback ha-icon{--mdc-icon-size:34px}
+#cp60-root .cp60-cam-name{font-size:11px;line-height:16px;padding:4px 8px}
+#cp60-root .cp60-map:before{background:linear-gradient(90deg,transparent,#7beeff,transparent) 0 0/45% 3px no-repeat,linear-gradient(270deg,transparent,#25ffd0,transparent) 100% 100%/45% 3px no-repeat,linear-gradient(180deg,#51e5ff88,transparent 40%,transparent 60%,#28ffd077) 0 0/3px 100% no-repeat,linear-gradient(180deg,#51e5ff88,transparent 40%,transparent 60%,#28ffd077) 100% 0/3px 100% no-repeat;animation:cp131Perimeter 5s ease-in-out infinite;opacity:1;box-shadow:inset 0 0 28px #19c8ed22}
+#cp60-root .cp60-map{box-shadow:0 0 0 1px #42e7ff99,0 0 22px #00caff44,inset 0 0 34px #00b4dd33}
+@keyframes cp131Perimeter{0%,100%{background-position:0 0,100% 100%,0 0,100% 0;filter:brightness(1)}50%{background-position:100% 0,0 100%,0 0,100% 0;filter:brightness(1.6)}}
+@media(max-width:760px){#cp60-root .cp60-camera-grid{grid-template-columns:1fr}}
+
+
+#cp60-root .cp132-light-routes{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;filter:drop-shadow(0 0 5px #36e7ff);fill:none;stroke:url(#cp132Route);stroke-width:1.8}
+#cp60-root .cp132-light-routes .edge{stroke-dasharray:36 760;animation:cp132Travel 12s linear infinite;opacity:.85}
+#cp60-root .cp132-light-routes .route{stroke-dasharray:8 90;animation:cp132Link 7s linear infinite;opacity:.48}
+#cp60-root .cp132-light-routes .two{animation-delay:-3s;stroke:#50ffd3}
+#cp60-root .cp132-light-routes circle{fill:#92ffff;stroke:none;animation:cp132Light 3s ease-in-out infinite}
+#cp60-root .cp132-light-routes circle:nth-last-child(2n){animation-delay:-1.5s}
+#cp60-root .cp60-map-chip:not(.bad){animation:cp132Chip 4s ease-in-out infinite}
+#cp60-root .cp60-map-chip.sens{animation-delay:-2s}
+@keyframes cp132Travel{to{stroke-dashoffset:-3184}}
+@keyframes cp132Link{to{stroke-dashoffset:-294}}
+@keyframes cp132Light{50%{opacity:.35;filter:drop-shadow(0 0 9px #50ffd3)}}
+@keyframes cp132Chip{50%{box-shadow:0 0 22px #2ef5ff66,inset 0 0 14px #36dfff22}}
+
 @media(prefers-reduced-motion:reduce){#cp60-root *{animation:none!important;transition:none!important}}
 @keyframes cp60Pulse{0%,100%{filter:drop-shadow(0 0 4px #00ddff)}50%{filter:drop-shadow(0 0 13px #00ffca);transform:scale(1.045)}}
 @keyframes cp60Ring{0%{transform:scale(.9);opacity:.6}100%{transform:scale(1.15);opacity:0}}
@@ -5854,7 +5980,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
     customElements.whenDefined(TAG).then(()=>{
       const K=customElements.get(TAG); if(!K||K.prototype.__cp60Installed)return; K.prototype.__cp60Installed=true;
       const r=K.prototype.render; if(typeof r==='function')K.prototype.render=function(...a){const out=r.apply(this,a);schedule(this);return out};
-      const c=K.prototype.connectedCallback; K.prototype.connectedCallback=function(...a){const out=typeof c==='function'?c.apply(this,a):undefined;this.__cp60NativeMode=false;this.__cp60View=localStorage.getItem(VIEW_KEY)||'overview';window.__cp60Host=this;clearInterval(this.__cp61Clock);this.__cp61Clock=setInterval(()=>schedule(this),30000);schedule(this);return out};
+      const c=K.prototype.connectedCallback; K.prototype.connectedCallback=function(...a){const out=typeof c==='function'?c.apply(this,a):undefined;this.__cp60NativeMode=false;this.__cp60View=localStorage.getItem(VIEW_KEY)||'overview';window.__cp60Host=this;clearInterval(this.__cp61Clock);this.__cp61Clock=setInterval(()=>schedule(this),15000);schedule(this);return out};
       const d=K.prototype.disconnectedCallback; K.prototype.disconnectedCallback=function(...a){cancelAnimationFrame(this.__cp60Frame);clearInterval(this.__cp61Clock);return typeof d==='function'?d.apply(this,a):undefined};
       document.querySelectorAll(TAG).forEach(h=>{h.__cp60NativeMode=false;schedule(h)});
     });

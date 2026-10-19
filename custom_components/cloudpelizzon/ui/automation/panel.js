@@ -2,7 +2,7 @@
  * Every customer-facing editor control is visual: no JSON/YAML editing.
  * Selection is monitoring scope, NOT automatic engine activation.
  */
-import './legacy-v1044.js?v=20261012-cpauto-v027-visible-motion-rc1';
+import './legacy-v1044.js?v=bc9da8dd7a3c';
 
 // CP_CLIENT_EXPERIENCE_V025 — default immersive panel; no misleading demo KPIs.
 // CP_AUTO_CLIENT_NATIVE_V026 — client reads automation.* from current Home Assistant only.
@@ -54,7 +54,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
 <section class="view" id="view-categories"><h2>Quais categorias quer gerenciar?</h2><p>Você escolhe. O botão <b>Todas</b> apresenta tudo que estiver disponível; <b>Personalizar</b> permite selecionar apenas o que deseja.</p><div class="toolrow"><button data-action="all" class="primary">✓ Todas</button><button data-action="selected">Personalizar</button><button data-action="clear">Nenhuma</button><button data-action="saveCategories">Salvar preferências</button></div><div class="catgrid" id="categories"></div></section>
 <section class="view" id="view-rules"><h2>Minhas automações</h2><p>Escolha quais automações desta instalação deseja acompanhar. A seleção não liga, desliga nem altera suas rotinas.</p><div class="toolrow"><input type="search" id="filter" placeholder="Buscar nome, código ou categoria"><select id="filter-cat" style="max-width:260px"><option value="">Todas as categorias</option></select><button data-action="ruleAll">Todas</button><button data-action="ruleNone">Nenhuma</button><button data-action="saveRules">Salvar seleção</button></div><div class="panel"><div id="rule-table" hidden></div></div><div class="panel"><h3>Automações do seu Home Assistant</h3><p class="small">Os dados são descobertos automaticamente nesta instalação. Use Todas, Nenhuma ou a seleção individual.</p><div id="native-table" class="tablewrap"></div></div></section>
 <section class="view" id="view-builder"><h2>Assistente de automações</h2><p>Descreva o que deve acontecer, em que situação e o que a casa deve fazer. Nenhum código é necessário.</p><div class="panel"><div class="toolrow"><button data-action="new" class="primary">+ Nova automação</button><select id="choose-rule" style="flex:1;min-width:220px"><option value="">Ou escolha uma automação para editar</option></select></div><div id="editor" class="empty">Selecione uma regra existente ou clique em Nova automação.</div><div id="feedback" class="feedback">Alterações só são aplicadas após salvar. Regras novas começam desativadas.</div></div></section>
-<section class="view" id="view-settings"><h2>Preferências do cliente</h2><div class="panel"><p class="small">O painel acompanha exclusivamente as automações locais do Home Assistant. Selecione categorias e regras nas respectivas abas.</p><input id="native-visible" type="checkbox" checked hidden></div><div class="panel"><h3>Segurança e funcionamento</h3><p>Este painel consulta suas automações existentes sem modificá-las. Os recursos de criação e edição permanecem supervisionados e exigem confirmação separada.</p><div class="toolrow"><button data-action="export">Exportar configurações e inventário</button><button data-action="refresh">Atualizar diagnóstico</button></div></div></section></main><datalist id="entities"></datalist>`;
+<section class="view" id="view-settings"><h2>Preferências do cliente</h2><div class="panel"><h3>Permissões de execução</h3><p>Escolha separadamente os sensores cujos estados poderão ser enviados ao servidor e os dispositivos que poderão receber comandos. Nenhum dispositivo vem autorizado. Limite: 200 entidades em cada lista. As seleções de categorias e do inventário continuam sendo apenas preferências de visualização.</p><p id="cp-execution-status">Consultando conexão...</p><div class="formgrid"><label>Leitura de estados e atributos<select multiple size="10" id="cp-read-permissions"></select></label><label>Dispositivos que podem receber comandos<select multiple size="10" id="cp-effect-permissions"></select></label></div><p class="small">Use Ctrl ou Shift para selecionar vários itens. Remover uma permissão interrompe a sessão anterior.</p><button data-action="permissionsSave">Salvar permissões de execução</button></div><div class="panel"><p class="small">O painel acompanha exclusivamente as automações locais do Home Assistant. Selecione categorias e regras nas respectivas abas.</p><input id="native-visible" type="checkbox" checked hidden></div><div class="panel"><h3>Segurança e funcionamento</h3><p>Este painel consulta suas automações existentes sem modificá-las. Os recursos de criação e edição permanecem supervisionados e exigem confirmação separada.</p><div class="toolrow"><button data-action="export">Exportar configurações e inventário</button><button data-action="refresh">Atualizar diagnóstico</button></div></div></section></main><datalist id="entities"></datalist>`;
     this.shadowRoot.addEventListener('click',e=>this._click(e));
     this.shadowRoot.addEventListener('change',e=>this._change(e));
     this._updateManagementVisibility();
@@ -76,7 +76,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     const selected=native.filter(n=>n.selected);
     const message=this.shadowRoot.getElementById('cp-source-note');
     if(message){
-      message.textContent=`Monitoramento local do Home Assistant: ${native.length} automações encontradas • ${selected.length} selecionadas. Estados em tempo real; execuções disponíveis pelo último disparo conhecido. Totais diários exatos exigem contadores/histórico próprios.`;
+      message.textContent=`Monitoramento local do Home Assistant: ${native.length} automações encontradas • ${selected.length} selecionadas. ${this._daily?.complete?'Contagem de disparos de hoje pelo registro de atividades ('+this._daily.day+').':'Contagem diária indisponível: '+(this._dailyError||'consultando registro de atividades…')}`;
     }
     const empty=this.shadowRoot.getElementById('cp-no-native');
     const box=this.shadowRoot.getElementById('legacy');
@@ -84,6 +84,9 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     if(box)box.hidden=!selected.length;
     if(!selected.length)return;
     // Never use owner-specific CMDB counters or rule-engine inventory as the client source.
+    this._cockpit.config.daily_counts=this._daily?.counts||{};
+    this._cockpit.config.daily_hours=this._daily?.hours||null;
+    this._cockpit.config.daily_complete=this._daily?.complete===true;
     this._cockpit.config.inventory_sensor='';
     this._cockpit.config.category_registry_sensor='';
     if(force)this._cockpit._last=0;
@@ -134,6 +137,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     this._loading=true;
     try{
       this._status=await this.ws('cloudpelizzon/automation/status');
+      await this._loadDaily();
     }catch(error){
       // HA local inventory is still usable when the optional engine backend is unavailable.
       if(!this._status)this._status={rules:[],native_rules:[],settings:{scope:'all',category_selection:[],rule_selection:[],native_selection:[],category_names:{},native_visible:true},categories:[],total:0,active:0};
@@ -147,6 +151,17 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     }
   }
 
+  async _loadDaily(){
+    try{
+      if(this._hass.states?.['sensor.cloudpelizzon_homolog_mirror'])this._daily=await this.ws('cloudpelizzon/automation/daily_counts');
+      else{
+        const now=new Date(),start=new Date(now);start.setHours(0,0,0,0);const ids=this._native().map(x=>x.entity_id),counts=Object.fromEntries(ids.map(id=>[id,0])),hours=Array(24).fill(0),seen=new Set();
+        for(let offset=0;offset<ids.length;offset+=40){const rows=await this.ws('logbook/get_events',{start_time:start.toISOString(),end_time:now.toISOString(),entity_ids:ids.slice(offset,offset+40)});if(!Array.isArray(rows))throw Error('Formato de histórico indisponível');for(const row of rows){const key=JSON.stringify([row.entity_id,row.context_id,row.when]);if(Object.hasOwn(counts,row.entity_id)&&/^triggered(?: by |$)/.test(row.message||'')&&row.when>=start.getTime()/1000&&row.when<now.getTime()/1000&&!seen.has(key)){seen.add(key);counts[row.entity_id]++;hours[new Date(row.when*1000).getHours()]++;}}}
+        this._daily={counts,hours,complete:true,day:start.toLocaleDateString('pt-BR')};
+      }
+      this._dailyError='';
+    }catch(error){this._daily=null;this._dailyError=String(error?.message||error);}
+  }
   _settings(){return this._status?.settings||{scope:'all',category_selection:[],rule_selection:[],native_selection:[],category_names:{},native_visible:true}}
   _categoryName(c){return this._settings().category_names?.[c]||categoriesLabel[c]||c}
   _render(){
@@ -265,11 +280,19 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     this._toast('Configurações e inventário exportados neste navegador.');
   }
 
+  async _loadPermissions(){
+    const value=await this.ws('cloudpelizzon/automation/permissions');
+    const states=this._hass?.states||{},keys=[...new Set([...Object.keys(states),...value.policy.reads,...value.policy.targets])].filter(k=>/^[a-z_]+\.[a-z0-9_]+$/.test(k)).sort();
+    for(const [id,selected,allowed] of [['cp-read-permissions',value.policy.reads,()=>true],['cp-effect-permissions',value.policy.targets,k=>/^(light|switch|input_boolean)\./.test(k)]]){
+      this.shadowRoot.getElementById(id).innerHTML=keys.filter(allowed).map(k=>`<option value="${esc(k)}" ${selected.includes(k)?'selected':''}>${esc(states[k]?.attributes?.friendly_name||k)} · ${esc(k)}</option>`).join('');
+    }
+    this.shadowRoot.getElementById('cp-execution-status').textContent=value.connected?'Conexão com o executor disponível.':'Aguardando conexão com o executor.';
+  }
   async _click(event){
     const node=event.target?.closest?.('[data-tab],[data-action],[data-open-category],[data-add],[data-remove]');
     if(!node||!this.shadowRoot.contains(node)||node.disabled)return;
     if(this._busyEditor)return;
-    if(node.dataset.tab){this._tab(node.dataset.tab);return}
+    if(node.dataset.tab){this._tab(node.dataset.tab);if(node.dataset.tab==='settings')await this._loadPermissions();return}
     if(node.dataset.openCategory){this._tab('rules');this.shadowRoot.getElementById('filter-cat').value=node.dataset.openCategory;this._renderRules();return}
     if(node.dataset.add){const section=node.dataset.add;if(!['triggers','conditions','actions'].includes(section))return;this._readBlocks();this._blocks[section].push({kind:section==='actions'?'light.turn_on':'state'});this._renderBlocks();return}
     if(node.dataset.remove){const [section,text]=node.dataset.remove.split(':');const index=Number(text);if(!['triggers','conditions','actions'].includes(section)||!Number.isInteger(index)||index<0)return;this._readBlocks();this._blocks[section].splice(index,1);this._renderBlocks();return}
@@ -281,7 +304,19 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
       if(['all','selected','clear'].includes(action)){this._scopeDraft=action==='all'?'all':'selected';if(action!=='selected')this.shadowRoot.querySelectorAll('.catbox').forEach(e=>{e.checked=action==='all'});return}
       if(['ruleAll','ruleNone'].includes(action)){this._ruleBulk=action==='ruleAll'?'all':'none';this._scopeDraft='selected';this.shadowRoot.querySelectorAll('.nativebox').forEach(e=>{e.checked=action==='ruleAll'});return}
       if(action==='saveCategories'||action==='saveRules'){this._busyEditor=true;await this._saveScope(action==='saveCategories'?'categories':'rules');return}
-      if(action==='activate'||action==='deactivate'){this._toast('A execução remota ainda está em homologação. Este editor mantém as regras desativadas.',true);return}
+      if(action==='permissionsSave'){
+        const reads=[...this.shadowRoot.getElementById('cp-read-permissions').selectedOptions].map(x=>x.value);
+        const targets=[...this.shadowRoot.getElementById('cp-effect-permissions').selectedOptions].map(x=>x.value);
+        if(!window.confirm('Autorizar o envio dos estados selecionados e comandos somente para os dispositivos selecionados?'))return;
+        this._busyEditor=true;await this.ws('cloudpelizzon/automation/permissions/save',{policy:{reads,targets},confirmed:true});await this._loadPermissions();this._toast('Permissões salvas. Ative individualmente as regras desejadas.');return;
+      }
+      if(action==='activate'||action==='deactivate'){
+        if(!this._editCode||!Number.isInteger(this._editRevision))throw Error('Abra uma regra salva antes de alterar sua ativação.');
+        if(!window.confirm(action==='activate'?'Ativar somente esta regra? Ela poderá comandar os dispositivos autorizados em Preferências.':'Desativar somente esta regra?'))return;
+        this._busyEditor=true;const value=await this.ws('cloudpelizzon/automation/'+action,{code:this._editCode,revision:this._editRevision});
+        if(value.active!==(action==='activate'))throw Error('Ativação não confirmada. Atualize o status antes de tentar novamente.');
+        await this.refresh(true);this._toast(action==='activate'?'Ativação solicitada ao executor. Acompanhe a conexão em Preferências.':'Regra desativada.');return;
+      }
       if(action==='export'){this._exportConfiguration();return}
       if(!['validate','save','delete'].includes(action))return;
       this._busyEditor=true;

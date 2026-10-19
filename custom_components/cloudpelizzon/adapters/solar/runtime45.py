@@ -39,9 +39,21 @@ def receipt(folder,data):
         os.replace(temp,path)
     finally:temp.unlink(missing_ok=True)
 
+def save_permissions(folder,selected):
+    if folder.is_symlink() or folder.resolve()!=folder.absolute():raise ValueError('permission_folder_alias')
+    path=folder/'solar_permissions45.json'
+    if path.is_symlink():raise ValueError('permission_symlink')
+    temp=folder/('.solar-permissions-'+uuid.uuid4().hex)
+    fd=os.open(temp,os.O_WRONLY|os.O_CREAT|os.O_EXCL|os.O_NOFOLLOW,0o600)
+    try:
+        with os.fdopen(fd,'w') as stream:
+            json.dump({'schema':'cp.solar.permissions.v1','read_entities':selected},stream);stream.flush();os.fsync(stream.fileno())
+        os.replace(temp,path)
+    finally:temp.unlink(missing_ok=True)
+
 class Controller:
     def __init__(self,hass,entry,iid,client,folder,selected):
-        self.hass=hass;self.entry=entry;self.iid=iid;self.folder=folder;self.selected=tuple(selected);self.closed=False
+        self.hass=hass;self.entry=entry;self.iid=iid;self.folder=folder;self.client=client;self.selected=tuple(selected);self.closed=False
         self.bridge=SolarBridge.from_client(hass,client,selected)
         async def status():return await hass.async_add_executor_job(client.status)
         self.mirror=SolarMirror(self.bridge,status,schedule=lambda delay,cb:async_call_later(hass,delay,lambda _:cb()))
@@ -79,12 +91,54 @@ class Controller:
             except Exception as error:
                 self.last_success=False;self.last_error=type(error).__name__;self.mirror.invalidate();raise
             finally:await self._record()
+    def candidates(self):
+        # Classification only; vendor discovery/ranking remains on the server.
+        result=[]
+        for row in self.hass.states.async_all('sensor'):
+            unit=str(row.attributes.get('unit_of_measurement','')).lower()
+            kind=row.attributes.get('device_class')
+            if (kind in ('power','energy') or unit in ('w','kw','mw','wh','kwh','mwh')) and not row.entity_id.startswith(('sensor.cloudpelizzon_','sensor.cp_energy_')):
+                result.append(row.entity_id)
+        if len(result)>1000:raise ValueError('select_measurements_limit')
+        return result
     async def handle(self,command,payload=None,*,admin=False):
-        result=await self.bridge.handle(command,payload,admin=admin)
+        if command.endswith('/discover'):
+            if admin is not True:raise PermissionError('admin_required')
+            candidates=self.candidates();merged={'power':[],'energy':[],'suggestions':{}}
+            for index in range(0,max(1,len(candidates)),100):
+                temporary=SolarBridge.from_client(self.hass,self.client,candidates[index:index+100])
+                try:result=await temporary.handle(command,payload,admin=admin)
+                finally:temporary.close()
+                merged['power'].extend(result['power']);merged['energy'].extend(result['energy'])
+                merged['suggestions'].update(result.get('suggestions',{}))
+            return merged
         if command.endswith('/config/save'):
+            if admin is not True:raise PermissionError('admin_required')
+            config=json.loads((payload or {}).get('config_json','{}'))
+            available=set(self.candidates());chosen=set()
+            def collect(value):
+                if isinstance(value,str) and value in available:chosen.add(value)
+                elif isinstance(value,dict):
+                    for item in value.values():collect(item)
+                elif isinstance(value,list):
+                    for item in value:collect(item)
+            collect(config)
+            temporary=SolarBridge.from_client(self.hass,self.client,sorted(chosen))
+            try:result=await temporary.handle(command,payload,admin=admin)
+            finally:temporary.close()
+            await self.hass.async_add_executor_job(save_permissions,self.folder,sorted(chosen))
+            self.selected=tuple(sorted(chosen));self.bridge._approved_read_entities[:]=self.selected
+            self.watch()
             try:await self.refresh()
             except Exception:LOGGER.warning('Solar configuration saved; remote measurements temporarily unavailable')
-        return result
+            return result
+        return await self.bridge.handle(command,payload,admin=admin)
+    def watch(self):
+        for remove in self.removers:remove()
+        self.removers=[]
+        if self.add is not None and self.selected:
+            self.removers.append(async_track_state_change_event(self.hass,list(self.selected),self.schedule))
+            self.removers.append(async_track_time_interval(self.hass,self.schedule,timedelta(seconds=3)))
     @callback
     def schedule(self,*_):
         if self.closed or self.task and not self.task.done():return
@@ -97,9 +151,7 @@ class Controller:
         if self.add is not None:raise ValueError('sensor_platform_already_bound')
         self.add=add_entities
         # No implicit device reading: only the explicit local permission list.
-        if self.selected:
-            self.removers.append(async_track_state_change_event(self.hass,list(self.selected),self.schedule))
-            self.removers.append(async_track_time_interval(self.hass,self.schedule,timedelta(seconds=3)))
+        self.watch()
 
 async def async_setup_runtime(hass,entry):
     folder=Path(hass.config.path('.storage/cloudpelizzon_edge')).absolute()

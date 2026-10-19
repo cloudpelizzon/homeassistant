@@ -20,5 +20,22 @@
     "abort": {
       "already_configured": "CloudPelizzon is already configured."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Production connection",
+        "description": "Receives live states and camera snapshots. Optionally forwards signed module commands to real production devices. Leave disabled for read-only observation. The token remains private; licenses and trials are not copied.",
+        "data": {
+          "enabled": "Enable production connection",
+          "source_url": "Production Home Assistant URL (http://IP:port)",
+          "token": "Production token (blank keeps current)",
+          "forward_commands": "Allow real commands on production devices"
+        }
+      }
+    },
+    "error": {
+      "mirror_cannot_connect": "Unable to validate source, local identity or read access. Check URL and token."
+    }
   }
 }

@@ -11,3 +11,8 @@ O teste gratuito tem duração de sete dias por módulo, com confirmação expl�
 Esta árvore está em homologação. A execução persistente de Automações, a execução segura de Segurança e os fluxos de licença paga/atualização ainda exigem integração e aceite. Não há release estável ou recomendação de instalação em produção nesta etapa. A publicação do código não representa a conclusão dessas funções.
 
 [Site CloudPelizzon](https://cloudpelizzon.com.br) · [Documentação](https://documentacao.cloudpelizzon.com.br) · [Portal do Cliente](https://cliente.cloudpelizzon.com.br)
+
+
+Automation connection: explicit state-read and device-command permissions are separate. Customer rules start disabled and require individual activation. The server checks connection readiness before starting a seven-day Automation trial. Security trial activation remains unavailable.
+
+Security connection: explicit sensor reads, exact service/device permissions and notification destinations. Engines begin disabled; shadow mode remains enabled until changed by an administrator. A fresh signed connection is required before starting the Security trial.

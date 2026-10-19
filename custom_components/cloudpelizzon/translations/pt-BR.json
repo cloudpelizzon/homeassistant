@@ -20,5 +20,22 @@
     "abort": {
       "already_configured": "A CloudPelizzon já está configurada."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Conexão com a produção",
+        "description": "Recebe estados e imagens da produção. A opção de comandos permite que os controles autorizados dos módulos acionem equipamentos reais. Desmarcada, mantém somente leitura. O token permanece privado; licenças e trials não são copiadas.",
+        "data": {
+          "enabled": "Ativar conexão com a produção",
+          "source_url": "Endereço do Home Assistant de produção (http://IP:porta)",
+          "token": "Token da produção (vazio mantém o atual)",
+          "forward_commands": "Permitir comandos reais nos equipamentos da produção"
+        }
+      }
+    },
+    "error": {
+      "mirror_cannot_connect": "Não foi possível validar a origem, identidade local ou acesso de leitura. Confira o endereço e o token."
+    }
   }
 }

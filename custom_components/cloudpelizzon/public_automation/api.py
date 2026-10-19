@@ -4,17 +4,24 @@ import probatio
 from homeassistant.components import websocket_api
 from .bridge import STATUS, GET, SETTINGS, CONTRACTS as READ_CONTRACTS
 from .editor import CREATE, VALIDATE, SAVE, DELETE, EDITOR_CONTRACTS
-CONTRACTS = READ_CONTRACTS | EDITOR_CONTRACTS
+from .execution124 import ACTIVATE,DEACTIVATE,PERMISSIONS,APPROVE,CONTRACTS as EXECUTION_CONTRACTS
+DAILY='cloudpelizzon/automation/daily_counts'
+CONTRACTS = READ_CONTRACTS | EDITOR_CONTRACTS | EXECUTION_CONTRACTS | {DAILY}
 
 KEY = 'cloudpelizzon_automation76'
 SCHEMAS = {
+    DAILY: {probatio.Required('type'):DAILY},
     STATUS: {probatio.Required('type'): STATUS},
     GET: {probatio.Required('type'): GET, probatio.Required('code'): str},
     SETTINGS: {probatio.Required('type'): SETTINGS, probatio.Required('settings'): dict},
     CREATE: {probatio.Required('type'): CREATE, probatio.Required('rule'): dict},
     VALIDATE: {probatio.Required('type'): VALIDATE, probatio.Required('code'): str, probatio.Required('rule'): dict},
     SAVE: {probatio.Required('type'): SAVE, probatio.Required('code'): str, probatio.Required('revision'): int, probatio.Required('rule'): dict},
-    DELETE: {probatio.Required('type'): DELETE, probatio.Required('code'): str, probatio.Required('revision'): int}}
+    DELETE: {probatio.Required('type'): DELETE, probatio.Required('code'): str, probatio.Required('revision'): int},
+    ACTIVATE: {probatio.Required('type'): ACTIVATE, probatio.Required('code'): str, probatio.Required('revision'): int},
+    DEACTIVATE: {probatio.Required('type'): DEACTIVATE, probatio.Required('code'): str, probatio.Required('revision'): int},
+    PERMISSIONS: {probatio.Required('type'): PERMISSIONS},
+    APPROVE: {probatio.Required('type'): APPROVE, probatio.Required('policy'): dict, probatio.Required('confirmed'): bool}}
 
 
 
@@ -28,7 +35,12 @@ async def dispatch(hass, connection, msg):
     try:
         if bridge is None:
             raise PermissionError('not_loaded')
-        result = await bridge.handle(msg['type'], {k: v for k, v in msg.items() if k not in ('id', 'type')},
+        if msg['type']==DAILY:
+            await bridge.handle(STATUS,{},authorized=authorized)
+            from ..homolog_mirror.source132 import daily
+            result=await daily(hass)
+        else:
+            result = await bridge.handle(msg['type'], {k: v for k, v in msg.items() if k not in ('id', 'type')},
                                      authorized=authorized)
         bridge.check(authorized)
         connection.send_result(msg['id'], result)

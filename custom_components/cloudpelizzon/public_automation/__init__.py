@@ -1,5 +1,6 @@
-"""Management transport only; no event subscription, activation or HA delivery."""
-from .editor import Bridge
+"""Owned management and signed remote execution transport."""
+from .execution124 import Bridge
+from .runtime124 import create as create_edge
 from . import api
 
 
@@ -18,6 +19,7 @@ async def create(hass,entry,context):
         found=current()
         hass.config_entries.async_update_entry(found,options={**found.options,'automation_rule_ui':data})
     bridge.metadata(read_categories,save_categories)
+    edge=create_edge(hass,entry,context);bridge.connect(edge);context["automation_edge"]=edge
     try:close=api.register(hass,bridge)
     except BaseException:
         bridge.close();raise
