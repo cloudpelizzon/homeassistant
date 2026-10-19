@@ -7,6 +7,19 @@ from native_mirror130 import MirrorTests,FakeWS,Session,SOURCE,result,state
 from client81.homolog_mirror import Mirror,policy
 from client81.homolog_mirror import source132 as source
 
+class RestSession:
+ def __init__(self,status=200):self.calls=[];self.status=status
+ def post(self,url,**kwargs):
+  self.calls.append((url,kwargs));outer=self
+  class Response:
+   status=outer.status
+   @property
+   def content(self):return self
+   async def iter_chunked(self,n):yield b'[]'
+   async def __aenter__(self):return self
+   async def __aexit__(self,*args):pass
+  return Response()
+
 class SourceTests(unittest.IsolatedAsyncioTestCase):
  asyncSetUp=MirrorTests.asyncSetUp
  cleanup=NativeSetupTests.cleanup
@@ -25,22 +38,22 @@ class SourceTests(unittest.IsolatedAsyncioTestCase):
   self.assertTrue(self.hass.states.get('switch.test_fence').attributes['cloudpelizzon_read_only'])
  async def test132_signed_context_and_ack_required(self):
   m=await self.mirror();m.forward_commands=True;m.apply(state('switch.test_fence','off'))
-  ws=FakeWS([{'type':'auth_required'},{'type':'auth_ok'},result(1,{})]);check=[]
+  ws=FakeWS([]);rest=RestSession();check=[]
   token=source.DELIVERY_CHECK.set(lambda:check.append(True))
   try:
-   with patch.object(source,'async_get_clientsession',return_value=Session(ws)),patch.object(source,'source_state',AsyncMock(side_effect=[state('switch.test_fence','off'),state('switch.test_fence','on')])):
+   with patch.object(source,'async_get_clientsession',return_value=rest),patch.object(source,'source_state',AsyncMock(side_effect=[state('switch.test_fence','off'),state('switch.test_fence','on')])):
     self.assertTrue(await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'}))
   finally:source.DELIVERY_CHECK.reset(token)
   self.assertEqual(check,[True]);self.assertEqual(m.commands_forwarded,1)
-  self.assertEqual(ws.sent[-1],{'id':1,'type':'call_service','domain':'switch','service':'turn_on','target':{'entity_id':'switch.test_fence'},'service_data':{}})
+  self.assertEqual(rest.calls[0][0],SOURCE.split('/api/')[0]+'/api/services/switch/turn_on');self.assertEqual(rest.calls[0][1]['json'],{'entity_id':'switch.test_fence'});self.assertIs(rest.calls[0][1]['allow_redirects'],False)
  async def test132_denied_source_ack_never_retries(self):
   m=await self.mirror();m.forward_commands=True
-  ws=FakeWS([{'type':'auth_required'},{'type':'auth_ok'},{'type':'result','id':1,'success':False}]);token=source.DELIVERY_CHECK.set(lambda:None)
+  ws=FakeWS([]);rest=RestSession(403);token=source.DELIVERY_CHECK.set(lambda:None)
   try:
-   with patch.object(source,'async_get_clientsession',return_value=Session(ws)),patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','off'))):
+   with patch.object(source,'async_get_clientsession',return_value=rest),patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','off'))):
     with self.assertRaises(PermissionError):await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'})
   finally:source.DELIVERY_CHECK.reset(token)
-  self.assertEqual(sum(x['type']=='call_service' for x in ws.sent),1);self.assertEqual(m.commands_forwarded,0)
+  self.assertEqual(len(rest.calls),1);self.assertEqual(m.commands_forwarded,0)
  async def test132_expired_receipt_cannot_cross_source_handshake(self):
   m=await self.mirror();m.forward_commands=True
   ws=FakeWS([{'type':'auth_required'},{'type':'auth_ok'}])
@@ -50,7 +63,7 @@ class SourceTests(unittest.IsolatedAsyncioTestCase):
    with patch.object(source,'async_get_clientsession',return_value=Session(ws)),patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','off'))):
     with self.assertRaises(PermissionError):await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'})
   finally:source.DELIVERY_CHECK.reset(token)
-  self.assertEqual([x['type'] for x in ws.sent],['auth'])
+  self.assertEqual(ws.sent,[])
  async def test132_redirect_does_not_receive_credentials(self):
   m=await self.mirror();ws=FakeWS([],url='http://10.8.0.3:8123/api/websocket')
   with patch.object(source,'async_get_clientsession',return_value=Session(ws)):

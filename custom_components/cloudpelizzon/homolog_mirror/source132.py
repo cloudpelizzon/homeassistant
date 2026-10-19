@@ -55,8 +55,8 @@ async def forward(hass,domain,service,data):
  mirror.last_command['before']=before['state']
  if expected and before['state'] in expected:
   mirror.apply(before);mirror.last_command.update(outcome='already_in_state',after=before['state']);mirror.status('connected');return True
- payload={k:v for k,v in data.items() if k!='entity_id'}
- await request(mirror,'call_service',domain=domain,service=service,target={'entity_id':target},service_data=payload)
+ mirror.last_command['transport']='ha_service_rest'
+ await post_service(mirror,domain,service,data)
  mirror.commands_forwarded+=1;mirror.last_command['outcome']='accepted_not_verified';mirror.status('connected')
  # An accepted HA service call can match zero entities. Verify telemetry instead
  # of displaying success based solely on its acknowledgement. Never resend.
@@ -69,6 +69,25 @@ async def forward(hass,domain,service,data):
   await asyncio.sleep(.5)
  mirror.last_command['outcome']='no_state_change';mirror.status('connected')
  raise PermissionError('production_state_not_confirmed_no_retry')
+
+async def post_service(mirror,domain,service,data):
+ """Use HA's native services endpoint, once, after the signed dispatch check."""
+ from ..public_security.wire126 import permitted
+ if (not mirror.forward_commands or mirror.stopping or observer(mirror.hass) is not mirror
+     or not permitted(domain,service,data.get('entity_id',''))):raise PermissionError('production_dispatch_not_authorized')
+ check=DELIVERY_CHECK.get()
+ if check is None:raise PermissionError('signed_delivery_context_required')
+ check()
+ async with asyncio.timeout(5):
+  async with async_get_clientsession(mirror.hass).post(mirror.source.split('/api/')[0]+'/api/services/'+domain+'/'+service,json=dict(data),headers={'Authorization':'Bearer '+mirror.token},allow_redirects=False) as response:
+   if response.status!=200:
+    mirror.last_command.update(outcome='source_rejected',http_status=response.status);mirror.status('connected')
+    raise PermissionError('production_service_rejected_no_retry')
+   content=bytearray()
+   async for chunk in response.content.iter_chunked(8192):
+    content.extend(chunk)
+    if len(content)>2097152:raise ValueError('source_service_response_limit')
+   if not isinstance(json.loads(content),list):raise ValueError('source_service_response_invalid')
 
 def expected_states(service,data):
  if service=='turn_on':return {'on'}

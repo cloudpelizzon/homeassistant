@@ -16,18 +16,18 @@ class DeliveryTests(unittest.IsolatedAsyncioTestCase):
  mirror=SourceTests.mirror
  async def test133_accepted_request_without_state_change_is_not_success(self):
   m=await self.mirror();m.forward_commands=True
-  with patch.object(source,'request',AsyncMock(return_value={})) as send,patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','off'))),patch.object(source,'STATE_VERIFY_SECONDS',0):
+  with patch.object(source,'post_service',AsyncMock(return_value={})) as send,patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','off'))),patch.object(source,'STATE_VERIFY_SECONDS',0):
    with self.assertRaises(PermissionError):await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'})
   self.assertEqual(send.await_count,1);self.assertEqual(m.last_command['outcome'],'no_state_change');self.assertEqual(m.last_command['after'],'off')
  async def test133_unavailable_source_does_not_receive_a_command(self):
   m=await self.mirror();m.forward_commands=True
-  with patch.object(source,'request',AsyncMock()) as send,patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','unavailable'))):
+  with patch.object(source,'post_service',AsyncMock()) as send,patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','unavailable'))):
    with self.assertRaises(PermissionError):await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'})
    send.assert_not_called()
   self.assertEqual(m.last_command['outcome'],'source_unavailable')
  async def test133_already_on_refreshes_observation_without_actuation(self):
   m=await self.mirror();m.forward_commands=True
-  with patch.object(source,'request',AsyncMock()) as send,patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','on'))):
+  with patch.object(source,'post_service',AsyncMock()) as send,patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','on'))):
    self.assertTrue(await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'}));send.assert_not_called()
   self.assertEqual(m.last_command['outcome'],'already_in_state');self.assertEqual(self.hass.states.get('switch.test_fence').state,'on')
  async def test133_native_HA_targets_switch_gate_alarm_and_house_mode(self):
@@ -39,17 +39,23 @@ class DeliveryTests(unittest.IsolatedAsyncioTestCase):
    async def effect(call,desired=after):
     calls.append((call.domain,call.service,dict(call.data)));production.states.async_set(call.data['entity_id'],desired)
    production.services.async_register(domain,name,effect)
-   class NativeWS(FakeWS):
-    async def receive_json(self):
-     if self.rows:return await super().receive_json()
-     q=self.sent[-1]
-     await production.services.async_call(q['domain'],q['service'],q['service_data'],target=q['target'],blocking=True)
-     return result(1,{})
-   ws=NativeWS([{'type':'auth_required'},{'type':'auth_ok'}])
+   class NativeSession:
+    def post(self,url,**kw):
+     outer=self
+     class Response:
+      status=200
+      @property
+      def content(self):return self
+      async def iter_chunked(self,n):yield b'[]'
+      async def __aenter__(self):
+       await production.services.async_call(domain,name,kw['json'],blocking=True)
+       return self
+      async def __aexit__(self,*args):pass
+     return Response()
    async def read(mirror,target):return production.states.get(target).as_dict()
    token=source.DELIVERY_CHECK.set(lambda:None)
    try:
-    with patch.object(source,'async_get_clientsession',return_value=Session(ws)),patch.object(source,'source_state',read):
+    with patch.object(source,'async_get_clientsession',return_value=NativeSession()),patch.object(source,'source_state',read):
      self.assertTrue(await source.forward(self.hass,domain,name,{'entity_id':eid,**extra}))
    finally:source.DELIVERY_CHECK.reset(token)
    self.assertEqual(production.states.get(eid).state,after);self.assertEqual(m.last_command['outcome'],'state_verified');self.assertEqual(calls[-1][2]['entity_id'],eid)

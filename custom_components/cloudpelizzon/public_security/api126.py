@@ -39,6 +39,7 @@ async def dispatch(hass,connection,msg):
    except PermissionError:detail=None
    if detail and time.time()-detail.get('at',0)<30 and detail.get('entity_id')==msg['data'].get('entity_id') and detail.get('service')==msg['service']:
     if detail.get('outcome')=='no_state_change':message=f"A produção recebeu a chamada, mas {detail['entity_id']} continuou em {detail.get('after')}. A ação não foi confirmada e não será repetida automaticamente."
+    elif detail.get('outcome')=='source_rejected':message=f"O Home Assistant de produção recusou o comando (HTTP {detail.get('http_status')}). A ação não foi confirmada."
     elif detail.get('outcome')=='source_unavailable':message=f"{detail['entity_id']} está {detail.get('after')} no Home Assistant de produção. Nenhum comando foi enviado."
   connection.send_error(msg['id'],'cloud_denied_or_unavailable',message)
 
