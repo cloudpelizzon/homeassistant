@@ -2,7 +2,7 @@
  * Every customer-facing editor control is visual: no JSON/YAML editing.
  * Selection is monitoring scope, NOT automatic engine activation.
  */
-import './legacy-v1044.js?v=20261012-cpauto-v027-visible-motion-rc1';
+import './legacy-v1044.js?v=bc9da8dd7a3c';
 
 // CP_CLIENT_EXPERIENCE_V025 — default immersive panel; no misleading demo KPIs.
 // CP_AUTO_CLIENT_NATIVE_V026 — client reads automation.* from current Home Assistant only.
@@ -76,7 +76,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     const selected=native.filter(n=>n.selected);
     const message=this.shadowRoot.getElementById('cp-source-note');
     if(message){
-      message.textContent=`Monitoramento local do Home Assistant: ${native.length} automações encontradas • ${selected.length} selecionadas. Estados em tempo real; execuções disponíveis pelo último disparo conhecido. Totais diários exatos exigem contadores/histórico próprios.`;
+      message.textContent=`Monitoramento local do Home Assistant: ${native.length} automações encontradas • ${selected.length} selecionadas. ${this._daily?.complete?'Contagem de disparos de hoje pelo registro de atividades ('+this._daily.day+').':'Contagem diária indisponível: '+(this._dailyError||'consultando registro de atividades…')}`;
     }
     const empty=this.shadowRoot.getElementById('cp-no-native');
     const box=this.shadowRoot.getElementById('legacy');
@@ -84,6 +84,9 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     if(box)box.hidden=!selected.length;
     if(!selected.length)return;
     // Never use owner-specific CMDB counters or rule-engine inventory as the client source.
+    this._cockpit.config.daily_counts=this._daily?.counts||{};
+    this._cockpit.config.daily_hours=this._daily?.hours||null;
+    this._cockpit.config.daily_complete=this._daily?.complete===true;
     this._cockpit.config.inventory_sensor='';
     this._cockpit.config.category_registry_sensor='';
     if(force)this._cockpit._last=0;
@@ -134,6 +137,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     this._loading=true;
     try{
       this._status=await this.ws('cloudpelizzon/automation/status');
+      await this._loadDaily();
     }catch(error){
       // HA local inventory is still usable when the optional engine backend is unavailable.
       if(!this._status)this._status={rules:[],native_rules:[],settings:{scope:'all',category_selection:[],rule_selection:[],native_selection:[],category_names:{},native_visible:true},categories:[],total:0,active:0};
@@ -147,6 +151,17 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     }
   }
 
+  async _loadDaily(){
+    try{
+      if(this._hass.states?.['sensor.cloudpelizzon_homolog_mirror'])this._daily=await this.ws('cloudpelizzon/automation/daily_counts');
+      else{
+        const now=new Date(),start=new Date(now);start.setHours(0,0,0,0);const ids=this._native().map(x=>x.entity_id),counts=Object.fromEntries(ids.map(id=>[id,0])),hours=Array(24).fill(0),seen=new Set();
+        for(let offset=0;offset<ids.length;offset+=40){const rows=await this.ws('logbook/get_events',{start_time:start.toISOString(),end_time:now.toISOString(),entity_ids:ids.slice(offset,offset+40)});if(!Array.isArray(rows))throw Error('Formato de histórico indisponível');for(const row of rows){const key=JSON.stringify([row.entity_id,row.context_id,row.when]);if(Object.hasOwn(counts,row.entity_id)&&/^triggered(?: by |$)/.test(row.message||'')&&row.when>=start.getTime()/1000&&row.when<now.getTime()/1000&&!seen.has(key)){seen.add(key);counts[row.entity_id]++;hours[new Date(row.when*1000).getHours()]++;}}}
+        this._daily={counts,hours,complete:true,day:start.toLocaleDateString('pt-BR')};
+      }
+      this._dailyError='';
+    }catch(error){this._daily=null;this._dailyError=String(error?.message||error);}
+  }
   _settings(){return this._status?.settings||{scope:'all',category_selection:[],rule_selection:[],native_selection:[],category_names:{},native_visible:true}}
   _categoryName(c){return this._settings().category_names?.[c]||categoriesLabel[c]||c}
   _render(){

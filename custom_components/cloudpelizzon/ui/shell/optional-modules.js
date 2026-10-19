@@ -12,17 +12,17 @@ const OPTIONAL_MODULES = {
   "CP-SOLAR": {
     tag: "cloudpelizzon-energy-panel",
     title: "Inteligência Solar",
-    url: "/cloudpelizzon-solar/frontend/panel.js?v=5fb2e0743da8",
+    url: "/cloudpelizzon-solar/frontend/panel.js?v=c3c3c44435b5",
   },
   "CP-SECURITY": {
     tag: "cloudpelizzon-security-panel",
     title: "Segurança",
-    url: "/cloudpelizzon-security/frontend/panel.js?v=21bfdc154d68",
+    url: "/cloudpelizzon-security/frontend/panel.js?v=13d896c1edbe",
   },
   "CP-AUTOMATION": {
     tag: "cloudpelizzon-automation-panel",
     title: "Automações",
-    url: "/cloudpelizzon-automation/frontend/panel.js?v=275e7dddd916",
+    url: "/cloudpelizzon-automation/frontend/panel.js?v=c444b565e15d",
   },
 };
 

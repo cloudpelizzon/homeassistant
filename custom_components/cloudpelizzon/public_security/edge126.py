@@ -47,7 +47,13 @@ class Edge:
         domain,name=service.split('.')
         target=data.get('entity_id','')
         if type(target) is not str or [domain,name,target] not in approved['effects'] or not permitted(domain,name,target):raise PermissionError('unapproved_security_effect')
-        await self.service(domain,name,data)
+        from ..homolog_mirror.source132 import DELIVERY_CHECK
+        def valid_delivery():
+            self.check(token)
+            if not self.connected or self.check()!=approved or self.consent!=approved or not self.clock()<expires:raise PermissionError('delivery_expired_or_changed')
+        context=DELIVERY_CHECK.set(valid_delivery)
+        try:await self.service(domain,name,data)
+        finally:DELIVERY_CHECK.reset(context)
     async def deliver(self,descriptor,approved,token):
         loop=asyncio.get_running_loop()
         deadline={}

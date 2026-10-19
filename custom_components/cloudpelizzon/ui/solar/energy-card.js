@@ -474,7 +474,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
       e.solarEnergy,e.solarEnergyFallback,e.importEnergy,e.importEnergyFallback,e.exportEnergy,e.exportEnergyFallback
     ]);
     for (const d of [...e.devices.qd1,...e.devices.qd2]) { ids.add(d.power); ids.add(d.energy); }
-    return [...ids].filter(Boolean);
+    return [...ids].filter(id=>id&&id!=='sensor.cloudpelizzon_energy_not_configured');
   }
 
   async _loadHistory(force=false, requestedSeq=null) {

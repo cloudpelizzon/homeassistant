@@ -23,6 +23,8 @@ jobs:
           persist-credentials: false
       - name: Verify reviewed public hashes and reject sensitive artifacts
         run: python3 tools/verify_public_tree.py
+      - name: Verify real daily counts and production Solar data routing
+        run: node tests/public-client/test_source132.cjs custom_components/cloudpelizzon
       - name: Verify Solar refresh and visible detection feedback
         run: node tests/public-client/test_solar131.cjs custom_components/cloudpelizzon/ui/solar/panel.js
       - name: Verify browser export without network or devices

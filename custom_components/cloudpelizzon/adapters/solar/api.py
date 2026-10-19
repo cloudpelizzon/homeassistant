@@ -4,6 +4,9 @@ import probatio
 from homeassistant.components import websocket_api
 from .bridge import COMMANDS
 KEY='cloudpelizzon_solar45'
+SOURCE='cloudpelizzon/energy/production_config'
+HISTORY='cloudpelizzon/energy/production_history'
+EXTRA={SOURCE,HISTORY}
 
 def _owned(current,original):
     if current is original:return True
@@ -23,7 +26,24 @@ async def dispatch(hass,connection,msg):
     if bridge is None:
         connection.send_error(msg['id'],'not_loaded','Solar indisponível.');return
     try:
-        result=await bridge.handle(msg['type'],{k:v for k,v in msg.items() if k not in ('id','type')},admin=user.is_admin)
+        if msg['type'] in EXTRA:
+            if not user.is_admin:raise PermissionError('admin_required')
+            await bridge.handle('cloudpelizzon/energy/status',{},admin=True)
+            from ...homolog_mirror.source132 import observer,request,measurement_config,energy_history
+            if msg['type']==SOURCE:result={'config':measurement_config(await request(observer(hass), 'cloudpelizzon/energy/config/get'))}
+            else:
+                config=await bridge.handle('cloudpelizzon/energy/config/get',{},admin=True)
+                allowed=set()
+                def collect(value):
+                    if isinstance(value,dict):
+                        for item in value.values():collect(item)
+                    elif isinstance(value,list):
+                        for item in value:collect(item)
+                    elif isinstance(value,str) and value.startswith('sensor.'):allowed.add(value)
+                collect(config)
+                result=await energy_history(hass,msg['query'],allowed)
+        else:
+            result=await bridge.handle(msg['type'],{k:v for k,v in msg.items() if k not in ('id','type')},admin=user.is_admin)
         if hass.data.get(KEY) is not bridge:raise PermissionError('bridge_unloaded')
         connection.send_result(msg['id'],result)
     except asyncio.CancelledError:raise
@@ -33,10 +53,11 @@ async def dispatch(hass,connection,msg):
 def register(hass,bridge):
     if KEY in hass.data:raise ValueError('solar_bridge_already_registered')
     registry=hass.data.get(websocket_api.DOMAIN,{})
-    if any(command in registry for command in COMMANDS):raise ValueError('legacy_handlers_must_be_unloaded_first')
+    if any(command in registry for command in set(COMMANDS)|EXTRA):raise ValueError('legacy_handlers_must_be_unloaded_first')
     handlers={}
-    for command in COMMANDS:
+    for command in set(COMMANDS)|EXTRA:
         schema={probatio.Required('type'):command}
+        if command==HISTORY:schema[probatio.Required('query')]=dict
         if command.endswith('/config/save'):schema[probatio.Required('config_json')]=str
         handler=websocket_api.websocket_command(schema)(websocket_api.async_response(dispatch))
         websocket_api.async_register_command(hass,handler);handlers[command]=handler

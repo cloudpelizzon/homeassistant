@@ -24,12 +24,13 @@
   "options": {
     "step": {
       "init": {
-        "title": "Read-only production observations",
-        "description": "Configure on homologation only. Receives live states and device metadata without forwarding commands. Source automation actions, camera images and previous history are not copied. Token stays in local private storage. Uncheck to disable.",
+        "title": "Production connection",
+        "description": "Receives live states and camera snapshots. Optionally forwards signed module commands to real production devices. Leave disabled for read-only observation. The token remains private; licenses and trials are not copied.",
         "data": {
-          "enabled": "Enable read-only observations",
+          "enabled": "Enable production connection",
           "source_url": "Production Home Assistant URL (http://IP:port)",
-          "token": "Production token (blank keeps current)"
+          "token": "Production token (blank keeps current)",
+          "forward_commands": "Allow real commands on production devices"
         }
       }
     },

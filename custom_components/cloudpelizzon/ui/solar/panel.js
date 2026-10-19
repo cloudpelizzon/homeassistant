@@ -1,4 +1,4 @@
-import "/cloudpelizzon-energy/frontend/energy-card.js?v=5400-smartsetup-r4";
+import "/cloudpelizzon-energy/frontend/energy-card.js?v=4a5c509eda29";
 
 class CloudPelizzonEnergyPanel extends HTMLElement {
   constructor() {
@@ -235,6 +235,13 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     return ranked[0]?.row?.entity_id||"";
   }
 
+
+  async _importProduction(){
+    this._detecting=true;this._detectFeedback='Lendo configuração de medição da produção…';this._render();
+    try{const result=await this._ws('cloudpelizzon/energy/production_config');this._cfg=result.config;this._ensureCfg();this._detectFeedback='Configuração da produção carregada. Revise os sensores e clique em Salvar. Licenças e trials foram preservadas.';}
+    catch(error){this._detectFeedback='Não foi possível importar: '+String(error?.message||error);}
+    finally{this._detecting=false;this._render();}
+  }
 
   async _refreshDiscovery(){
     this._syncDraft();this._detecting=true;this._detectFeedback='Consultando sensores de energia do Home Assistant…';this._render();
@@ -990,7 +997,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
               <h2>Configuração automática</h2>${this._detectFeedback?`<p role="status">${this._esc(this._detectFeedback)}</p>`:""}
               <p>Não é necessário conhecer entity_id, acumuladores ou tratamento de sinal. Revise o resumo e salve. Os detalhes técnicos ficam em “Configuração avançada”.</p>
             </div>
-            <button id="autodetect" class="primary" ${this._detecting?"disabled":""}>
+            <button id="import-production" ${this._detecting?"disabled":""}>Usar configuração da produção</button><button id="autodetect" class="primary" ${this._detecting?"disabled":""}>
               <ha-icon icon="mdi:radar"></ha-icon>
               ${generation.length||boards.length||this._cfg.site.house_power_entity?"Refazer detecção automática":"Detectar e configurar automaticamente"}
             </button>
@@ -1265,6 +1272,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
       </main>
     `;
 
+    this.shadowRoot.querySelector("#import-production")?.addEventListener("click",()=>this._importProduction());
     this.shadowRoot.querySelector("#autodetect")?.addEventListener("click",()=>this._refreshDiscovery());
     this.shadowRoot.querySelector("#add-source")?.addEventListener("click",()=>this._addSource());
     this.shadowRoot.querySelector("#add-board")?.addEventListener("click",()=>this._addBoard());
@@ -1378,8 +1386,10 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
   _propagate(){
     const card=this.shadowRoot?.querySelector("#energy-card");
     if(card&&this._hass){
-      if(typeof card.setConfig==="function")card.setConfig(this._cardConfig());
-      card.hass=this._hass;
+      const config=this._cardConfig(),signature=JSON.stringify(config);
+      if(typeof card.setConfig==="function"&&card.__cpConfig!==signature){card.setConfig(config);card.__cpConfig=signature;}
+      const original=this._hass;
+      card.hass=original.states?.['sensor.cloudpelizzon_homolog_mirror']?{...original,callWS:query=>query.type==='history/history_during_period'?original.callWS({type:'cloudpelizzon/energy/production_history',query}):original.callWS(query)}:original;
     }
   }
 

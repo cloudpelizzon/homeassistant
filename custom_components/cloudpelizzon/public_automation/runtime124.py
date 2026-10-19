@@ -26,6 +26,8 @@ def create(hass,entry,context):
         return result
     async def service(domain,name,data):
         current();deny_read_only_targets(hass,data)
+        from ..homolog_mirror.source132 import forward
+        if await forward(hass,domain,name,data):return
         await hass.services.async_call(domain,name,data,blocking=True)
     folder=Path(hass.config.path('.storage/cloudpelizzon_relay124')).absolute()
     def relay(targets,gateway,call_service):

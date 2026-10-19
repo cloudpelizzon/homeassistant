@@ -53,7 +53,13 @@ class Edge:
         if domain not in ('light','switch','input_boolean') or name not in ('turn_on','turn_off','toggle'):raise PermissionError('unsupported_service')
         entities=data.get('entity_id');entities=[entities] if type(entities) is str else entities
         if type(entities) is not list or not entities or any(e not in approved['targets'] for e in entities):raise PermissionError('unapproved_target')
-        await self.service(domain,name,data)
+        from ..homolog_mirror.source132 import DELIVERY_CHECK
+        def valid_delivery():
+            self.check(token)
+            if not self.connected or self.check()!=approved or self.consent!=approved or not self.clock()<expires:raise PermissionError('delivery_expired_or_changed')
+        context=DELIVERY_CHECK.set(valid_delivery)
+        try:await self.service(domain,name,data)
+        finally:DELIVERY_CHECK.reset(context)
     async def deliver(self,descriptor,approved,token):
         loop=asyncio.get_running_loop()
         deadline={}

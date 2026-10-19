@@ -37,7 +37,7 @@ async def start_saved(hass,entry):
  if not isinstance(core,dict) or core.get('installation_id')!=saved.get('target_core') or core.get('installation_id')!=entry.data.get('fleet_installation_id'):
   _LOGGER.error('Mirror refused: local identity changed');return
  source=source_url(saved['source_base'])
- mirror=Mirror(hass,entry,saved['token'],source);hass.data.setdefault(DOMAIN,{})[entry.entry_id]=mirror
+ mirror=Mirror(hass,entry,saved['token'],source);mirror.forward_commands=saved.get('forward_commands') is True;hass.data.setdefault(DOMAIN,{})[entry.entry_id]=mirror
  from ..camera import ADDERS
  if entry.entry_id not in hass.data.get(ADDERS,{}):await hass.config_entries.async_forward_entry_setups(entry,['camera'])
  mirror.task=entry.async_create_background_task(hass,mirror.run(),'Production observations',eager_start=False)
@@ -45,10 +45,10 @@ async def start_saved(hass,entry):
 class Mirror:
  def __init__(self,hass,entry,token,source):
   self.cameras={};self.source_devices={};self.image_slots=asyncio.Semaphore(3)
-  self.token=token;self.source=source
+  self.token=token;self.source=source;self.forward_commands=False;self.commands_forwarded=0
   self.hass=hass;self.entry=entry;self.owned=set();self.blocked=set();self.mapping={};self.stopping=False;self.task=None
  def status(self,state):
-  self.hass.states.async_set('sensor.cloudpelizzon_homolog_mirror',state,{'friendly_name':'Espelho da produção — somente leitura','entities':len(self.owned),'collisions_skipped':len(self.blocked),'source':self.source.split('/api/')[0],'commands_forwarded':0})
+  self.hass.states.async_set('sensor.cloudpelizzon_homolog_mirror',state,{'friendly_name':'Espelho da produção', 'forward_commands':self.forward_commands,'entities':len(self.owned),'collisions_skipped':len(self.blocked),'source':self.source.split('/api/')[0],'commands_forwarded':self.commands_forwarded})
  def offline(self):
   for eid in self.owned:
    if eid in self.cameras:self.cameras[eid].update_source('unavailable');continue
@@ -59,6 +59,8 @@ class Mirror:
   sanitized=clean(row)
   if sanitized is None:return
   eid,value,attrs=sanitized
+  attrs['cloudpelizzon_read_only']=not self.forward_commands
+  attrs['cloudpelizzon_forward_commands']=self.forward_commands
   if eid in self.blocked or (eid not in self.owned and len(self.owned)>=10000):return
   existing=self.hass.states.get(eid)
   registry=er.async_get(self.hass);reg=registry.async_get(eid)

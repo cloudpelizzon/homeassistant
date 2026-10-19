@@ -5626,7 +5626,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function overviewView(host,s){
     const imgChips=`<div class="cp60-map-chip win"><ha-icon icon="mdi:window-closed-variant"></ha-icon><span><b>Janelas</b><small>${s.windows.length-s.open.filter(id=>openingType(host,id)==='window').length}/${s.windows.length} protegidas</small></span></div><div class="cp60-map-chip sens"><ha-icon icon="mdi:motion-sensor"></ha-icon><span><b>Sensores internos</b><small>${sensorCandidates(host).filter(x=>x.type==='motion').length} monitorados</small></span></div><div class="cp60-map-chip fence ${s.fenceOn?'ok':'bad'}"><ha-icon icon="mdi:electric-switch"></ha-icon><span><b>Cerca elétrica</b><small>${s.fenceOn?'Ativada':'Desativada'}</small></span></div><div class="cp60-map-chip gate"><ha-icon icon="mdi:garage"></ha-icon><span><b>Portão</b><small>${s.gateRaw==='closed'?'Fechado':s.gateRaw==='open'?'Aberto':esc(s.gateRaw)}</small></span></div>`;
-    return `<div class="cp60-map"><img src="${ASSET}" alt="Residência">${imgChips}</div>`;
+    return `<div class="cp60-map"><img src="${ASSET}" alt="Residência"><svg class="cp132-light-routes" viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="cp132Route"><stop stop-color="#33eaff"/><stop offset="1" stop-color="#49ffd1"/></linearGradient></defs><path class="edge" d="M35 400 L35 80 L270 25 L750 25 L965 95 L965 425 L730 480 L280 480 Z"/><path class="route one" d="M320 60 L320 160 L500 240 L830 110"/><path class="route two" d="M80 390 L270 390 L500 330 L500 450"/><circle cx="320" cy="160" r="3"/><circle cx="830" cy="110" r="3"/><circle cx="270" cy="390" r="3"/><circle cx="500" cy="450" r="3"/></svg>${imgChips}</div>`;
   }
 
   function camerasView(host,s){ return `<div class="cp60-scroll cp60-camera-grid">${s.cams.map(id=>cameraCard(host,id)).join('')||'<div class="cp60-empty">Nenhuma câmera cadastrada.</div>'}</div>`; }
@@ -5809,7 +5809,33 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function toast(host,msg,tone='info'){const el=host.shadowRoot?.querySelector('#cp60-root [data-toast]');if(!el)return;el.textContent=msg;el.className=`cp60-toast show ${tone}`;clearTimeout(host.__cp60Toast);host.__cp60Toast=setTimeout(()=>el.className='cp60-toast',2500);}
 
-  async function service(host,domain,svc,data){const targets=Array.isArray(data?.entity_id)?data.entity_id:[data?.entity_id];if(targets.some(id=>state(host,id)?.attributes?.cloudpelizzon_read_only)){toast(host,'Somente leitura: este dispositivo é espelhado da produção. Nenhum comando foi enviado.','error');return false;}try{const result=await host._hass.callWS({type:'cloudpelizzon/security/command',service:domain+'.'+svc,data:data||{}});if(result.delivered!==true)throw Error('Comando não confirmado');return true}catch(e){toast(host,String(e?.message||e),'error');return false}}
+  async function service(host,domain,svc,data){
+    const targets=Array.isArray(data?.entity_id)?data.entity_id:[data?.entity_id],mirrored=targets.some(id=>state(host,id)?.attributes?.mirror_source==='production_observer');
+    if(targets.some(id=>state(host,id)?.attributes?.cloudpelizzon_read_only)){toast(host,'Comandos da produção desativados. Ative “Permitir comandos reais” nas opções da integração CloudPelizzon.','error');return false;}
+    try{
+      if(mirrored){
+        const result=await host._hass.callWS({type:'cloudpelizzon/security/permissions'}),p=result.policy;
+        const missing=targets.filter(id=>!p.effects.some(x=>x[0]===domain&&x[1]===svc&&x[2]===id));
+        if(missing.length||host._config?.geral?.modo_sombra){
+          if(!window.confirm(`Autorizar ${domain}.${svc} em ${targets.join(', ')} na PRODUÇÃO? Esta ação é real. O modo sombra será desativado; as demais permissões serão preservadas.`))return false;
+          const policy={...p,reads:[...new Set([...p.reads,...targets])],effects:[...p.effects,...missing.map(id=>[domain,svc,id])]};
+          if(host._config?.geral?.modo_sombra){
+            const next=JSON.parse(JSON.stringify(host._config));next.geral.modo_sombra=false;
+            const saved=await host._hass.callApi('POST',CP_SEG_API,next);
+            host._config=saved?.configuracao||next;
+          }
+          await host._hass.callWS({type:'cloudpelizzon/security/permissions/save',policy,confirmed:true});
+        }
+      }
+      if(domain==='alarm_control_panel'&&state(host,targets[0])?.attributes?.code_format&&(svc==='alarm_disarm'||state(host,targets[0])?.attributes?.code_arm_required)){
+        const code=window.prompt('Código da central de alarme (usado somente neste comando):');if(code===null)return false;data={...data,code};
+      }
+      const result=await host._hass.callWS({type:'cloudpelizzon/security/command',service:domain+'.'+svc,data:data||{}});
+      if(result.delivered!==true)throw Error('Comando não confirmado. Não será repetido automaticamente.');
+      toast(host,mirrored?'Comando confirmado pelo Home Assistant de produção.':'Comando confirmado.','success');return true;
+    }catch(e){toast(host,String(e?.message||e),'error');return false}
+  }
+
   async function handleClick(host,e){
     const t=e.composedPath().find(n=>n?.dataset && Object.keys(n.dataset).length) || e.target;
     const btn=e.composedPath().find(n=>n?.matches?.('button,[data-entity]')) || e.target.closest?.('button,[data-entity]'); if(!btn)return;
@@ -5925,6 +5951,20 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 #cp60-root .cp60-map{box-shadow:0 0 0 1px #42e7ff99,0 0 22px #00caff44,inset 0 0 34px #00b4dd33}
 @keyframes cp131Perimeter{0%,100%{background-position:0 0,100% 100%,0 0,100% 0;filter:brightness(1)}50%{background-position:100% 0,0 100%,0 0,100% 0;filter:brightness(1.6)}}
 @media(max-width:760px){#cp60-root .cp60-camera-grid{grid-template-columns:1fr}}
+
+
+#cp60-root .cp132-light-routes{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;filter:drop-shadow(0 0 5px #36e7ff);fill:none;stroke:url(#cp132Route);stroke-width:1.8}
+#cp60-root .cp132-light-routes .edge{stroke-dasharray:36 760;animation:cp132Travel 12s linear infinite;opacity:.85}
+#cp60-root .cp132-light-routes .route{stroke-dasharray:8 90;animation:cp132Link 7s linear infinite;opacity:.48}
+#cp60-root .cp132-light-routes .two{animation-delay:-3s;stroke:#50ffd3}
+#cp60-root .cp132-light-routes circle{fill:#92ffff;stroke:none;animation:cp132Light 3s ease-in-out infinite}
+#cp60-root .cp132-light-routes circle:nth-last-child(2n){animation-delay:-1.5s}
+#cp60-root .cp60-map-chip:not(.bad){animation:cp132Chip 4s ease-in-out infinite}
+#cp60-root .cp60-map-chip.sens{animation-delay:-2s}
+@keyframes cp132Travel{to{stroke-dashoffset:-3184}}
+@keyframes cp132Link{to{stroke-dashoffset:-294}}
+@keyframes cp132Light{50%{opacity:.35;filter:drop-shadow(0 0 9px #50ffd3)}}
+@keyframes cp132Chip{50%{box-shadow:0 0 22px #2ef5ff66,inset 0 0 14px #36dfff22}}
 
 @media(prefers-reduced-motion:reduce){#cp60-root *{animation:none!important;transition:none!important}}
 @keyframes cp60Pulse{0%,100%{filter:drop-shadow(0 0 4px #00ddff)}50%{filter:drop-shadow(0 0 13px #00ffca);transform:scale(1.045)}}

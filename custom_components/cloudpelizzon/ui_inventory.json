@@ -2,8 +2,8 @@
   "schema": "cp.ui.inventory73.v1",
   "files": {
     "ui/automation/legacy-v1044.css": "37233c2890a5d76042d222e0ff6415366011f69d417d655301dde266ab3d6004",
-    "ui/automation/legacy-v1044.js": "afabcb1790a5c82e5d14937a6cf8c878d59fe73f164826f28dd01cbebda474d2",
-    "ui/automation/panel.js": "275e7dddd91655a843251bdab9a43b37f1639269bfc69fd1240add49a24cd2e0",
+    "ui/automation/legacy-v1044.js": "bc9da8dd7a3c0697935055955d04875d7b5f2789f2d4d4fb86d0ad1c58d0d66c",
+    "ui/automation/panel.js": "c444b565e15d9fbf65c6619013e59b3306a4ab3419cee0c5dea7cea53f8eb848",
     "ui/core/cloudpelizzon-logo.png": "09589abe9aab02e51543e959be9b492073febf2a38a864dbe624911bcb85b9ac",
     "ui/core/fleet-registration.js": "08f47ffbccc114015a163866a3afd8574c60a693b433caa0188e7e1eaea7ffb5",
     "ui/core/hacs-brand-compat.js": "39cd41964a7c73e3735f40a8ae84b824d632b79bc884474ec68ddec3728806f3",
@@ -62,12 +62,12 @@
     "ui/security/cp-security-v035-extension.js": "f7ff1aa2e0e4ed25460186c24ab7dd8466d3d47949ff361f23bc401d78d66aac",
     "ui/security/cp-security-v036-extension.js": "bc2313060eb98c6a647d9447aca56c4f8a9c5b118e0761aa1151328753e5e162",
     "ui/security/cp-security-v037-extension.js": "91396ec238c8dafd5bb50eb5b1b822dd3644dfebbd21cbc1d84647ba8a431ca5",
-    "ui/security/panel.js": "21bfdc154d6823566b0d2d64785ff8374301e7dec80d30912f6e062d665bac12",
+    "ui/security/panel.js": "13d896c1edbe5689e8df48f9496230eb9ae2b69d9f40969d8fd7790b3313467c",
     "ui/shell/date-format-r51.js": "86319cce81b733583b633114e5c1f0ed431caa591f3f29cc5dc3e72106586e47",
-    "ui/shell/optional-modules.js": "3d890d0479627f0ea5b9bae0adffdf6bc44d3dd27c3083d2dcdb9baf96e4c46c",
-    "ui/shell/panel.js": "8196bff53c4880a41136509419f4ed6ede0e72f10e3e5f8f76aa8fd41360e432",
-    "ui/solar/energy-card.js": "14d311b1b29ebf5749f6f2fa5601809d89f799ba24649484a82c7d0825c2d71e",
-    "ui/solar/panel.js": "5fb2e0743da83a82f3f377ff8ed213476147dc47953e585f06cac66e32017ff4",
+    "ui/shell/optional-modules.js": "ea72d43af55488e804f33e8830245e07b2a813670d4fe6dfa1e724733082fdac",
+    "ui/shell/panel.js": "fe8c1bc0e26e6c4379f573b6101cea8f28d875fd97d1ea423f0d5841ec94542f",
+    "ui/solar/energy-card.js": "4a5c509eda290fc9e10907e5b8d72314e8b20e26b28f7dcf0cb73fced39c79e0",
+    "ui/solar/panel.js": "c3c3c44435b5f877d57b5e0e5e3e04528746aa9b20ad47d43d2285a751ac0709",
     "ui/updater/panel.js": "e1ec03718ec046c3146ec268e0b5955e00690d0ca9ef4f96d62c86e293c7c6cd"
   }
 }

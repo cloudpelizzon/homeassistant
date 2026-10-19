@@ -41,11 +41,12 @@ class HomologOptionsFlow(config_entries.OptionsFlow):
     await verify(self.hass,source,token)
    except (ValueError,aiohttp.ClientError,TimeoutError):errors['base']='mirror_cannot_connect'
    else:
-    await store.async_save({'enabled':True,'source_base':base,'token':token,'target_core':iid})
+    await store.async_save({'enabled':True,'source_base':base,'token':token,'target_core':iid,'forward_commands':user_input.get('forward_commands') is True})
     await start_saved(self.hass,self.config_entry)
     return self.async_create_entry(title='',data=dict(self.config_entry.options))
   return self.async_show_form(step_id='init',data_schema=vol.Schema({
    vol.Required('enabled',default=saved.get('enabled',False)):bool,
+   vol.Optional('forward_commands',default=saved.get('forward_commands',False)):bool,
    vol.Optional('source_url',default=saved.get('source_base','')):str,
    vol.Optional('token'):TextSelector(TextSelectorConfig(type=TextSelectorType.PASSWORD)),
   }),errors=errors)
