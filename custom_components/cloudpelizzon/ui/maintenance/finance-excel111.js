@@ -105,7 +105,7 @@ export function buildWorkbook(inputModel,ExcelJS,logoData=null,extraModels=[]){
   }
   merged(row,1,60,model.footer,{size:10});sheet.getRow(row).height=30;
   sheet.pageSetup.printArea=`A1:BH${row}`;
-  sheet.headerFooter.oddFooter='CloudPelizzon — Página &P de &N';
+  sheet.headerFooter.oddFooter='&CCloudPelizzon — Página &P de &N';
   }
   return book;
 }

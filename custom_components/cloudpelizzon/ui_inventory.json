@@ -65,7 +65,7 @@
     "ui/updater/panel.js": "e1ec03718ec046c3146ec268e0b5955e00690d0ca9ef4f96d62c86e293c7c6cd",
     "ui/core/hacs-brand-compat.js": "d56cf9022b4492116f00ac00a459fefbd41da492cc0ec8813ff3564e3f61c74b",
     "ui/core/hacs-icon.png": "01bec3858428b8fd2fbe4fc1593e715220e5d27e43b5396c532eaaf7f8cd5bc5",
-    "ui/maintenance/finance-excel111.js": "b5999d20f5ee280170d5cfd41c3e5cdee1b5b15b13d7e779287caade3dd46094",
+    "ui/maintenance/finance-excel111.js": "8dbab33af2b0da989c7fbbca70c2ff2b6fc7e300d202de489993ad4bccc4dbb8",
     "ui/maintenance/exceljs-4.4.0.min.js": "7e49da68588e250dbb8bba190d2caa8ab3787cc0284bda1d8b2f805c4df742c9"
   }
 }
