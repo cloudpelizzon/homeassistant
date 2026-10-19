@@ -30,7 +30,7 @@ class NativeEntity:
     @property
     def extra_state_attributes(self):
         value=self.edge.native or {}
-        return {'cloudpelizzon_native_security':True,'house_mode':value.get('mode'),
+        return {'server_supports_native':self.edge.native is not None,'cloudpelizzon_native_security':True,'house_mode':value.get('mode'),
                 'configured_sensors':value.get('configured_sensors',0),'occupancy':value.get('occupancy'),'pending':value.get('pending'),
                 'faults':value.get('faults',[]),'revision':value.get('revision'),
                 'events':value.get('events',[])[-10:],'controller':'private_authorized_runtime'}

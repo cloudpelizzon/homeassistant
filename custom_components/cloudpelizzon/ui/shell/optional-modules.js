@@ -17,7 +17,7 @@ const OPTIONAL_MODULES = {
   "CP-SECURITY": {
     tag: "cloudpelizzon-security-panel",
     title: "Segurança",
-    url: "/cloudpelizzon-security/frontend/panel.js?v=725026d77f59",
+    url: "/cloudpelizzon-security/frontend/panel.js?v=3d5260f6689c",
   },
   "CP-AUTOMATION": {
     tag: "cloudpelizzon-automation-panel",
