@@ -5861,14 +5861,15 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
     const availableW=Math.max(320,window.innerWidth-left-4);
     const w=Math.max(320,Math.min(availableW,(r.width>320?r.width:availableW)));
     const h=Math.max(460,window.innerHeight-top-4);
-    mount.style.setProperty('--cp60-left',`${left}px`);
-    mount.style.setProperty('--cp60-top',`${top}px`);
-    mount.style.setProperty('--cp60-w',`${w}px`);
-    mount.style.setProperty('--cp60-h',`${h}px`);
-    mount.classList.toggle('compact',h<790);
-    mount.classList.toggle('micro',h<700);
-    mount.classList.toggle('narrow',w<1450);
-    mount.classList.toggle('wide',w>=1800);
+    mount.style.zoom='0.75';
+    mount.style.setProperty('--cp60-left',`${left/0.75}px`);
+    mount.style.setProperty('--cp60-top',`${top/0.75}px`);
+    mount.style.setProperty('--cp60-w',`${w/0.75}px`);
+    mount.style.setProperty('--cp60-h',`${h/0.75}px`);
+    mount.classList.toggle('compact',h/0.75<790);
+    mount.classList.toggle('micro',h/0.75<700);
+    mount.classList.toggle('narrow',w/0.75<1450);
+    mount.classList.toggle('wide',w/0.75>=1800);
     mount.dataset.viewport=`${Math.round(w)}x${Math.round(h)}`;
     bindAlarmPicker(host);
   }

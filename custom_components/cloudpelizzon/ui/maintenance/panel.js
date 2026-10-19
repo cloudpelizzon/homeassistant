@@ -314,6 +314,7 @@ class CloudPelizzonMaintenancePanel extends HTMLElement {
         items: [],
       });
       this.hydrateCard(card, snapshot);
+      card.style.zoom="0.67";card.style.width="100%";
       this._card = card;
       this.shadowRoot.replaceChildren(card);
       card.hass = this.createHassProxy(this._hass, card);

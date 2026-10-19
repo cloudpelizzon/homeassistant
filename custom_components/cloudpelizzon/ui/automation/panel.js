@@ -49,7 +49,8 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
   connectedCallback(){if(!this._initialized){this._initialized=true;this._build();this.refresh()}this._timer??=setInterval(()=>this.refresh(false),45000)}
   disconnectedCallback(){if(this._timer)clearInterval(this._timer);this._timer=null;}
   async ws(type,data={}){if(!this._hass)throw Error('Home Assistant não conectado.');return this._hass.callWS({type,...data})}
-  _build(){this.shadowRoot.innerHTML=`<style>${STYLES}</style><header class="top"><div><div class="brand">◉ CLOUDPELIZZON · AUTOMATION</div><div class="subbrand">CENTRAL INTELIGENTE · CLOUDPELIZZON</div></div><nav class="tabs">${[['overview','Visão geral'],['categories','Categorias'],['rules','Automações'],['builder','Criar e editar'],['settings','Preferências']].map(([v,t])=>`<button data-tab="${v}" class="${v==='overview'?'active':''}">${t}</button>`).join('')}</nav><span class="statusbar" id="online">Carregando...</span></header><main>
+  _build(){this.shadowRoot.innerHTML=`<style>${STYLES}
+:host{zoom:0.67!important;width:100%!important}</style><header class="top"><div><div class="brand">◉ CLOUDPELIZZON · AUTOMATION</div><div class="subbrand">CENTRAL INTELIGENTE · CLOUDPELIZZON</div></div><nav class="tabs">${[['overview','Visão geral'],['categories','Categorias'],['rules','Automações'],['builder','Criar e editar'],['settings','Preferências']].map(([v,t])=>`<button data-tab="${v}" class="${v==='overview'?'active':''}">${t}</button>`).join('')}</nav><span class="statusbar" id="online">Carregando...</span></header><main>
 <section class="view active" id="view-overview"><div class="cp-viewbar"><button type="button" data-action="toggleOverview" id="cp-toggle-overview" aria-controls="cp-overview-manager" aria-expanded="false">Mostrar configurações e categorias</button><label>Exibir <select id="cp-count-scope"><option value="all">Todas as automações</option><option value="home">Rotinas da casa</option><option value="technical">Diagnósticos NOC/DIA</option></select></label><span class="cp-ha-badge">● Leitura automática das automações deste Home Assistant</span></div><div id="cp-source-note" class="cp-datanote"></div><div id="cp-overview-manager" class="client-overview-managed" hidden><div class="explain"><b>Seu centro de automações, do seu jeito.</b> Escolha as categorias e regras que deseja acompanhar. <b>Selecionar não modifica suas automações:</b> nenhuma automação nativa será alterada.</div><div id="metrics" class="grid"></div><div class="toolrow"><button class="primary" data-tab="categories">Personalizar categorias</button><button data-tab="builder">Criar automação sem código</button><button data-action="refresh">Atualizar painel</button></div><div class="panel" id="visual-network"><h3>Mapa inteligente de categorias</h3><p class="small">Mapa dinâmico: selecione uma categoria para abrir as automações relacionadas.</p><div id="dynamic-map"></div></div></div><div id="cp-no-native" class="explain" hidden></div><div class="legacy" id="legacy"></div></section>
 <section class="view" id="view-categories"><h2>Quais categorias quer gerenciar?</h2><p>Você escolhe. O botão <b>Todas</b> apresenta tudo que estiver disponível; <b>Personalizar</b> permite selecionar apenas o que deseja.</p><div class="toolrow"><button data-action="all" class="primary">✓ Todas</button><button data-action="selected">Personalizar</button><button data-action="clear">Nenhuma</button><button data-action="saveCategories">Salvar preferências</button></div><div class="catgrid" id="categories"></div></section>
 <section class="view" id="view-rules"><h2>Minhas automações</h2><p>Escolha quais automações desta instalação deseja acompanhar. A seleção não liga, desliga nem altera suas rotinas.</p><div class="toolrow"><input type="search" id="filter" placeholder="Buscar nome, código ou categoria"><select id="filter-cat" style="max-width:260px"><option value="">Todas as categorias</option></select><button data-action="ruleAll">Todas</button><button data-action="ruleNone">Nenhuma</button><button data-action="saveRules">Salvar seleção</button></div><div class="panel"><div id="rule-table" hidden></div></div><div class="panel"><h3>Automações do seu Home Assistant</h3><p class="small">Os dados são descobertos automaticamente nesta instalação. Use Todas, Nenhuma ou a seleção individual.</p><div id="native-table" class="tablewrap"></div></div></section>
@@ -85,8 +86,8 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     if(box)box.hidden=!selected.length;
     if(!selected.length)return;
     // Never use owner-specific CMDB counters or rule-engine inventory as the client source.
-    this._cockpit.config.daily_counts=this._daily?.counts||{};
-    this._cockpit.config.daily_hours=this._daily?.entity_hours?selected.reduce((hours,n)=>hours.map((v,i)=>v+(this._daily.entity_hours[n.entity_id]?.[i]||0)),Array(24).fill(0)):this._daily?.hours||null;
+    this._cockpit.config.daily_counts=Object.fromEntries(selected.map(n=>[n.entity_id,this._daily?.counts?.[n.entity_id]||0]));
+    this._cockpit.config.daily_hours=this._daily?.entity_hours?selected.reduce((hours,n)=>hours.map((v,i)=>v+(this._daily.entity_hours[n.entity_id]?.[i]||0)),Array(24).fill(0)):selected.length===native.length?this._daily?.hours||null:null;
     this._cockpit.config.daily_complete=this._daily?.complete===true;
     this._cockpit.config.inventory_sensor='';
     this._cockpit.config.category_registry_sensor='';
@@ -117,7 +118,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
         const name=String(v.attributes?.friendly_name||v.entity_id);
         const match=name.match(/^(?:MAN[-_](INF|CAR|CAS|GAS|TEC|ENE)[-_]\d{3}|([A-Z]{2,6})[-_]\d{3})/i);
         const category=match?(match[1]?'MAN':match[2].toUpperCase()):'SEM';
-        return {entity_id:v.entity_id,name,category,state:v.state,selected:isSelected||explicit.has(v.entity_id)||categories.has(category),last_triggered:v.attributes?.last_triggered||null};
+        return {entity_id:v.entity_id,name,category,state:v.state,selected:(isSelected||explicit.has(v.entity_id)||categories.has(category))&&(isSelected||!categories.size||categories.has(category)),last_triggered:v.attributes?.last_triggered||null};
       })
       .sort((a,b)=>a.name.localeCompare(b.name,'pt-BR'));
   }
@@ -164,7 +165,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
       this._dailyError='';
     }catch(error){this._daily=null;this._dailyError=String(error?.message||error);}
   }
-  _settings(){return this._status?.settings||{scope:'all',category_selection:[],rule_selection:[],native_selection:[],category_names:{},native_visible:true}}
+  _settings(){if(this._categoryDraft147)return {...(this._status?.settings||{}),scope:'selected',category_selection:this._categoryDraft147,native_selection:[]};return this._status?.settings||{scope:'all',category_selection:[],rule_selection:[],native_selection:[],category_names:{},native_visible:true}}
   _categoryName(c){return this._settings().category_names?.[c]||categoriesLabel[c]||c}
   _render(){
     const n=this._native(),c=this._categories();
@@ -247,7 +248,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
       prev.clear();
       for(const n of this._native())if(catSel.includes(n.category))prev.add(n.entity_id);
     }
-    const payload={scope,category_selection:origin==='categories'?catSel:current.category_selection,
+    const payload={scope,category_selection:origin==='categories'?catSel:[...new Set(this._native().filter(n=>prev.has(n.entity_id)).map(n=>n.category))],
       native_selection:[...prev],category_names:origin==='categories'?names:current.category_names||{},
       // Preserve existing module-created rule selection; never activate or modify private imports.
       rule_selection:current.rule_selection||[],native_visible:true};
@@ -355,6 +356,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     finally{this._busyEditor=false}
   }
 
-    _change(e){const node=e.target;if(node.classList?.contains('kind')){this._readBlocks();const block=node.closest('[data-section]');const s=block.dataset.section;const i=Number(block.dataset.index);this._blocks[s][i]={kind:node.value};this._renderBlocks();return}if(node.matches('.catbox,.rulebox,.nativebox')){this._scopeDraft='selected';this._toast('Seleção alterada. Clique em Salvar preferências para aplicar ao dashboard.');}}
+    _change(e){const node=e.target;if(node.classList?.contains('kind')){this._readBlocks();const block=node.closest('[data-section]');const s=block.dataset.section;const i=Number(block.dataset.index);this._blocks[s][i]={kind:node.value};this._renderBlocks();return}if(node.matches('.catbox')){this._categoryDraft147=[...this.shadowRoot.querySelectorAll('.catbox:checked')].map(e=>e.dataset.category);this._updateCockpitSource(true);clearTimeout(this._categoryTimer147);this._categoryTimer147=setTimeout(()=>{this._categoryQueue147=(this._categoryQueue147||Promise.resolve()).catch(()=>{}).then(async()=>{const version147=JSON.stringify(this._categoryDraft147);await this._saveScope('categories');if(JSON.stringify(this._categoryDraft147)===version147)this._categoryDraft147=null;this._updateCockpitSource(true)}).catch(error=>this._toast('Não foi possível salvar as categorias: '+(error?.message||error),true));},350);}if(node.matches('.catbox,.rulebox,.nativebox')){this._scopeDraft='selected';this._toast(node.matches('.catbox')?'Categoria aplicada. Salvando preferência…':'Seleção alterada. Clique em Salvar preferências para aplicar ao dashboard.');}}
 }
 if(!customElements.get('cloudpelizzon-automation-panel'))customElements.define('cloudpelizzon-automation-panel',CloudPelizzonAutomationPanel);
+

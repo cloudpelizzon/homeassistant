@@ -1636,11 +1636,17 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
     const point=selector=>{const e=scene.querySelector(selector);if(!e)return null;const r=e.getBoundingClientRect();return {x:Number(((r.x+r.width/2-area.x)/area.width*1000).toFixed(3)),y:Number(((r.y+r.height/2-area.y)/area.height*1000).toFixed(3))};};
     const inv=point('.v26-inverter'),micro=point('.v26-micro'),total=point('.v26-solar-total'),imp=point('.v26-grid-meter.import'),exp=point('.v26-grid-meter.export');
     if(!inv||!micro||!total||!imp||!exp)return;
-    const house={x:550,y:520},plant={x:85,y:650},grid={x:945,y:590};
+    const ring=scene.querySelector('.v26-shield')?.getBoundingClientRect();
+    if(!ring||!ring.width||!ring.height)return;
+    const cx=(ring.x+ring.width/2-area.x)/area.width*1000,cy=(ring.y+ring.height/2-area.y)/area.height*1000;
+    const rx=ring.width/2/area.width*1000,ry=ring.height/2/area.height*1000;
+    const edge=angle=>({x:cx+rx*Math.cos(angle),y:cy+ry*Math.sin(angle)});
+    const solarEdge=edge(Math.PI),importEdge=edge(-Math.PI/7),exportEdge=edge(Math.PI/7);
+    const plant={x:85,y:650},grid={x:945,y:590};
     const segment=(a,b)=>`C${(a.x+b.x)/2} ${a.y} ${(a.x+b.x)/2} ${b.y} ${b.x} ${b.y}`;
     const route=points=>`M${points[0].x} ${points[0].y} `+points.slice(1).map((b,i)=>segment(points[i],b)).join(' ');
     const live=this._live();
-    const paths=[['inverter','solar',[plant,inv,total],live.sofar>5],['micro','solar',[plant,micro,total],live.deye>5],['total','solar',[total,house],live.solar>5],['import','import',[grid,imp,house],live.imp>5],['export','export',[house,exp,grid],live.exp>5]];
+    const paths=[['inverter','solar',[plant,inv,total],live.sofar>5],['micro','solar',[plant,micro,total],live.deye>5],['total','solar',[total,solarEdge],live.solar>5],['import','import',[grid,imp,importEdge],live.imp>5],['export','export',[exportEdge,exp,grid],live.exp>5]];
     svg.innerHTML=paths.map(([name,color,points,active])=>{const d=route(points);return `<path data-flow="${name}" class="rail146 ${color}" d="${d}"/><path data-motion="${name}" pathLength="100" class="motion146 ${color} ${active?'active':'idle'}" d="${d}"/>`;}).join('');
   }
 

@@ -1,6 +1,6 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 import "/cloudpelizzon-core/frontend/panel.js?v=ecc500f34550";
-import "/cloudpelizzon/frontend/optional-modules.js?v=a79a17166375";
+import "/cloudpelizzon/frontend/optional-modules.js?v=03a27220c62a";
 import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
 
 
@@ -896,7 +896,7 @@ class CloudPelizzonPanel extends HTMLElement {
       </style>
 
 
-      <div class="topbar ${this._view==='energy'?'solar-compact145':''}">
+      <div style="zoom:${this._view==='security'?0.75:['maintenance','automation'].includes(this._view)?0.67:1}" class="topbar ${this._view==='energy'?'solar-compact145':''}">
 
         <div class="brand">
 
@@ -1598,6 +1598,7 @@ class CloudPelizzonPanel extends HTMLElement {
     }
 
     this._view = view;
+    const bar147=this.shadowRoot.querySelector('.topbar');if(bar147)bar147.style.zoom=view==='security'?'0.75':['maintenance','automation'].includes(view)?'0.67':'';
     this.shadowRoot.querySelector(".topbar")?.classList.toggle("solar-compact145",view==="energy");
 
 
