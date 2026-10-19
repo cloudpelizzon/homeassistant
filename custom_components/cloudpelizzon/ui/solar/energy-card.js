@@ -1033,6 +1033,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
         </header>
         <div class="v26-scene">
           <div class="v26-landscape"></div>
+          <svg class="flow146" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"></svg>
           ${this._sceneSvg()}
           <div class="v26-shield ${solarActive||importing||exporting?"active":""}"><i></i><i></i></div>
 
@@ -1628,6 +1629,21 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
   }
 
 
+  _syncFlow146(){
+    const scene=this.shadowRoot?.querySelector('.v26-scene');if(!scene)return;
+    const svg=scene.querySelector('.flow146');if(!svg)return;
+    const area=scene.getBoundingClientRect();if(!area.width||!area.height)return;
+    const point=selector=>{const e=scene.querySelector(selector);if(!e)return null;const r=e.getBoundingClientRect();return {x:Number(((r.x+r.width/2-area.x)/area.width*1000).toFixed(3)),y:Number(((r.y+r.height/2-area.y)/area.height*1000).toFixed(3))};};
+    const inv=point('.v26-inverter'),micro=point('.v26-micro'),total=point('.v26-solar-total'),imp=point('.v26-grid-meter.import'),exp=point('.v26-grid-meter.export');
+    if(!inv||!micro||!total||!imp||!exp)return;
+    const house={x:550,y:520},plant={x:85,y:650},grid={x:945,y:590};
+    const segment=(a,b)=>`C${(a.x+b.x)/2} ${a.y} ${(a.x+b.x)/2} ${b.y} ${b.x} ${b.y}`;
+    const route=points=>`M${points[0].x} ${points[0].y} `+points.slice(1).map((b,i)=>segment(points[i],b)).join(' ');
+    const live=this._live();
+    const paths=[['inverter','solar',[plant,inv,total],live.sofar>5],['micro','solar',[plant,micro,total],live.deye>5],['total','solar',[total,house],live.solar>5],['import','import',[grid,imp,house],live.imp>5],['export','export',[house,exp,grid],live.exp>5]];
+    svg.innerHTML=paths.map(([name,color,points,active])=>{const d=route(points);return `<path data-flow="${name}" class="rail146 ${color}" d="${d}"/><path data-motion="${name}" pathLength="100" class="motion146 ${color} ${active?'active':'idle'}" d="${d}"/>`;}).join('');
+  }
+
   _providerText145(body){
     const provider=String(this._config.grid_provider||'Concessionária').trim().slice(0,80)||'Concessionária';
     return body.replace(/(^|>)([^<]+)/g,(all,prefix,text)=>prefix+text.replace(/\b(?:Copel|COPEL)\b/g,()=>this._esc(provider)));
@@ -1826,6 +1842,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
       </div>
     </ha-card>`;
     this._bind();
+    if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>this._syncFlow146());
   }
 
   _css() {
@@ -11299,6 +11316,14 @@ radial-gradient(ellipse at 89% 96%,rgba(8,42,39,.30),transparent 28%)}
 @media(prefers-reduced-motion:reduce){:host([viewport-fit]) .energy-v54 .v29-net-line.flow-now145 i{animation:none!important;left:calc(50% - 9px)!important}}
 @media(max-width:900px){:host([viewport-fit]) .energy-v54 .filter-v14{grid-template-columns:120px minmax(180px,1fr) minmax(250px,1.2fr) 85px!important;gap:4px!important}}
 
+
+:host([viewport-fit]) .energy-v54 .v26-scene .asset-house{z-index:3!important;left:55%!important;width:32%!important;height:94%!important;max-height:94%!important;bottom:1%!important}
+:host([viewport-fit]) .energy-v54 .v26-house-meter,:host([viewport-fit]) .energy-v54 .v26-shield{left:55%!important}
+:host([viewport-fit]) .energy-v54 .v26-flow-svg,:host([viewport-fit]) .energy-v54 .v51-mobile-mesh{display:none!important}
+:host([viewport-fit]) .energy-v54 .flow146{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;z-index:2!important;pointer-events:none!important;overflow:visible!important}
+.flow146 path{fill:none;vector-effect:non-scaling-stroke;stroke-linecap:round}.flow146 .solar{stroke:#60d997}.flow146 .import{stroke:#e9b45d}.flow146 .export{stroke:#58c9eb}.flow146 .rail146{stroke-width:2;opacity:.4}.flow146 .motion146{stroke-width:3;stroke-dasharray:2 7;animation:flow146Move 2.8s linear infinite;opacity:.95}.flow146 .motion146.idle{display:none}.flow146 .motion146.solar{stroke:#d4ffe5}.flow146 .motion146.import{stroke:#ffe1a4}.flow146 .motion146.export{stroke:#c9f6ff}
+@keyframes flow146Move{to{stroke-dashoffset:-18}}
+@media(prefers-reduced-motion:reduce){.flow146 .motion146{animation:none!important}}
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
     `;
   }
@@ -11320,4 +11345,5 @@ if (!window.customCards.some(c=>c.type === "casa-pelizzon-energy-ops-card")) {
 }
 
 console.info("%c MALHA ENERGÉTICA V54.0.0 ","background:#020914;color:#35c8ff;padding:5px 8px;border:1px solid #1d6aa5;border-radius:4px;font-weight:bold;");
+
 

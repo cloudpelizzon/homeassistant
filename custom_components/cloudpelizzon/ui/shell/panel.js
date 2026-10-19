@@ -1,6 +1,6 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 import "/cloudpelizzon-core/frontend/panel.js?v=ecc500f34550";
-import "/cloudpelizzon/frontend/optional-modules.js?v=6eb419e93503";
+import "/cloudpelizzon/frontend/optional-modules.js?v=a79a17166375";
 import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
 
 
@@ -1683,7 +1683,7 @@ class CloudPelizzonPanel extends HTMLElement {
     style.textContent=`
       :host{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;overflow-x:hidden!important}
       .topbar{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;display:flex!important;flex-wrap:wrap!important;padding-left:clamp(8px,1vw,18px)!important;padding-right:clamp(8px,1vw,18px)!important}
-      .topbar.solar-compact145{padding-top:5px!important;padding-bottom:5px!important;gap:6px!important;min-height:44px!important;font-size:14px!important}
+      .topbar.solar-compact145{zoom:0.67!important;width:100%!important;padding-top:5px!important;padding-bottom:5px!important;gap:6px!important;min-height:44px!important;font-size:14px!important}
       .topbar.solar-compact145 .brand{font-size:14px!important;gap:7px!important;margin-right:12px!important}
       .topbar.solar-compact145 button{font-size:14px!important;padding:7px 10px!important;line-height:20px!important}
       .topbar.solar-compact145 ha-icon{--mdc-icon-size:20px;width:20px;height:20px}
@@ -1734,3 +1734,4 @@ if (
     CloudPelizzonPanel,
   );
 }
+

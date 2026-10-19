@@ -1,4 +1,4 @@
-import "/cloudpelizzon-energy/frontend/energy-card.js?v=2e47a15dd3d9";
+import "/cloudpelizzon-energy/frontend/energy-card.js?v=4f049ad4f6ee";
 
 class CloudPelizzonEnergyPanel extends HTMLElement {
   constructor() {
@@ -37,8 +37,9 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
   disconnectedCallback(){window.removeEventListener('resize',this._resizeViewport);this._viewportObserver?.disconnect();}
   _fitViewport(){
     const shell=this.shadowRoot?.querySelector('.energy-shell');if(!shell)return;
-    const top=Math.max(0,this.getBoundingClientRect().top),height=Math.max(260,window.innerHeight-top-3);
+    const top=Math.max(0,this.getBoundingClientRect().top),height=Math.max(260,window.innerHeight-top-3)/0.67;
     if(shell.style.height!==height+'px')shell.style.height=height+'px';
+    if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>this.shadowRoot?.querySelector('#energy-card')?._syncFlow146?.());
   }
 
   async _ws(type,payload={}){
@@ -1876,7 +1877,8 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
           .wizard-actions,.savebar,.topo-title{align-items:flex-start;flex-direction:column}
           .module-actions{align-items:flex-start;flex-direction:column}
         }
-      </style>
+      .energy-shell,.config-shell{zoom:0.67!important;width:100%!important;max-width:none!important;box-sizing:border-box!important}
+</style>
     `;
   }
 }
@@ -1884,3 +1886,4 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
 if(!customElements.get("cloudpelizzon-energy-panel")){
   customElements.define("cloudpelizzon-energy-panel",CloudPelizzonEnergyPanel);
 }
+

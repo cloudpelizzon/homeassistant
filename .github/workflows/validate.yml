@@ -63,6 +63,8 @@ jobs:
         run: node tests/public-client/test_xlsx_compat.cjs custom_components/cloudpelizzon/ui/maintenance/exceljs-4.4.0.min.js custom_components/cloudpelizzon/ui/maintenance/fflate-0.8.3.min.js custom_components/cloudpelizzon/ui/maintenance/finance-excel111.js /tmp/report117.xlsx
       - name: Verify Solar provider escaping and live energy direction
         run: node tests/public-client/test_solar145.cjs custom_components/cloudpelizzon/ui/solar/energy-card.js custom_components/cloudpelizzon/ui/solar/panel.js
+      - name: Verify Solar exact display scale and measured flow anchors
+        run: node tests/public-client/test_solar146.cjs custom_components/cloudpelizzon/ui/solar/energy-card.js custom_components/cloudpelizzon/ui/solar/panel.js
       - name: Validate the candidate integration with official hassfest
         run: docker run --rm -v "$PWD/.:/github/workspace:ro" ghcr.io/home-assistant/hassfest
       - name: Pull pinned Home Assistant runtime
@@ -78,3 +80,4 @@ jobs:
             -v "$PWD/tests/public-client:/checks:ro" \
             ghcr.io/home-assistant/home-assistant@sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0 \
             -B /checks/run.py
+
