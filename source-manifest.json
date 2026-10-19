@@ -178,7 +178,8 @@
     "tools/verify_public_tree.py": "f59655cdff6ba01c4ec5b5702257ad21bea3949ad13c7922bebd3312a56dec59",
     "custom_components/cloudpelizzon/ui/lighting/projection.mjs": "c9159f5b4224cc3520e173fe33080089eeeb7a21392a5ab30ab5cca0ae3f1a66",
     "tests/public-client/test_lighting_projection.mjs": "8b465117028beae9fdd77d6a15d918cbd712f91aed1f07e5e9c75ebf0bc767da",
-    "docs/lighting-public-contract.md": "b3fb83a6504403f1e9484c217f27e84a3eb1f9eb3522c71ea0dd355da4598a89"
+    "docs/lighting-public-contract.md": "b3fb83a6504403f1e9484c217f27e84a3eb1f9eb3522c71ea0dd355da4598a89",
+    "docs/lighting-ui-inventory-review.md": "8e21f3d5a9caffa4488a55d22efd4634fe236b43df875bf8fd9fa80ae46a8129"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,
