@@ -2,6 +2,7 @@
 // This preview intentionally exports no Home Assistant service calls or writable controls.
 export const LIGHTING_PREVIEW_SKU = 'CP-LIGHTING';
 const LIGHT_ID = /^light\.[a-z0-9_]+$/;
+const SWITCH_ID = /^switch\.[a-z0-9_]+$/;
 const STATES = new Set(['on', 'off', 'unavailable', 'unknown']);
 const STATE_LABELS = Object.freeze({
   on: 'Ligada', off: 'Desligada', unavailable: 'Indisponível', unknown: 'Desconhecida',
@@ -19,7 +20,8 @@ function safeLights(raw) {
   const byId = new Map();
   for (const candidate of raw) {
     if (!candidate || typeof candidate !== 'object' ||
-        typeof candidate.entity_id !== 'string' || !LIGHT_ID.test(candidate.entity_id)) continue;
+        typeof candidate.entity_id !== 'string' || !(LIGHT_ID.test(candidate.entity_id)
+          || (SWITCH_ID.test(candidate.entity_id) && candidate.source_kind === 'configured_switch'))) continue;
     const id = candidate.entity_id;
     const state = STATES.has(candidate.state) ? candidate.state : 'unknown';
     const brightness = state === 'on' && typeof candidate.brightness_pct === 'number' &&

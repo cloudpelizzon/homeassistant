@@ -3,10 +3,12 @@
 // readiness review. No endpoint, signature verifier or local license is created.
 import {LIGHTING_SKU, projectLightingSnapshot, hasLightingViewAccess} from './projection.mjs';
 import {projectLightingCapabilities} from './capabilities.mjs';
+import {loadLightingConfiguration, projectConfiguredLightingSnapshot} from './configuration-view.mjs';
 
 const MAX_ENTITIES = 2000;
 const MAX_PAYLOAD_BYTES = 524288;
 const LIGHT_ID = /^light\.[a-z0-9_]+$/;
+const CONFIG_ENTITY_ID = /^(light|switch|binary_sensor)\.[a-z0-9_]{1,128}$/;
 const record = value => value !== null && typeof value === 'object' && !Array.isArray(value)
   && [Object.prototype, null].includes(Object.getPrototypeOf(value));
 
@@ -35,9 +37,14 @@ function projectResponse(payload) {
   if (new TextEncoder().encode(raw).byteLength > MAX_PAYLOAD_BYTES) throw new TypeError('size');
   const input = JSON.parse(raw); // Detach all data from transport-owned objects.
   for (const [id, entity] of Object.entries(input.states)) {
-    if (!LIGHT_ID.test(id) || !record(entity) || entity.entity_id !== id) {
+    if (!(input.configuration === undefined ? LIGHT_ID : CONFIG_ENTITY_ID).test(id)
+        || !record(entity) || entity.entity_id !== id) {
       throw new TypeError('entity');
     }
+  }
+  if (input.configuration !== undefined) {
+    return freeze({...projectConfiguredLightingSnapshot(input.states, input.grant, input.configuration),
+      status: 'ready', commands_available: false});
   }
   const view = projectLightingSnapshot(input.states, input.grant, input.areas);
   const lights = view.lights.map(light => {
@@ -57,17 +64,22 @@ function projectResponse(payload) {
  */
 export class LightingReadSession {
   #read;
+  #readConfiguration;
   #timeout;
   #closed = false;
   #flight = null;
   #snapshot = locked();
 
-  constructor({readSnapshot, timeoutMs = 10000} = {}) {
+  constructor({readSnapshot, readConfigurationPage, timeoutMs = 10000} = {}) {
     if (readSnapshot !== undefined && typeof readSnapshot !== 'function') throw new TypeError('port');
     if (!Number.isSafeInteger(timeoutMs) || timeoutMs < 1 || timeoutMs > 30000) {
       throw new TypeError('timeout');
     }
+    if (readConfigurationPage !== undefined && typeof readConfigurationPage !== 'function') {
+      throw new TypeError('configuration_port');
+    }
     this.#read = readSnapshot;
+    this.#readConfiguration = readConfigurationPage;
     this.#timeout = timeoutMs;
   }
 
@@ -104,7 +116,15 @@ export class LightingReadSession {
     Promise.resolve().then(() => {
       if (flight.done) return undefined;
       return this.#read({signal: controller.signal});
-    }).then(payload => {
+    }).then(async payload => {
+      if (flight.done) return;
+      if (this.#readConfiguration && record(payload) && payload.sku === LIGHTING_SKU
+          && record(payload.grant) && hasLightingViewAccess(payload.grant)) {
+        const configuration = await loadLightingConfiguration({readPage: this.#readConfiguration,
+          signal: controller.signal});
+        if (flight.done) return;
+        payload = {...payload, configuration};
+      }
       if (!flight.done) finish(projectResponse(payload));
     }).catch(() => {
       finish(locked('unavailable')); // No backend body, error text or secrets in UI.
@@ -125,6 +145,7 @@ export class LightingReadSession {
   close() {
     this.#closed = true;
     this.#read = undefined;
+    this.#readConfiguration = undefined;
     return this.invalidate();
   }
 }

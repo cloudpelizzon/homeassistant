@@ -140,3 +140,5 @@ test('inventaria os arquivos revisados sem reabrir a publicação do módulo', (
 
 // Run the read lifecycle suite in the existing CI entry point, without changing workflows.
 import './test_lighting_read_session.mjs';
+
+import './test_lighting_configuration_view.mjs';
