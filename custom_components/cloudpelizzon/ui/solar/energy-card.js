@@ -1501,17 +1501,17 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
             </div>
 
             <div class="v29-net-flow">
-              <div class="v29-net-line import ${period.imp>0?"active":"idle"}">
+              <div class="v29-net-line import ${importing?"active flow-now145":"idle"}">
                 <span>IMPORTADO NO PERÍODO</span>
                 <strong>${this._fmtK(period.imp)}</strong>
                 <small>${period.house>0?this._fmtPct(period.imp/period.house*100):"0%"} do consumo</small>
-                <i></i>
+                <em class="flow-caption145">← ${importing?this._fmtW(live.imp)+" agora":"Sem fluxo agora"}</em><i aria-hidden="true"></i>
               </div>
-              <div class="v29-net-line export ${period.exp>0?"active":"idle"}">
+              <div class="v29-net-line export ${exporting?"active flow-now145":"idle"}">
                 <span>EXPORTADO NO PERÍODO</span>
                 <strong>${this._fmtK(period.exp)}</strong>
                 <small>${period.solar>0?this._fmtPct(period.exp/period.solar*100):"0%"} da geração</small>
-                <i></i>
+                <em class="flow-caption145">→ ${exporting?this._fmtW(live.exp)+" agora":"Sem fluxo agora"}</em><i aria-hidden="true"></i>
               </div>
             </div>
 
@@ -1628,6 +1628,11 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
   }
 
 
+  _providerText145(body){
+    const provider=String(this._config.grid_provider||'Concessionária').trim().slice(0,80)||'Concessionária';
+    return body.replace(/(^|>)([^<]+)/g,(all,prefix,text)=>prefix+text.replace(/\b(?:Copel|COPEL)\b/g,()=>this._esc(provider)));
+  }
+
   _analytics(live,p) {
     const generation=Math.max(0,p.solar||0),house=Math.max(0,p.house||0),imported=Math.max(0,p.imp||0),exported=Math.max(0,p.exp||0);
     const direct=Math.max(0,generation-exported),ratio=(v,total)=>total>0?v/total*100:0;
@@ -1642,7 +1647,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
         ${metric('GERAÇÃO SOLAR',this._fmtK(generation),'Total produzido','green')}
         ${metric('CONSUMO DA CASA',this._fmtK(house),'Total consumido','red')}
         ${metric('CONSUMIDO DA COPEL',this._fmtK(imported),'Energia recebida da rede','cyan')}
-        ${metric('SOLAR CONSUMIDO DIRETAMENTE',this._fmtK(direct),'Geração − exportação; sem passar pela Copel','green')}
+        ${metric('SOLAR CONSUMIDO DIRETAMENTE',this._fmtK(direct),'Energia solar usada na casa, sem passar pela Copel','green')}
         ${metric('MAIOR PICO DE CONSUMO',p.housePeak?.time?this._fmtW(p.housePeak.value):'Sem histórico',peak(p.housePeak),'red')}
         ${metric('MAIOR PICO DE GERAÇÃO',p.solarPeak?.time?this._fmtW(p.solarPeak.value):'Sem histórico',peak(p.solarPeak),'green')}
         ${metric('SALDO COPEL',`${balance>=0?'+':''}${this._fmtK(balance)}`,balance>=0?'Exportação maior que importação':'Importação maior que exportação','purple')}
@@ -1789,6 +1794,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
         </article>
       </section>`;
     }
+    body=this._providerText145(body);
     const opMode=live.imp>5?"IMPORTANDO":live.exp>5?"EXPORTANDO":"EQUILIBRADO";
     const histStatus=this._historyLoading?"SINCRONIZANDO":this._historyError?"ERRO NO HISTÓRICO":"DADOS EM TEMPO REAL";
     const tabs=[
@@ -11257,6 +11263,42 @@ radial-gradient(ellipse at 89% 96%,rgba(8,42,39,.30),transparent 28%)}
 @media(max-width:900px){.pie-content144{grid-template-columns:1fr}.pie-legend144{gap:4px}.analysis144{grid-template-rows:30px minmax(120px,.8fr) minmax(220px,1.3fr) minmax(80px,.5fr) auto;overflow:auto}.analysis-metrics144{grid-template-columns:repeat(4,minmax(0,1fr))}}
 
 .analysis144{grid-template-rows:24px minmax(124px,.85fr) minmax(135px,1.15fr) minmax(56px,.4fr) 20px;gap:6px}.analysis144 .metric144{padding:5px 8px;gap:2px}.analysis144 .metric144>span{font-size:9px;line-height:11px;flex-shrink:0}.analysis144 .metric144>strong{font-size:17px;line-height:20px;flex-shrink:0;min-height:20px}.analysis144 .metric144>small{font-size:9px;line-height:11px;flex-shrink:0}.pie-card144 svg text{fill:#042334!important;font-size:17px!important;font-weight:900!important}.analysis-note144{font-size:8px}.analysis-title144 h2{font-size:17px}.analysis-metrics144{gap:5px}.analysis-pies144{gap:6px}.analysis144 .pie-card144{padding:7px}.analysis-ratios144{gap:6px}
+/* Compact geometry at normal zoom, independent of Home Assistant rem scaling. */
+:host([viewport-fit]) .energy-v54 .shell-v24{grid-template-rows:44px 44px minmax(0,1fr)!important}
+:host([viewport-fit]) .energy-v54 .master-header{grid-template-columns:minmax(180px,1.9fr) minmax(0,5fr) minmax(140px,1.3fr)!important}
+:host([viewport-fit]) .energy-v54 .brand-v14 strong{font-size:16px!important}
+:host([viewport-fit]) .energy-v54 .brand-mark{width:28px!important;height:28px!important}
+:host([viewport-fit]) .energy-v54 .filter-v14{display:grid!important;grid-template-columns:160px minmax(220px,.85fr) minmax(320px,1.4fr) 100px!important;grid-template-rows:1fr!important;align-items:center!important;gap:8px!important;padding:4px 8px!important;min-height:44px!important;max-height:none!important;overflow:visible!important}
+:host([viewport-fit]) .energy-v54 .filter-label{grid-column:auto!important;grid-row:auto!important;align-items:center!important;padding:0!important;border:0!important;min-width:0!important}
+:host([viewport-fit]) .energy-v54 .filter-label strong{font-size:9px!important;line-height:12px!important}
+:host([viewport-fit]) .energy-v54 .filter-label small{font-size:8px!important;line-height:11px!important;margin:0!important;white-space:normal!important}
+:host([viewport-fit]) .energy-v54 .quick-v14{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:3px!important;min-width:0!important;overflow:visible!important}
+:host([viewport-fit]) .energy-v54 .filter-v14 button{font-size:9px!important;height:25px!important;min-width:0!important;margin:0!important}
+:host([viewport-fit]) .energy-v54 .dates-v14{display:grid!important;grid-template-columns:minmax(0,1fr) 16px minmax(0,1fr) 57px!important;align-items:end!important;gap:5px!important;min-width:0!important}
+:host([viewport-fit]) .energy-v54 .dates-v14 label{display:grid!important;grid-template-rows:10px 23px!important;gap:0!important;margin:0!important;padding:0!important;min-width:0!important;height:33px!important}
+:host([viewport-fit]) .energy-v54 .dates-v14 label span{font-size:8px!important;line-height:10px!important;margin:0!important}
+:host([viewport-fit]) .energy-v54 .dates-v14 input{height:23px!important;min-width:0!important;width:100%!important;font-size:10px!important;margin:0!important}
+:host([viewport-fit]) .energy-v54 .period-active{min-width:0!important;text-align:right!important;display:flex!important;flex-direction:column!important;gap:0!important;justify-content:center!important;height:33px!important;overflow:visible!important}
+:host([viewport-fit]) .energy-v54 .period-active span,:host([viewport-fit]) .energy-v54 .period-active small{font-size:8px!important;line-height:10px!important;margin:0!important;white-space:nowrap!important}
+:host([viewport-fit]) .energy-v54 .period-active strong{font-size:11px!important;line-height:13px!important;margin:0!important}
+:host([viewport-fit]) .energy-v54 .v26-source,:host([viewport-fit]) .energy-v54 .v26-grid-meter,:host([viewport-fit]) .energy-v54 .v26-solar-total{width:11%!important;max-width:140px!important;height:23%!important;max-height:54px!important;padding:3px 5px!important;gap:3px!important}
+:host([viewport-fit]) .energy-v54 .v26-inverter,:host([viewport-fit]) .energy-v54 .v26-micro{left:14%!important}
+:host([viewport-fit]) .energy-v54 .v26-solar-total{left:27%!important;top:36%!important}
+:host([viewport-fit]) .energy-v54 .v26-grid-meter{right:15%!important}
+:host([viewport-fit]) .energy-v54 .v26-scene .asset-house{left:53%!important;width:28%!important;height:82%!important;max-height:82%!important}
+:host([viewport-fit]) .energy-v54 .v26-house-meter{left:53%!important}
+:host([viewport-fit]) .energy-v54 .v26-source span,:host([viewport-fit]) .energy-v54 .v26-grid-meter span{font-size:8px!important;white-space:normal!important}
+:host([viewport-fit]) .energy-v54 .v26-source small{font-size:8px!important}
+:host([viewport-fit]) .energy-v54 .v29-net-line{padding:10px 14px 23px!important;min-height:90px!important;opacity:1!important}
+:host([viewport-fit]) .energy-v54 .v29-net-line .flow-caption145{font-size:11px!important;font-style:normal!important;grid-column:1/-1!important;line-height:15px!important}
+:host([viewport-fit]) .energy-v54 .v29-net-line i{display:none!important;animation:none!important}
+:host([viewport-fit]) .energy-v54 .v29-net-line.flow-now145 i{display:block!important;width:18px!important;height:7px!important;border-radius:2px!important;bottom:11px!important;clip-path:polygon(0 0,65% 0,100% 50%,65% 100%,0 100%,35% 50%)!important;animation:flowExport145 2.4s linear infinite!important}
+:host([viewport-fit]) .energy-v54 .v29-net-line.import.flow-now145 i{clip-path:polygon(35% 0,100% 0,65% 50%,100% 100%,35% 100%,0 50%)!important;animation:flowImport145 2.4s linear infinite!important}
+@keyframes flowExport145{from{left:14px}to{left:calc(100% - 32px)}}
+@keyframes flowImport145{from{left:calc(100% - 32px)}to{left:14px}}
+@media(prefers-reduced-motion:reduce){:host([viewport-fit]) .energy-v54 .v29-net-line.flow-now145 i{animation:none!important;left:calc(50% - 9px)!important}}
+@media(max-width:900px){:host([viewport-fit]) .energy-v54 .filter-v14{grid-template-columns:120px minmax(180px,1fr) minmax(250px,1.2fr) 85px!important;gap:4px!important}}
+
 @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important}}
     `;
   }

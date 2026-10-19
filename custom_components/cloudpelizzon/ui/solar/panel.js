@@ -1,4 +1,4 @@
-import "/cloudpelizzon-energy/frontend/energy-card.js?v=08f98577b618";
+import "/cloudpelizzon-energy/frontend/energy-card.js?v=0c12ba07f117";
 
 class CloudPelizzonEnergyPanel extends HTMLElement {
   constructor() {
@@ -810,6 +810,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     );
 
     return {
+      grid_provider:String(cfg.site?.grid_provider||'').trim().slice(0,80),
       unassigned_loads:this._detectedLoads().filter(row=>!(cfg.boards||[]).some(b=>(b.loads||[]).some(x=>x.power_entity===row.entity_id))).map(row=>({name:row.name||row.entity_id,power:row.entity_id,energy:this._historyEnergyEntity(this._matchEnergy(row.entity_id,'load'),'')})),
       solar_power:n.generation_power,
       sofar_power:n.generation_primary_power,
@@ -1178,9 +1179,9 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
             <label>Nome da instalação
               <input id="site-name" value="${this._esc(this._cfg.site.name||"Minha residência")}">
             </label>
-            <label>Concessionária
-              <input id="grid-provider" value="${this._esc(this._cfg.site.grid_provider)}" placeholder="Detectada automaticamente quando possível">
-            </label>
+            <label>Nome da concessionária de energia
+              <input id="grid-provider" value="${this._esc(this._cfg.site.grid_provider)}" maxlength="80" placeholder="Ex.: COPEL, Enel, Cemig" aria-describedby="provider-help145">
+            <small id="provider-help145">Esse nome será usado nos cards e gráficos de energia.</small></label>
             <label>Número de fases
               <select id="phases">
                 ${[1,2,3].map(n=>`<option value="${n}" ${Number(this._cfg.site.phases)===n?"selected":""}>${n}</option>`).join("")}

@@ -1,6 +1,6 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 import "/cloudpelizzon-core/frontend/panel.js?v=ecc500f34550";
-import "/cloudpelizzon/frontend/optional-modules.js?v=67a2472db3e0";
+import "/cloudpelizzon/frontend/optional-modules.js?v=a06d6806a427";
 import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
 
 
@@ -896,7 +896,7 @@ class CloudPelizzonPanel extends HTMLElement {
       </style>
 
 
-      <div class="topbar">
+      <div class="topbar ${this._view==='energy'?'solar-compact145':''}">
 
         <div class="brand">
 
@@ -1598,6 +1598,7 @@ class CloudPelizzonPanel extends HTMLElement {
     }
 
     this._view = view;
+    this.shadowRoot.querySelector(".topbar")?.classList.toggle("solar-compact145",view==="energy");
 
 
     this.shadowRoot
@@ -1682,6 +1683,10 @@ class CloudPelizzonPanel extends HTMLElement {
     style.textContent=`
       :host{display:block!important;width:100%!important;max-width:none!important;min-width:0!important;overflow-x:hidden!important}
       .topbar{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;display:flex!important;flex-wrap:wrap!important;padding-left:clamp(8px,1vw,18px)!important;padding-right:clamp(8px,1vw,18px)!important}
+      .topbar.solar-compact145{padding-top:5px!important;padding-bottom:5px!important;gap:6px!important;min-height:44px!important;font-size:14px!important}
+      .topbar.solar-compact145 .brand{font-size:14px!important;gap:7px!important;margin-right:12px!important}
+      .topbar.solar-compact145 button{font-size:14px!important;padding:7px 10px!important;line-height:20px!important}
+      .topbar.solar-compact145 ha-icon{--mdc-icon-size:20px;width:20px;height:20px}
       .view{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;overflow-x:hidden!important}
       cloudpelizzon-core-panel,cloudpelizzon-module-slot,cloudpelizzon-updater-panel{display:block!important;width:100%!important;max-width:none!important;min-width:0!important}
       @media(max-width:800px){.topbar{gap:4px!important}.topbar button{padding-left:8px!important;padding-right:8px!important}}
