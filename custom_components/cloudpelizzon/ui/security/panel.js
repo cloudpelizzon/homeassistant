@@ -5701,12 +5701,54 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
     finally{host.__cp60EngineLoading=false;}
   }
 
+  const permissionServices={light:['turn_on','turn_off','toggle'],switch:['turn_on','turn_off','toggle'],input_boolean:['turn_on','turn_off'],input_select:['select_option'],input_number:['set_value'],cover:['open_cover','close_cover','stop_cover'],alarm_control_panel:['alarm_arm_home','alarm_arm_away','alarm_arm_night','alarm_disarm','alarm_trigger'],siren:['turn_on','turn_off']};
+  function permissionChoices(host){
+    const result=[];
+    for(const id of Object.keys(host._hass.states||{}).sort()){
+      const domain=id.split('.')[0];
+      for(const service of permissionServices[domain]||[])result.push([domain,service,id]);
+    }
+    for(const name of Object.keys(host._hass.services?.notify||{}).sort())result.push(['notify',name,'']);
+    if(host._hass.services?.persistent_notification?.create)result.push(['persistent_notification','create','']);
+    for(const row of host.__cp127Permissions?.effects||[])if(!result.some(x=>JSON.stringify(x)===JSON.stringify(row)))result.push(row);
+    return result;
+  }
+  async function loadPermissions127(host){
+    try{const result=await host._hass.callWS({type:'cloudpelizzon/security/permissions'});host.__cp127Permissions=result.policy;host.__cp127PermissionError='';}
+    catch(error){host.__cp127Permissions=null;host.__cp127PermissionError=String(error?.message||error);}
+  }
+  function permissionMarkup127(host){
+    const p=host.__cp127Permissions;
+    if(!p)return modal('Permissões de Segurança','mdi:shield-key',`<p>${esc(host.__cp127PermissionError||'Carregando permissões...')}</p>`);
+    const ids=[...new Set([...Object.keys(host._hass.states||{}),...p.reads])].sort();
+    const effects=permissionChoices(host);const notify=effects.filter(x=>['notify','persistent_notification'].includes(x[0]));
+    const value=row=>row.join('|');
+    return modal('Permissões de Segurança','mdi:shield-key',`<p>Escolha os sensores que podem enviar estados ao servidor e os comandos permitidos para cada dispositivo. Nenhum dispositivo vem autorizado. Limites: 64 sensores e 200 comandos.</p><div class="cp60-engine-fields"><label><span>Leitura de estados</span><select multiple size="10" data-security-reads>${ids.map(id=>`<option value="${esc(id)}" ${p.reads.includes(id)?'selected':''}>${esc(host._hass.states[id]?.attributes?.friendly_name||id)} · ${esc(id)}</option>`).join('')}</select></label><label><span>Comandos permitidos</span><select multiple size="10" data-security-effects>${effects.map(row=>`<option value="${esc(value(row))}" ${p.effects.some(x=>value(x)===value(row))?'selected':''}>${esc(row[2]||'Notificação')} · ${esc(row[0]+'.'+row[1])}</option>`).join('')}</select></label><label><span>Destino dos avisos</span><select data-security-notification><option value="">Não enviar avisos</option>${notify.map(row=>`<option value="${esc(value(row))}" ${p.notification?.join('|')===row.slice(0,2).join('|')?'selected':''}>${esc(row[0]+'.'+row[1])}</option>`).join('')}</select></label></div><p>Use Ctrl ou Shift para selecionar vários itens. O destino escolhido para avisos também será incluído nos comandos autorizados.</p><p>Após salvar, configure os motores desejados. Para permitir comandos, desative “Modo sombra” nas configurações de Segurança.</p><div class="cp60-modal-actions"><button data-overlay-back="engines">Voltar</button><button class="ok" data-security-permissions-save>Salvar permissões</button></div>`);
+  }
+  function capturePermissions127(host){
+    const root=host.shadowRoot,reads=root.querySelector('[data-security-reads]'),effects=root.querySelector('[data-security-effects]'),notification=root.querySelector('[data-security-notification]');
+    if(!reads||!effects||!notification)return;
+    const rows=[...effects.selectedOptions].map(x=>x.value.split('|'));
+    const destination=notification.value?notification.value.split('|'):null;
+    if(destination&&!rows.some(x=>x.join('|')===destination.join('|')))rows.push(destination);
+    host.__cp127Permissions={reads:[...reads.selectedOptions].map(x=>x.value),effects:rows,notification:destination?.slice(0,2)||null};
+  }
+  async function savePermissions127(host){
+    capturePermissions127(host);
+    const p=host.__cp127Permissions;
+    if(!p||p.reads.length>64||p.effects.length>200){toast(host,'Selecione até 64 sensores e 200 comandos.','error');return;}
+    if(!window.confirm('Autorizar os sensores, comandos e destino de avisos selecionados para Segurança?'))return;
+    try{await host._hass.callWS({type:'cloudpelizzon/security/permissions/save',policy:p,confirmed:true});await loadPermissions127(host);toast(host,'Permissões salvas.','success');}
+    catch(error){toast(host,String(error?.message||error),'error');}
+  }
+
   function overlayMarkup(host,s){
     const kind=host.__cp60Overlay||''; if(!kind)return '';
+    if(kind==='permissions')return permissionMarkup127(host);
     if(kind==='alerts') return modal('Alertas ativos','mdi:shield-alert-outline',`<div class="cp60-modal-list">${s.alerts.map(a=>`<button data-entity="${esc(a.entity||'')}"><ha-icon icon="${a.icon}"></ha-icon><span><b>${esc(a.title)}</b><small>${esc(a.sub)}</small></span></button>`).join('')||'<div class="cp60-empty">Nenhum alerta ativo.</div>'}</div>`);
     if(kind==='offline') return modal('Dispositivos offline','mdi:access-point-network-off',`<div class="cp60-modal-list">${s.offline.map(id=>`<button data-entity="${esc(id)}"><ha-icon icon="mdi:wifi-off"></ha-icon><span><b>${esc(state(host,id)?.attributes?.friendly_name||fmtName(id))}</b><small>${esc(id)}</small></span></button>`).join('')||'<div class="cp60-empty">Nenhum dispositivo offline.</div>'}</div>`);
     if(kind==='camera-select'){const avail=s.cams,sel=selectedCameras(host,avail);return modal('Selecionar 4 câmeras','mdi:cctv',`<p class="cp60-help">Escolha até quatro câmeras para a Visão Sensores.</p><div class="cp60-modal-list">${avail.map(id=>`<button data-cam-pick="${esc(id)}" class="${sel.includes(id)?'selected':''}"><ha-icon icon="${sel.includes(id)?'mdi:checkbox-marked-circle':'mdi:checkbox-blank-circle-outline'}"></ha-icon><span><b>${esc(state(host,id)?.attributes?.friendly_name||fmtName(id))}</b><small>${esc(id)}</small></span></button>`).join('')}</div>`);}
-    if(kind==='engines'){const data=host.__cp60Engines; if(!data && !host.__cp60EngineLoading) setTimeout(()=>{loadEngines(host,true).then(()=>render(host))},0); const rows=arr(data?.engines);return modal('Motores nativos do CP-SECURITY','mdi:brain',`<div class="cp60-engine-summary"><div><small>Motores</small><b>${rows.length}</b></div><div><small>Ativos</small><b>${rows.filter(x=>x.enabled).length}</b></div><div><small>Inativos</small><b>${rows.filter(x=>!x.enabled).length}</b></div><div><small>Execução</small><b>NATIVA</b></div></div>${host.__cp60EngineError?`<div class="cp60-engine-error"><ha-icon icon="mdi:alert-circle"></ha-icon><span><b>Motor não carregado</b><small>${esc(host.__cp60EngineError)}</small></span></div>`:''}<div class="cp60-engine-list">${rows.map(e=>`<div><span class="cp60-code">${esc(e.code)}</span><span><b>${esc(e.name)}</b><small>${esc(e.category)} · ${esc(e.description||'')}</small></span><button data-engine-edit="${esc(e.code)}">Editar</button><button data-engine-toggle="${esc(e.code)}" data-desired="${e.enabled?'0':'1'}" class="${e.enabled?'danger':'ok'}">${e.enabled?'Desativar':'Ativar'}</button></div>`).join('')||(!host.__cp60EngineError?'<div class="cp60-empty">Carregando motores...</div>':'')}</div>`);}
+    if(kind==='engines'){const data=host.__cp60Engines; if(!data && !host.__cp60EngineLoading) setTimeout(()=>{loadEngines(host,true).then(()=>render(host))},0); const rows=arr(data?.engines);return modal('Motores nativos do CP-SECURITY','mdi:brain',`<div class="cp60-modal-actions"><button data-overlay="permissions">Permissões de Segurança</button></div><div class="cp60-engine-summary"><div><small>Motores</small><b>${rows.length}</b></div><div><small>Ativos</small><b>${rows.filter(x=>x.enabled).length}</b></div><div><small>Inativos</small><b>${rows.filter(x=>!x.enabled).length}</b></div><div><small>Execução</small><b>${data?.global?.connected?'CONECTADA':'DESCONECTADA'}</b></div></div>${host.__cp60EngineError?`<div class="cp60-engine-error"><ha-icon icon="mdi:alert-circle"></ha-icon><span><b>Motor não carregado</b><small>${esc(host.__cp60EngineError)}</small></span></div>`:''}<div class="cp60-engine-list">${rows.map(e=>`<div><span class="cp60-code">${esc(e.code)}</span><span><b>${esc(e.name)}</b><small>${esc(e.category)} · ${esc(e.description||'')}</small></span><button data-engine-edit="${esc(e.code)}">Editar</button><button data-engine-toggle="${esc(e.code)}" data-desired="${e.enabled?'0':'1'}" class="${e.enabled?'danger':'ok'}">${e.enabled?'Desativar':'Ativar'}</button></div>`).join('')||(!host.__cp60EngineError?'<div class="cp60-empty">Carregando motores...</div>':'')}</div>`);}
     if(kind==='engine-edit'){const e=arr(host.__cp60Engines?.engines).find(x=>x.code===host.__cp60EditCode); if(!e)return modal('Editar motor','mdi:cog-outline','<div class="cp60-empty">Motor não encontrado.</div>'); const fields=arr(e.fields).map(f=>{const v=e.config?.[f.key]; if(f.type==='list')return `<label><span><b>${esc(f.label)}</b><small>${esc(f.help||'')}</small></span><textarea data-engine-field="${esc(f.key)}" data-type="list">${esc(arr(v).join('\n'))}</textarea></label>`; if(f.type==='number')return `<label><span><b>${esc(f.label)}</b><small>${esc(f.help||'')}</small></span><input type="number" value="${esc(v??'')}" data-engine-field="${esc(f.key)}" data-type="number"></label>`; return `<label><span><b>${esc(f.label)}</b><small>${esc(f.help||'')}</small></span><input value="${esc(v??'')}" data-engine-field="${esc(f.key)}" data-type="text"></label>`}).join(''); return modal(`${e.code} · ${e.name}`,'mdi:cog-outline',`<div class="cp60-engine-fields">${fields}</div><div class="cp60-modal-actions"><button data-overlay-back="engines">Cancelar</button><button class="ok" data-engine-save="${esc(e.code)}">Salvar motor</button></div>`);}
     return '';
   }
@@ -5738,7 +5780,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function render(host){
     const root=host?.shadowRoot; if(!root)return; window.__cp60Host=host;
-    let mount=root.querySelector('#cp60-root'); if(!mount){mount=document.createElement('div');mount.id='cp60-root';root.appendChild(mount);mount.addEventListener('click',e=>handleClick(host,e));}
+    let mount=root.querySelector('#cp60-root'); if(!mount){mount=document.createElement('div');mount.id='cp60-root';root.appendChild(mount);mount.addEventListener('click',e=>handleClick(host,e));mount.addEventListener('change',()=>capturePermissions127(host));}
     if(host.__cp60NativeMode){mount.style.display='none';return;}
     mount.style.display='block'; mount.innerHTML=mainMarkup(host); fit(host,mount);
   }
@@ -5763,13 +5805,14 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function toast(host,msg,tone='info'){const el=host.shadowRoot?.querySelector('#cp60-root [data-toast]');if(!el)return;el.textContent=msg;el.className=`cp60-toast show ${tone}`;clearTimeout(host.__cp60Toast);host.__cp60Toast=setTimeout(()=>el.className='cp60-toast',2500);}
 
-  async function service(host,domain,svc,data){try{await host._hass.callService(domain,svc,data||{});return true}catch(e){toast(host,String(e?.message||e),'error');return false}}
+  async function service(host,domain,svc,data){try{const result=await host._hass.callWS({type:'cloudpelizzon/security/command',service:domain+'.'+svc,data:data||{}});if(result.delivered!==true)throw Error('Comando não confirmado');return true}catch(e){toast(host,String(e?.message||e),'error');return false}}
   async function handleClick(host,e){
     const t=e.composedPath().find(n=>n?.dataset && Object.keys(n.dataset).length) || e.target;
     const btn=e.composedPath().find(n=>n?.matches?.('button,[data-entity]')) || e.target.closest?.('button,[data-entity]'); if(!btn)return;
+    if(btn.hasAttribute('data-security-permissions-save')){await savePermissions127(host);return;}
     if(btn.dataset.view){host.__cp60View=btn.dataset.view;try{localStorage.setItem(VIEW_KEY,host.__cp60View)}catch(_){};render(host);return;}
     if(btn.dataset.entity){const id=btn.dataset.entity;if(id){btn.dispatchEvent(new CustomEvent('hass-more-info',{bubbles:true,composed:true,detail:{entityId:id}}));}return;}
-    if(btn.dataset.overlay){host.__cp60Overlay=btn.dataset.overlay;if(host.__cp60Overlay==='engines')await loadEngines(host,true);render(host);return;}
+    if(btn.dataset.overlay){host.__cp60Overlay=btn.dataset.overlay;if(host.__cp60Overlay==='engines')await loadEngines(host,true);if(host.__cp60Overlay==='permissions')await loadPermissions127(host);render(host);return;}
     if(btn.hasAttribute('data-overlay-close')){host.__cp60Overlay='';render(host);return;}
     if(btn.dataset.overlayBack){host.__cp60Overlay=btn.dataset.overlayBack;render(host);return;}
     if(btn.hasAttribute('data-native')){host.__cp60NativeMode=true;render(host);return;}

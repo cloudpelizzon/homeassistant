@@ -225,7 +225,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
   v2TrialButton(m){
     const t=m?.trial;
     if(!t||t.verified!==true||t.phase!=="not_started"||m?.license?.allowed)return "";
-    if(!["CP-MAINTENANCE","CP-SOLAR","CP-AUTOMATION"].includes(m.sku))return `<p role="status">Teste ainda indisponível nesta versão.</p>`;
+    if(!["CP-MAINTENANCE","CP-SOLAR","CP-AUTOMATION","CP-SECURITY"].includes(m.sku))return `<p role="status">Teste ainda indisponível nesta versão.</p>`;
     return `<button type="button" class="cp-v2-trial-button" data-start-trial="${this.esc(m.sku)}">Teste grátis por 7 dias</button>`;
   }
   v2Remaining(m){
@@ -244,7 +244,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     });
   }
   async v2StartTrial(sku){
-    if(!["CP-MAINTENANCE","CP-SOLAR","CP-AUTOMATION"].includes(sku)){this.toast("O teste deste módulo ainda não está disponível nesta versão.","error");return;}
+    if(!["CP-MAINTENANCE","CP-SOLAR","CP-AUTOMATION","CP-SECURITY"].includes(sku)){this.toast("O teste deste módulo ainda não está disponível nesta versão.","error");return;}
     if(!confirm("Iniciar o teste grátis de "+sku+" agora? O relógio começa neste clique e não pode ser reiniciado."))return;
     try{
       const result=await this._hass.callWS({type:"cloudpelizzon/core/trial/v2/start",sku});
@@ -257,7 +257,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     if(m?.license?.allowed)return this.statusLabel(m.license);
     if(this.cpTrialActive(m))return "Teste grátis por 7 dias"+(this.cpHomolog(m)?" • Homologação 60 min":"");
     if(m?.trial?.verified===true){
-      if(m.trial.phase==="not_started")return ["CP-MAINTENANCE","CP-SOLAR","CP-AUTOMATION"].includes(m.sku)?"Teste disponível • Ative quando desejar":"Teste ainda indisponível";
+      if(m.trial.phase==="not_started")return ["CP-MAINTENANCE","CP-SOLAR","CP-AUTOMATION","CP-SECURITY"].includes(m.sku)?"Teste disponível • Ative quando desejar":"Teste ainda indisponível";
       if(m.trial.phase==="trial_blocked")return "Teste encerrado • Acesso bloqueado";
       if(m.trial.phase==="trial_removal_due")return "Teste encerrado • Solicitar contratação";
     }

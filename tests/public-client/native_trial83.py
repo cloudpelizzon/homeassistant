@@ -114,11 +114,11 @@ class TrialCommandTests(unittest.IsolatedAsyncioTestCase):
             self.assertEqual(activate.call_count,1)
         self.assertFalse(self.results);self.assertTrue(self.errors)
 
-    async def test104_security_not_ready_never_calls_activation(self):
+    async def test127_security_without_connection_callback_never_calls_activation(self):
         self.message['sku']='CP-SECURITY'
         await self.run_command()
         self.assertFalse(self.calls);self.assertFalse(self.results)
-        self.assertEqual(self.errors[0][1],'trial_module_not_ready')
+        self.assertEqual(self.errors[0][1],'trial_activation_denied_or_unconfirmed')
 
     async def test125_automation_without_connection_callback_never_calls_activation(self):
         self.message['sku']='CP-AUTOMATION'

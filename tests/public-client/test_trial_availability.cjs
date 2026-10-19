@@ -7,18 +7,18 @@ const Core=classes.get('cloudpelizzon-core-panel'),core=Object.create(Core.proto
 core.esc=x=>String(x);core.toast=()=>{};core.load=async()=>{};
 core._hass={callWS:async()=>{requests++;return{first_activation:true}}};
 (async()=>{
- for(const sku of ['CP-SECURITY']){
+ for(const sku of ['CP-UNKNOWN']){
    const module={sku,trial:{verified:true,phase:'not_started'},license:{allowed:false}};
    assert(!core.v2TrialButton(module).includes('data-start-trial'));
    assert.equal(core.cpModuleStatus(module),'Teste ainda indisponível');
    await core.v2StartTrial(sku);assert.equal(requests,0);assert.equal(confirmations,0);checks++;
  }
- for(const sku of ['CP-MAINTENANCE','CP-SOLAR','CP-AUTOMATION']){
+ for(const sku of ['CP-MAINTENANCE','CP-SOLAR','CP-AUTOMATION','CP-SECURITY']){
    const module={sku,trial:{verified:true,phase:'not_started'},license:{allowed:false}};
    assert(core.v2TrialButton(module).includes('data-start-trial'));
    await core.v2StartTrial(sku);checks++;
  }
- assert.equal(requests,3);assert.equal(confirmations,3);
+ assert.equal(requests,4);assert.equal(confirmations,4);
  const existing={sku:'CP-SECURITY',trial:{verified:true,phase:'trial_active',paid_confirmed:false}};
  assert(core.cpTrialActive(existing));assert(!core.v2TrialButton(existing));checks++;
  assert(!core.v2TrialButton({sku:'CP-SOLAR',trial:{verified:false,phase:'not_started'}}));checks++;

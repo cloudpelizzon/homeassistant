@@ -19,14 +19,18 @@ with tempfile.TemporaryDirectory(prefix='cp-public-native81-',dir='/tmp') as fol
     shutil.copyfile('/checks/public_transport87.py',case/'public_transport87.py')
     shutil.copyfile('/checks/test_edge125.py',case/'test_edge125.py')
     shutil.copyfile('/checks/native_automation125.py',case/'native_automation125.py')
+    shutil.copyfile('/checks/test_security_edge127.py',case/'test_security_edge127.py')
+    shutil.copyfile('/checks/native_security127.py',case/'native_security127.py')
     sys.path.insert(0,str(case))
-    import native_setup, native_trial83, public_transport87, native_enrollment106, test_edge125, native_automation125
+    import native_setup, native_trial83, public_transport87, native_enrollment106, test_edge125, native_automation125, test_security_edge127, native_security127
     suite=unittest.defaultTestLoader.loadTestsFromTestCase(native_setup.NativeSetupTests)
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_trial83.TrialCommandTests))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(public_transport87.TransportTests))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_enrollment106.NativeEnrollmentTests))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(test_edge125.EdgeTests))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_automation125.NativeAutomationTests))
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(test_security_edge127.SecurityEdgeTests))
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_security127.NativeSecurityTests))
     result=unittest.TextTestRunner(verbosity=2).run(suite)
     report={'schema':'cp.public.setup_and_activation83.github.native.v1','tests':result.testsRun,
         'failures':len(result.failures),'errors':len(result.errors),'skipped':len(result.skipped),
@@ -35,5 +39,5 @@ with tempfile.TemporaryDirectory(prefix='cp-public-native81-',dir='/tmp') as fol
         'Fleet_HTTP':'synthetic_boundary','activation_SDK':'synthetic_boundary','trial_WS_tests':14,'automation_transport_tests':12,'automation_HTTP_capability':'synthetic_boundary','private_engines_in_fixture':False,
         'customer_data_present':False,'network':'none','publication_allowed':False}
     print('CP_PUBLIC_NATIVE81='+json.dumps(report,separators=(',',':')),flush=True)
-    code=0 if result.wasSuccessful() and result.testsRun==56 and not result.skipped else 1
+    code=0 if result.wasSuccessful() and result.testsRun==73 and not result.skipped else 1
 raise SystemExit(code)

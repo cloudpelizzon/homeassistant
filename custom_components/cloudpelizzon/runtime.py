@@ -81,9 +81,9 @@ class Runtime:
             self.closers.append(api.register(self.hass, self.bridge))
             self.stage = 'trial_websocket'
             async def prepare_trial(sku):
-                if sku=='CP-AUTOMATION':await context['automation_edge'].prepare()
+                if sku in ('CP-AUTOMATION','CP-SECURITY'):await context['automation_edge' if sku=='CP-AUTOMATION' else 'security_edge'].prepare()
             def trial_activated(sku):
-                if sku=='CP-AUTOMATION':context['automation_edge'].refresh_status=True
+                if sku in ('CP-AUTOMATION','CP-SECURITY'):context['automation_edge' if sku=='CP-AUTOMATION' else 'security_edge'].refresh_status=True
             self.closers.append(public_trials.register(self.hass, context['client'],prepare=prepare_trial,activated=trial_activated))
             self.stage = 'portal_fleet'
             handoff = await onboarding(self.hass, self.entry, context)
