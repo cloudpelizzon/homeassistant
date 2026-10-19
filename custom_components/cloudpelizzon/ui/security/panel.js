@@ -5761,7 +5761,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
   }
 
   const NATIVE_ALARM134='alarm_control_panel.cloudpelizzon_security_internal';
-  function nativeDefaults134(){return {enabled:true,exit_seconds:60,entry_seconds:30,sensors:[],siren:'',siren_seconds:180,notify:true,mode_entity:'',actions:{},presence:{enabled:false,residents:[],arrival_seconds:15,departure_seconds:300,max_age_seconds:300,arm_on_departure:false,disarm_on_arrival:false,allowed_modes:['Casa','Ausente']}};}
+  function nativeDefaults134(){return {enabled:true,exit_seconds:60,entry_seconds:30,sensors:[],siren:'',siren_seconds:180,notify:true,mode_entity:'',actions:{},presence:{enabled:false,residents:[],arrival_seconds:15,departure_seconds:300,max_age_seconds:900,arm_on_departure:false,disarm_on_arrival:false,allowed_modes:['Casa','Ausente']}};}
   function nativeMarkup134(host){
     if(!state(host,NATIVE_ALARM134)?.attributes?.server_supports_native)return modal('Motores nativos ainda indisponíveis','mdi:shield-alert','<p>O servidor ainda não confirmou o suporte à central virtual e à presença. Instale a atualização privada dos motores e confirme o acesso do módulo antes de configurar.</p>');
     const c=host._config?.native134||nativeDefaults134(),p=c.presence,states=host._hass?.states||{};

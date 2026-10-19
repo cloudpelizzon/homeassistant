@@ -28,3 +28,13 @@ class NativeSecurity134Tests(unittest.IsolatedAsyncioTestCase):
   edge=object.__new__(Edge);edge.native=None;edge.native_at=None;edge.native_listeners=set();edge.clock=lambda:datetime.now(timezone.utc)
   with self.assertRaises(ValueError):edge.native_update({'alarm':'forged','mode':'Casa'})
   self.assertIsNone(edge.native)
+
+ async def test_presence_refresh_is_awaited_before_private_snapshot_delivery(self):
+  sequence=[];policy={'reads':['person.synthetic'],'effects':[],'notification':None}
+  async def refresh(approved):self.assertEqual(approved,policy);sequence.append('refresh')
+  class SDK:
+   def security(self,action,payload,**kwargs):sequence.append('feed');return {'connected':True,'faults':[],'shadow_mode':True}
+  async def executor(fn):return fn()
+  def snapshot(reads):sequence.append('snapshot');return {}
+  edge=Edge(SDK(),executor=executor,snapshot=snapshot,read_policy=lambda:policy,save_policy=lambda x:None,service=None,relay_factory=None,before_snapshot=refresh)
+  await edge.cycle();self.assertEqual(sequence,['refresh','snapshot','feed'])

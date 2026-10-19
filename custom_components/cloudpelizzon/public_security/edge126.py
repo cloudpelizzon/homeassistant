@@ -10,12 +10,12 @@ from functools import partial
 from .wire126 import policy,permitted
 
 class Edge:
-    def __init__(self,client,*,executor,snapshot,read_policy,save_policy,service,relay_factory,clock=None):
+    def __init__(self,client,*,executor,snapshot,read_policy,save_policy,service,relay_factory,clock=None,before_snapshot=None):
         self.client=client;self.executor=executor;self.snapshot=snapshot
         self.read_policy=read_policy;self.save_policy=save_policy;self.service=service;self.relay_factory=relay_factory
         self.clock=clock or (lambda:datetime.now(timezone.utc));self.closed=False;self.lock=asyncio.Lock()
         self.generation=uuid.uuid4().hex;self.task=None;self.connected=False;self.fault=None;self.relay=None;self.consent=None
-        self.refresh_status=True;self.prepared_until=None;self.native=None;self.native_at=None;self.native_listeners=set()
+        self.refresh_status=True;self.prepared_until=None;self.native=None;self.native_at=None;self.native_listeners=set();self.before_snapshot=before_snapshot
     def check(self,generation=None):
         if self.closed or generation is not None and generation!=self.generation:raise PermissionError('runtime_or_permissions_changed')
         return policy(self.read_policy())
@@ -75,6 +75,9 @@ class Edge:
     async def cycle(self):
         async with self.lock:
             approved=self.check();token=self.generation
+            if self.before_snapshot is not None:await self.before_snapshot(approved)
+            self.check(token)
+            if self.check()!=approved:raise PermissionError('snapshot_permissions_changed')
             result=await self.call('security','feed',self.feed(approved),request_id=uuid.uuid4().hex)
             self.check(token)
             if self.check()!=approved or type(result) is not dict or result.get('connected') is not True or type(result.get('faults')) is not list:raise PermissionError('security_feed_binding')

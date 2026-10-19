@@ -46,6 +46,24 @@ def create(hass,entry,context):
         info=folder.stat()
         if os.name=='posix' and (info.st_uid!=os.geteuid() or info.st_mode&0o077):raise ValueError('relay_folder_permissions')
         return RelayClient(context['trial_id'],folder/'security.sqlite3',allowed_entities=targets,gateway=gateway,call_service=call_service)
-    edge=Edge(context['client'],executor=hass.async_add_executor_job,snapshot=snapshot,read_policy=read,save_policy=save,service=service,relay_factory=relay)
+    # Read-only refresh of approved mirrored presence entities. HA may report
+    # an unchanged home/not_home state without emitting state_changed.
+    observed={'at':0.,'ids':()}
+    async def refresh_observations(approved):
+        import asyncio,time
+        ids=tuple(eid for eid in approved['reads'] if eid.startswith(('person.','device_tracker.')) and hass.states.get(eid) and hass.states.get(eid).attributes.get('mirror_source')=='production_observer')
+        if not ids or observed['ids']==ids and time.monotonic()-observed['at']<30:return
+        from ..homolog_mirror.source132 import observer,source_state
+        try:mirror=observer(hass)
+        except PermissionError:return
+        slots=asyncio.Semaphore(3)
+        async def read(eid):
+            async with slots:
+                try:row=await source_state(mirror,eid)
+                except (OSError,ValueError,PermissionError,TimeoutError):return
+                current();mirror.apply(row)
+        await asyncio.gather(*(read(eid) for eid in ids))
+        observed.update(at=time.monotonic(),ids=ids)
+    edge=Edge(context['client'],executor=hass.async_add_executor_job,snapshot=snapshot,read_policy=read,save_policy=save,service=service,relay_factory=relay,before_snapshot=refresh_observations)
     edge.start(lambda coro:hass.async_create_background_task(coro,'CloudPelizzon security connection'))
     return edge
