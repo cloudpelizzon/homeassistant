@@ -71,3 +71,11 @@ class DeliveryTests(unittest.IsolatedAsyncioTestCase):
   from homeassistant.util import dt as dt_util
   with patch.object(source,'request',read),patch.object(dt_util,'utcnow',return_value=now):value=await source.daily(self.hass)
   self.assertEqual(value['counts'],{'automation.synthetic':1});self.assertEqual(value['hours'][1],1);self.assertEqual(value['entity_hours']['automation.synthetic'][1],1);self.assertEqual(value['time_zone'],'America/Sao_Paulo')
+
+ async def test133_virtual_alarm_state_is_mirrored_but_license_entities_stay_excluded(self):
+  from client81.homolog_mirror import policy
+  m=await self.mirror();m.apply(state('alarm_control_panel.cloudpelizzon_security','disarmed',{'code_arm_required':True}))
+  self.assertEqual(self.hass.states.get('alarm_control_panel.cloudpelizzon_security').state,'disarmed')
+  self.assertIn('alarm_control_panel.cloudpelizzon_security',m.owned)
+  for eid in ('sensor.cloudpelizzon_license','sensor.cp_trial_remaining','sensor.cp_core_status'):
+   self.assertIsNone(policy.clean(state(eid,'active')))

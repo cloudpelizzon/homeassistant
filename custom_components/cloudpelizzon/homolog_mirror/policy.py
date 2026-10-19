@@ -2,10 +2,11 @@
 import re
 STORE='cloudpelizzon_homolog_mirror130'
 DOMAIN='cloudpelizzon_homolog_mirror'
+SOURCE_CONTROL_ENTITIES={'alarm_control_panel.cloudpelizzon_security'}
 ALLOWED={'sensor','binary_sensor','automation','person','device_tracker','zone','group','light','switch','cover','alarm_control_panel','siren','camera','climate','fan','input_boolean','input_number','input_select','input_text','input_datetime','sun','weather','number','select'}
 ATTRS={'friendly_name','icon','device_class','state_class','unit_of_measurement','supported_features','options','min','max','step','mode','last_triggered','latitude','longitude','gps_accuracy','source_type','radius','persons','entity_id','battery_level','temperature','current_temperature','humidity','brightness','color_mode','color_temp_kelvin','percentage','current_position','hvac_modes','preset_modes','attribution','code_format','code_arm_required'}
 def valid_id(eid):
- return isinstance(eid,str) and len(eid)<256 and bool(re.fullmatch(r'[a-z_]+\.[a-z0-9_]+',eid)) and eid.split('.')[0] in ALLOWED and not any(x in eid.lower() for x in ('cloudpelizzon','cp_license','cp_trial','cp_core'))
+ return isinstance(eid,str) and len(eid)<256 and bool(re.fullmatch(r'[a-z_]+\.[a-z0-9_]+',eid)) and eid.split('.')[0] in ALLOWED and (eid in SOURCE_CONTROL_ENTITIES or not any(x in eid.lower() for x in ('cloudpelizzon','cp_license','cp_trial','cp_core')))
 def clean(row):
  if not isinstance(row,dict) or not valid_id(row.get('entity_id')):return None
  value=row.get('state');attrs=row.get('attributes',{})

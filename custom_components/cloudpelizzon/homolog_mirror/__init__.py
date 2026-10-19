@@ -5,7 +5,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers import device_registry as dr,entity_registry as er
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from .policy import DOMAIN,STORE,clean,outgoing,check_peer,source_url
+from .policy import DOMAIN,STORE,clean,outgoing,check_peer,source_url,SOURCE_CONTROL_ENTITIES
 _LOGGER=logging.getLogger(__name__)
 
 async def stop(hass,entry,*,unload_platform=False):
@@ -125,7 +125,7 @@ class Mirror:
     local=registry.async_get_or_create(config_entry_id=self.entry.entry_id,identifiers={(DOMAIN,source_id)},**data);device_ids[source_id]=local.id
    self.source_devices={e['entity_id']:e.get('device_id') for e in entities if isinstance(e,dict) and isinstance(e.get('entity_id'),str)}
    self.mapping={e['entity_id']:{'device_id':device_ids.get(e.get('device_id'))} for e in entities if isinstance(e,dict) and isinstance(e.get('entity_id'),str) and e.get('platform') not in {'cloudpelizzon',DOMAIN}}
-   excluded={e['entity_id'] for e in entities if isinstance(e,dict) and e.get('platform')=='cloudpelizzon'}
+   excluded={e['entity_id'] for e in entities if isinstance(e,dict) and e.get('platform')=='cloudpelizzon' and e.get('entity_id') not in SOURCE_CONTROL_ENTITIES}
    self.blocked.update(excluded)
    rows=await request('get_states',4)
    if not isinstance(rows,list) or len(rows)>10000:raise ConnectionError('state_limit')
