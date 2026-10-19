@@ -11,6 +11,60 @@ export async function excelLibrary(){
   }).catch(error=>{libraryPromise=null;throw error});
   return libraryPromise;
 }
+let zipPromise;
+async function zipLibrary(){
+  if(window.fflate?.unzipSync)return window.fflate;
+  if(!zipPromise)zipPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');script.src=BASE+'/fflate-0.8.3.min.js?v=119';
+    script.onload=()=>window.fflate?.zipSync?resolve(window.fflate):reject(Error('Conversor Excel indisponível.'));
+    script.onerror=()=>reject(Error('Não foi possível carregar o conversor Excel.'));
+    document.head.append(script);
+  }).catch(error=>{zipPromise=null;throw error});
+  return zipPromise;
+}
+export function normalizeWorksheetXML(xml){
+  // Emit explicit per-column widths, matching the compatible workbook that
+  // renders correctly in the independent workbook preview.
+  xml=xml.replace(/<sheetFormatPr\b[^>]*\/>/,tag=>tag
+    .replace(/ (?:defaultColWidth|outlineLevelRow|outlineLevelCol|customHeight|x14ac:dyDescent)="[^"]*"/g,''));
+  xml=xml.replace(/<cols>([\s\S]*?)<\/cols>/,(_,columns)=>'<cols>'+columns.replace(/<col\b[^>]*\/>/g,tag=>{
+    const min=Number(/\bmin="(\d+)"/.exec(tag)?.[1]),max=Number(/\bmax="(\d+)"/.exec(tag)?.[1]);
+    if(!Number.isInteger(min)||!Number.isInteger(max)||min<1||max<min||max>12)throw Error('Colunas inválidas no relatório Excel.');
+    const attributes=tag.replace(/<col\b|\/>/g,'').replace(/\s(?:min|max|hidden)="[^"]*"/g,'');
+    return Array.from({length:max-min+1},(_,i)=>`<col min="${min+i}" max="${min+i}"${attributes} hidden="0"/>`).join('');
+  })+'</cols>');
+  return xml.replace(/ x14ac:dyDescent="[^"]*"/g,'')
+    .replace(/ (?:horizontalDpi|verticalDpi)="4294967295"/g,'');
+}
+export function normalizeXlsx(buffer,zip){
+  const files=zip.unzipSync(new Uint8Array(buffer)),decoder=new TextDecoder(),encoder=new TextEncoder();
+  let count=0;
+  for(const name of Object.keys(files)){
+    if(/^xl\/worksheets\/sheet\d+\.xml$/.test(name)){
+      files[name]=encoder.encode(normalizeWorksheetXML(decoder.decode(files[name])));count++;
+    }else if(name==='xl/styles.xml'){
+      let xml=decoder.decode(files[name]).replace(/ x14ac:knownFonts="[^"]*"/g,'');
+      // Match font-property order and alignment from the workbook writer whose
+      // output rendered correctly in the independent workbook preview.
+      const order=['b','i','u','strike','outline','shadow','condense','extend','sz','color','name','family','charset','scheme','vertAlign'];
+      xml=xml.replace(/<font>([\s\S]*?)<\/font>/g,(_,body)=>{
+        const children=body.match(/<\w+\b[^>]*\/>/g)||[];
+        if(children.join('')!==body)throw Error('Fonte inválida no relatório Excel.');
+        children.sort((a,b)=>order.indexOf(/^<(\w+)/.exec(a)[1])-order.indexOf(/^<(\w+)/.exec(b)[1]));
+        return '<font>'+children.join('')+'</font>';
+      }).replace(/ indent="1"/g,'');
+      // Native Excel verification of report 119 confirmed this explicit font
+      // policy. Do not leave the Normal style dependent on the theme font.
+      xml=xml.replace(/<font>([\s\S]*?)<\/font>/g,(_,body)=>
+        '<font>'+body.replace(/<name val="[^"]*"\/>/,'<name val="Arial"/>')
+          .replace(/<scheme\b[^>]*\/>/g,'')+'</font>');
+      files[name]=encoder.encode(xml);
+    }
+  }
+  if(!count)throw Error('O arquivo Excel não contém planilhas.');
+  return zip.zipSync(files,{level:6});
+}
+
 const text=node=>(node?.textContent||'').replace(/\u00a0/g,' ').trim();
 export function reportModel(html){
   const doc=new DOMParser().parseFromString(html,'text/html');
@@ -46,7 +100,7 @@ export function buildWorkbook(inputModel,ExcelJS,logoData=null,extraModels=[]){
   }
   for(const layout of layouts){
   const model=layout.model;
-  const sheet=book.addWorksheet(layout.name,{properties:{defaultColWidth:18,defaultRowHeight:22},
+  const sheet=book.addWorksheet(layout.name,{properties:{defaultRowHeight:22},
     views:[{state:'normal',showGridLines:false,zoomScale:85}],
     pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,
       margins:{left:.25,right:.25,top:.35,bottom:.35,header:.1,footer:.15}}});
@@ -55,7 +109,7 @@ export function buildWorkbook(inputModel,ExcelJS,logoData=null,extraModels=[]){
   function merged(row,left,right,value,options={}){
     if(right>left)sheet.mergeCells(row,left,row,right);
     const cell=sheet.getCell(row,left);cell.value=cellValue(String(value??''));
-    cell.font={name:'Calibri',family:2,size:options.size||11,bold:!!options.bold,color:{argb:'FF17202A'}};
+    cell.font={name:'Arial',family:2,size:options.size||11,bold:!!options.bold,color:{argb:'FF17202A'}};
     cell.alignment={vertical:'middle',horizontal:typeof cell.value==='number'?'right':'left',wrapText:true,indent:1};
     if(typeof cell.value==='number')cell.numFmt=String(value).startsWith('+')?'+'+MONEY:MONEY;
     if(options.fill)cell.fill=fill(options.fill);
@@ -128,7 +182,7 @@ async function logoPng(source){
 export async function exportReport(html,filename,extraReports=[]){
   const model=reportModel(html),ExcelJS=await excelLibrary();
   const book=buildWorkbook(model,ExcelJS,await logoPng(model.logo),extraReports.map(reportModel));
-  const buffer=await book.xlsx.writeBuffer();
+  const buffer=normalizeXlsx(await book.xlsx.writeBuffer(),await zipLibrary());
   const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=filename;a.click();
   setTimeout(()=>URL.revokeObjectURL(url),30000);

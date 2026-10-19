@@ -41,6 +41,8 @@ jobs:
         run: node tests/public-client/test_writer.cjs custom_components/cloudpelizzon/ui/maintenance/exceljs-4.4.0.min.js custom_components/cloudpelizzon/ui/maintenance/finance-excel111.js /tmp/report111.xlsx
       - name: Verify PDF and Excel share identical report content
         run: node tests/public-client/test_pdf_parity.cjs custom_components/cloudpelizzon/ui/maintenance/legacy-v311-core.js custom_components/cloudpelizzon/ui/maintenance/legacy-v311-core.js /tmp/report111.html /tmp/history111.html
+      - name: Verify desktop Excel compatibility without changing values or print settings
+        run: node tests/public-client/test_xlsx_compat.cjs custom_components/cloudpelizzon/ui/maintenance/exceljs-4.4.0.min.js custom_components/cloudpelizzon/ui/maintenance/fflate-0.8.3.min.js custom_components/cloudpelizzon/ui/maintenance/finance-excel111.js /tmp/report117.xlsx
       - name: Validate the candidate integration with official hassfest
         run: docker run --rm -v "$PWD/.:/github/workspace:ro" ghcr.io/home-assistant/hassfest
       - name: Pull pinned Home Assistant runtime
