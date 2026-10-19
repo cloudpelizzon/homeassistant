@@ -218,6 +218,9 @@ class Client:
 
 
 
+    def enrollment_proof(self,claim):
+        return self._sign(claim,b'CP-TRIAL-ENROLL106\n','trial_signature')['trial_signature']
+
     def activate(self,sku,*,confirmed=False):
         if confirmed is not True or type(sku) is not str or sku not in SKUS:
             raise ClientError('explicit_module_activation_required')

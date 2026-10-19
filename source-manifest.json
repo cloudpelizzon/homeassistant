@@ -53,7 +53,7 @@
     "custom_components/cloudpelizzon/adapters/solar/runtime45.py": "1c5304ba18153a886c261d4474fe7f4231f3b59a32b8e9127141c4fd75c9e38d",
     "custom_components/cloudpelizzon/adapters/solar/sdk/__init__.py": "970c1145eefa6d9aa5de86d8fd2375ed559bb8d4ca8ee7b59560a245bb3ac136",
     "custom_components/cloudpelizzon/adapters/solar/sdk/activation83.py": "f83699265e121c8393689ce96b1914a9ba30fafe11b65c386fd80181451fbca1",
-    "custom_components/cloudpelizzon/adapters/solar/sdk/client.py": "7d21525c061f64de781d101afe06722c497c8b7c0720b771ccc8d2d3aaed36ff",
+    "custom_components/cloudpelizzon/adapters/solar/sdk/client.py": "1607263bd5646f9df562ea7970aeece9efdd70939ba3fbe12f5e0553c349ac5e",
     "custom_components/cloudpelizzon/adapters/solar/sdk/native_wire85.py": "658b754e95849a69cc0f5a5cc010702973c5196920d9cb95894c6a69bfc8f6cc",
     "custom_components/cloudpelizzon/adapters/solar/sensor.py": "9b2f0d13c1b6da0b723d3e4117d84c17e517d9b915c07e38234d98dfcf7b02e9",
     "custom_components/cloudpelizzon/brand/dark_icon.png": "01bec3858428b8fd2fbe4fc1593e715220e5d27e43b5396c532eaaf7f8cd5bc5",
