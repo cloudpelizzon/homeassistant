@@ -981,6 +981,12 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
     const liveMap = Object.fromEntries([...live.qd1Devices,...live.qd2Devices].map(d=>[d.key,d.powerNow]));
     const rows=[...source].sort((a,b)=>b.energyPeriod-a.energyPeriod);
     const max=Math.max(.001,...rows.map(d=>d.energyPeriod));
+    if(!rows.length){
+      const pending=qd?[]:(this._config.unassigned_loads||[]);
+      return `<div class="loads-empty143"><p>${pending.length?`${pending.length} medições encontradas, ainda sem vínculo com um quadro.`:'Nenhum dispositivo individual associado. Os totais dos quadros continuam disponíveis.'}</p>
+        ${pending.map(row=>`<div class="pending-load143"><span>${this._esc(row.name)}</span><strong>${this._valid(row.power)?this._fmtW(this._num(row.power,0)):'Sem leitura'}</strong></div>`).join('')}
+        <button class="configure-loads143">Associar tomadas e disjuntores</button><small>O consumo individual em kWh será exibido após configurar a medição de cada carga.</small></div>`;
+    }
     return `<div class="device-table">${rows.map((d,i)=>`<div class="device-row clickable" data-entity="${this._esc(d.energy)}">
       <div class="device-rank">${String(i+1).padStart(2,"0")}</div>
       <div class="device-icon">${this._svgIcon(d.icon)}</div>
@@ -1500,7 +1506,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
   }
 
   _boards(live,period) {
-    const panel=(qd,devices,totalEnergy,totalPower,other,cls)=>`<article class="panel board-panel ${cls}"><div class="section-head"><div><span>QUADRO://${qd}</span><strong>${qd==="QUADRO A"?"ANDAR INFERIOR":"ANDAR SUPERIOR"}</strong><small>${this._fmtW(totalPower)} agora • ${this._fmtK(totalEnergy)} no período</small></div></div>${this._deviceRows({qd1Devices:qd==="QUADRO A"?devices:[],qd2Devices:qd==="QUADRO B / DEMAIS"?devices:[]},live,qd)}<div class="untracked"><span>NÃO MONITORADO INDIVIDUALMENTE</span><strong>${this._fmtK(other)}</strong></div></article>`;
+    const panel=(qd,devices,totalEnergy,totalPower,other,cls)=>`<article class="panel board-panel ${cls}"><div class="section-head"><div><span>QUADRO://${qd}</span><strong>${qd==="QUADRO A"?"ANDAR INFERIOR":"ANDAR SUPERIOR"}</strong><small>${this._fmtW(totalPower)} agora • ${this._fmtK(totalEnergy)} no período</small></div></div><div class="board-chart143">${this._chart([{entity:qd==="QUADRO A"?this.entities.qd1Power:this.entities.qd2Power,label:qd,cls:qd==="QUADRO A"?"green":"orange"}],{buckets:96})}</div>${this._deviceRows({qd1Devices:qd==="QUADRO A"?devices:[],qd2Devices:qd==="QUADRO B / DEMAIS"?devices:[]},live,qd)}<div class="untracked"><span>NÃO MONITORADO INDIVIDUALMENTE</span><strong>${this._fmtK(other)}</strong></div></article>`;
     return `<section class="screen boards-screen">${this._tabIntro("qd","QUADROS","Distribuição elétrica da residência","QUADRO A e QUADRO B / DEMAIS com consumo individual e cargas não monitoradas","orange")}
       ${panel("QUADRO A",period.qd1Devices,period.qd1,live.qd1,period.qd1Other,"qd1")}
       ${panel("QUADRO B / DEMAIS",period.qd2Devices,period.qd2,live.qd2,period.qd2Other,"qd2")}
@@ -1645,77 +1651,23 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
         <small>${sub}</small>
       </div>`;
 
-    return `<section class="screen analytics-screen">
-      ${this._tabIntro("analytics","ANÁLISES","Inteligência energética","Indicadores consolidados, eficiência e comportamento do período","purple")}
 
-      <article class="analytics-gauges">
-        ${gauge(selfConsumption,"AUTOCONSUMO","cyan",`${this._fmtK(selfUse)} usados na casa`)}
-        ${gauge(selfSufficiency,"AUTOSSUFICIÊNCIA","purple",`${this._fmtK(selfUse)} cobertos pela geração`)}
-        ${gauge(solarVsConsumption,"GERAÇÃO / CONSUMO","green",`${this._fmtK(solar)} / ${this._fmtK(house)}`)}
+    const enough=solar>0&&house>0;
+    const inconsistent=Math.abs(solar+imp-house-exp)>Math.max(.1,house*.05);
+    const recommendation=inconsistent?'As medições do período ainda não fecham o balanço entre geração, consumo e rede. Confira a cobertura do histórico antes de concluir sobre eficiência.':!enough?'Ainda não há dados suficientes para avaliar este período.':exportRate>50&&imp>0?'Há energia solar enviada à rede e consumo vindo da rede em outros horários. Se for conveniente, programe cargas flexíveis para os horários de maior geração.':imp>exp?'A casa recebeu mais energia da rede do que enviou. Confira os horários de maior consumo no gráfico.':'A casa enviou mais energia à rede do que recebeu neste período.';
+    return `<section class="screen analysis143">
+      ${this._tabIntro("analytics","ANÁLISES","Como sua energia foi utilizada",this._range.label,"purple")}
+      <div class="insight-grid143">
+        ${metric("SEU SOL ABASTECEU A CASA",inconsistent?"Conferir leituras":enough?`${Math.round(selfSufficiency)}%`:"Sem dados",`${this._fmtK(selfUse)} de energia solar usada localmente`,"green")}
+        ${metric("ENERGIA RECEBIDA DA REDE",this._fmtK(imp),house>0?`${Math.round(gridDependency)}% do consumo da casa`:"Consumo ainda indisponível","cyan")}
+        ${metric("ENERGIA ENVIADA À REDE",this._fmtK(exp),solar>0?`${Math.round(exportRate)}% da geração solar`:"Geração ainda indisponível","purple")}
+        ${metric("MAIOR DEMANDA DA CASA",p.housePeak?.time?this._fmtW(p.housePeak.value):"Sem histórico",p.housePeak?.time?this._fmtTime(p.housePeak.time):"Aguardando medições","red")}
+      </div>
+      <article class="panel insight143"><h3>O que os números indicam</h3><p>${recommendation}</p>
+        <div class="insight-split143"><div><b>De onde veio o consumo</b><p>Solar usado na casa: ${this._fmtK(selfUse)} · Rede: ${this._fmtK(imp)}</p></div><div><b>Distribuição entre quadros</b><p>Quadro A: ${this._fmtK(qd1)} (${Math.round(qd1Pct)}%) · Demais: ${this._fmtK(qd2)} (${Math.round(qd2Pct)}%)</p></div></div>
+        <small>Valores de energia do período. Enviar energia à rede não significa que a casa ficou independente dela em todos os horários. Diferenças entre medições podem ocorrer por cobertura de histórico e atualização dos medidores.</small>
       </article>
-
-      <article class="panel analytics-ledger">
-        <div class="section-head"><div>
-          <span>ANÁLISES://BALANÇO</span>
-          <strong>LEITURA DO PERÍODO</strong>
-          <small>${this._esc(this._range.label)}</small>
-        </div></div>
-        <div class="analysis-cards">
-          ${metric("ENERGIA SOLAR USADA NA CASA",this._fmtK(selfUse),"Geração − exportação")}
-          ${metric("MAIOR PICO DE CONSUMO",this._fmtW(p.housePeak?.value||0),p.housePeak?.time?this._fmtTime(p.housePeak.time):"Sem pico registrado","red")}
-          ${metric("MAIOR CONSUMIDOR MONITORADO",top?this._esc(top.name):"—",top?this._fmtK(top.energy):"Sem dado")}
-          ${metric("SALDO REDE",`${balance>=0?"+":""}${this._fmtK(balance)}`,balance>=0?"crédito líquido":"débito líquido",balance>=0?"green":"red")}
-          ${metric("QUADRO A NO CONSUMO",`${Math.round(qd1Pct)}%`,this._fmtK(qd1))}
-          ${metric("QUADRO B / DEMAIS NO CONSUMO",`${Math.round(qd2Pct)}%`,this._fmtK(qd2))}
-        </div>
-      </article>
-
-      <article class="panel analytics-performance">
-        <div class="section-head"><div>
-          <span>ANÁLISES://EFICIÊNCIA</span>
-          <strong>EFICIÊNCIA E DEPENDÊNCIA</strong>
-          <small>Como a casa utilizou a energia no período selecionado</small>
-        </div></div>
-
-        <div class="analysis-bars">
-          <div>
-            <div class="bar-label"><span>Dependência da Copel</span><strong>${Math.round(gridDependency)}%</strong></div>
-            <div class="bar-track"><i style="width:${Math.min(100,gridDependency)}%"></i></div>
-            <small>${this._fmtK(imp)} importados</small>
-          </div>
-          <div>
-            <div class="bar-label"><span>Energia solar aproveitada na casa</span><strong>${Math.round(selfConsumption)}%</strong></div>
-            <div class="bar-track green"><i style="width:${Math.min(100,selfConsumption)}%"></i></div>
-            <small>${this._fmtK(selfUse)} consumidos localmente</small>
-          </div>
-          <div>
-            <div class="bar-label"><span>Energia solar enviada à Copel</span><strong>${Math.round(exportRate)}%</strong></div>
-            <div class="bar-track purple"><i style="width:${Math.min(100,exportRate)}%"></i></div>
-            <small>${this._fmtK(exp)} exportados</small>
-          </div>
-        </div>
-      </article>
-
-      <article class="panel analytics-balance">
-        <div class="section-head"><div>
-          <span>ANÁLISES://FLUXO</span>
-          <strong>BALANÇO ENERGÉTICO</strong>
-          <small>Comparação entre geração, consumo e rede</small>
-        </div></div>
-
-        <div class="balance-grid">
-          ${metric("GERAÇÃO",this._fmtK(solar),"Total produzido","green")}
-          ${metric("CONSUMO",this._fmtK(house),"Total consumido","red")}
-          ${metric("IMPORTAÇÃO",this._fmtK(imp),"Energia recebida da Copel","cyan")}
-          ${metric("EXPORTAÇÃO",this._fmtK(exp),"Energia enviada à Copel","purple")}
-        </div>
-
-        <div class="balance-summary ${balance>=0?"positive":"negative"}">
-          <span>${balance>=0?"SUPERÁVIT DO PERÍODO":"DÉFICIT DO PERÍODO"}</span>
-          <strong>${balance>=0?"+":""}${this._fmtK(balance)}</strong>
-          <small>${balance>=0?"A casa exportou mais energia do que importou":"A casa importou mais energia do que exportou"}</small>
-        </div>
-      </article>
+      <article class="panel insight143"><h3>Geração e consumo ao longo do período</h3>${this._chart([{entity:this.entities.solarPower,label:"Geração solar",cls:"green"},{entity:this.entities.housePower,label:"Consumo da casa",cls:"red"}],{buckets:96})}</article>
     </section>`;
   }
 
@@ -1768,6 +1720,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
 
   _bind() {
     const r=this.shadowRoot;
+    r.querySelectorAll('.configure-loads143').forEach(button=>button.onclick=()=>this.dispatchEvent(new CustomEvent('energy-configure-loads',{bubbles:true,composed:true})));
     r.querySelectorAll("[data-tab]").forEach(b=>b.onclick=(ev)=>{
       ev.preventDefault();
       ev.stopPropagation();
@@ -1817,6 +1770,7 @@ class CasaPelizzonEnergyOpsCard extends HTMLElement {
   }
 
   _render() {
+
     if (!this.shadowRoot || !this._hass) return;
     this._lastVisualRender=Date.now();
     const live=this._live();
@@ -3506,6 +3460,13 @@ filter:blur(2px)}
 }
 
 /* accessibility */
+
+.loads-empty143{padding:12px;display:grid;gap:10px}.loads-empty143 p{margin:0;line-height:1.5}.loads-empty143 small{color:#95b8c9;line-height:1.5}.pending-load143{display:flex;justify-content:space-between;gap:12px;padding:8px;border-bottom:1px solid #183744}.configure-loads143{padding:10px;border:1px solid #27bbeb;border-radius:8px;background:#092b3c;color:#dff7ff;cursor:pointer}.board-chart143{min-height:160px;margin:12px 0}.analysis143{display:grid;gap:12px;grid-template-columns:1fr}.insight-grid143{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}.insight143{padding:14px}.insight143 h3{margin:0 0 10px;font-size:17px}.insight143 p{line-height:1.6}.insight143 small{display:block;color:#9db8c8;line-height:1.5}.insight-split143{display:grid;grid-template-columns:1fr 1fr;gap:14px}.analysis143 .analysis-metric{padding:14px}.analysis143 .analysis-metric strong{font-size:26px}
+@media(min-width:900px){:host([viewport-fit]) .analysis143{height:100%;grid-template-rows:60px 90px minmax(120px,.8fr) minmax(140px,1fr);overflow:auto}:host([viewport-fit]) .analysis143>.tab-intro{min-height:0;padding:10px}:host([viewport-fit]) .analysis143 .insight143{min-height:0;overflow:auto}:host([viewport-fit]) .boards-screen{height:100%;grid-template-rows:65px minmax(0,1fr)}:host([viewport-fit]) .boards-screen>.tab-intro{min-height:0;padding:10px}:host([viewport-fit]) .boards-screen .board-panel{min-height:0;overflow:auto}:host([viewport-fit]) .board-chart143 .chart-viewport{height:clamp(130px,28cqh,250px);min-height:130px}:host([viewport-fit]) .board-chart143 .chart-viewport svg{height:100%}}
+@media(max-width:899px){.insight-grid143{grid-template-columns:repeat(2,minmax(0,1fr))}.insight-split143{grid-template-columns:1fr}}
+
+.analysis143 .analysis-metric{display:flex;flex-direction:column;gap:6px;border:1px solid #173747;border-radius:12px;background:#04131d}.analysis143 .analysis-metric span{font-size:11px}.analysis143 .analysis-metric small{font-size:11px;color:#a6bdcc}.analysis143 .insight143:last-child{display:grid;grid-template-rows:auto minmax(0,1fr)}.analysis143 .insight143 .chart-box{min-height:0;height:100%;display:grid;grid-template-rows:minmax(0,1fr) auto}.analysis143 .insight143 .chart-viewport{height:100%;min-height:0}.analysis143 .insight143 .chart-viewport svg{height:100%}.analysis143 .insight143 p{margin:6px 0;line-height:1.35}.analysis143 .insight143 small{font-size:10px}.insight-split143 b{font-size:12px}
+:host([viewport-fit]) .analysis143{grid-template-rows:60px 90px minmax(110px,.45fr) minmax(180px,1fr)}.analysis143 .tab-intro-icon{width:36px;height:36px;min-width:36px}.analysis143 .tab-intro-copy strong{font-size:19px}.analysis143 .tab-intro-copy small{font-size:10px}.analysis143 .tab-intro{gap:10px}.analysis143 .analysis-metric strong{font-size:22px}
 @media(prefers-reduced-motion:reduce){
   .ico *,.tab-intro-pulse i{animation:none!important}
 }

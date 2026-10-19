@@ -24,7 +24,7 @@ class SolarMirror:
     async def refresh(self):
         async with self.lock:
             if self.closed:raise PermissionError('mirror_unloaded')
-            self.invalidate()
+            # Keep the previous verified sample only until its original expiry.
             try:
                 status=await self.status()
                 # Display status is not an operation grant. evaluate() always
@@ -54,8 +54,9 @@ class SolarMirror:
                         or set(item['attributes'])-{'module','metric','configured','dependencies','mode','integration_method'}):raise ValueError('entity_projection_invalid')
                     staged[item['entity_id']]=copy.deepcopy(item)
                 if self.closed:raise PermissionError('mirror_unloaded')
+                if self.cancel:self.cancel();self.cancel=None
                 self.entities=staged;self.until=expiry;self.wall=now;self.started=self.monotonic()
-                if self.schedule:self.cancel=self.schedule(min(5,(expiry-now).total_seconds()),self.invalidate)
+                if self.schedule:self.cancel=self.schedule(min(5,(expiry-now).total_seconds()),lambda:self.invalidate() if self.until==expiry else None)
                 self.notify();return len(staged)
             except BaseException:
                 self.invalidate();raise

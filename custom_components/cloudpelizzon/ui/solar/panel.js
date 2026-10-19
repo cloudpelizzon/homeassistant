@@ -1,4 +1,4 @@
-import "/cloudpelizzon-energy/frontend/energy-card.js?v=34c942d03b4a";
+import "/cloudpelizzon-energy/frontend/energy-card.js?v=2a9a012aec3d";
 
 class CloudPelizzonEnergyPanel extends HTMLElement {
   constructor() {
@@ -810,6 +810,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     );
 
     return {
+      unassigned_loads:this._detectedLoads().filter(row=>!(cfg.boards||[]).some(b=>(b.loads||[]).some(x=>x.power_entity===row.entity_id))).map(row=>({name:row.name||row.entity_id,power:row.entity_id})),
       solar_power:n.generation_power,
       sofar_power:n.generation_primary_power,
       sofar_power_fallback:n.generation_primary_power,
@@ -990,6 +991,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
 
     const card=this.shadowRoot.querySelector("#energy-card");
     if(card){
+      card.addEventListener('energy-configure-loads',()=>{this._mode='config';this._render();requestAnimationFrame(()=>this.shadowRoot.querySelector('.detected-loads')?.scrollIntoView({block:'center'}));});
       card.setConfig(this._cardConfig());
       if(this._hass)card.hass=this._hass;
     }

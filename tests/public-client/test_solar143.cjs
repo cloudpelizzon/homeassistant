@@ -1,0 +1,10 @@
+const fs=require('fs'),vm=require('vm'),assert=require('node:assert/strict');
+const classes=new Map(),context={HTMLElement:class{attachShadow(){return this.shadowRoot={innerHTML:'',querySelector:()=>null,querySelectorAll:()=>[]}}},customElements:{get:n=>classes.get(n),define:(n,c)=>classes.set(n,c)},window:{customCards:[]},console,Date,setTimeout,clearTimeout,setInterval,clearInterval};vm.createContext(context);
+vm.runInContext(fs.readFileSync(process.argv[2],'utf8'),context);
+const card=new (classes.get('casa-pelizzon-energy-ops-card'))();card._chart=defs=>`<div class="fixture-chart">${defs.map(x=>x.label).join(',')}</div>`;
+card._config={unassigned_loads:[{name:'Tomada da sala',power:'sensor.plug'}],cloudpelizzon_entities:{qd1Power:'sensor.a',qd2Power:'sensor.b'}};card._hass={states:{'sensor.plug':{state:'25',attributes:{unit_of_measurement:'W'}}}};
+const live={qd1Devices:[],qd2Devices:[],qd1:300,qd2:200};const period={qd1Devices:[],qd2Devices:[],qd1:6,qd2:4,house:10,solar:15,imp:3,exp:8,qd1Other:6,qd2Other:4,housePeak:{value:1200,time:Date.now()}};
+const rows=card._deviceRows(period,live);assert(rows.includes('Tomada da sala'));assert(rows.includes('25 W'));assert(rows.includes('Associar tomadas'));
+const boards=card._boards(live,period);assert.equal((boards.match(/fixture-chart/g)||[]).length,2);
+const analysis=card._analytics(live,period);assert(analysis.includes('O que os números indicam'));assert(analysis.includes('horários de maior geração'));assert(!analysis.includes('MAIOR CONSUMIDOR MONITORADO'));
+console.log('SOLAR143=unassigned_loads_visible; two_board_charts; concise_actionable_analysis');
