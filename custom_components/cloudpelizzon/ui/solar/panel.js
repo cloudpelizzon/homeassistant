@@ -302,14 +302,14 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
 
 
   async _importProduction(){
-    this._detecting=true;this._detectFeedback='Lendo configuração de medição da produção…';this._render();
+    this._error='';this._detecting=true;this._detectFeedback='Lendo configuração de medição da produção…';this._render();
     try{const result=await this._ws('cloudpelizzon/energy/production_config');const issues=this._mappingIssues(result.config);if(issues.length)throw Error('Configuração da produção não importada: '+issues.join(' '));this._cfg=result.config;this._ensureCfg();this._detectFeedback='Configuração da produção carregada. Revise os sensores e clique em Salvar. Licenças e trials foram preservadas.';}
     catch(error){this._detectFeedback='Não foi possível importar: '+String(error?.message||error);}
     finally{this._detecting=false;this._render();}
   }
 
   async _refreshDiscovery(){
-    this._syncDraft();this._detecting=true;this._detectFeedback='Consultando sensores de energia do Home Assistant…';this._render();
+    this._syncDraft();this._error='';this._detecting=true;this._detectFeedback='Consultando sensores de energia do Home Assistant…';this._render();
     try{
       this._discovery=await this._ws('cloudpelizzon/energy/discover');
       let imported=false,sourceRejected=false;
@@ -680,6 +680,17 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     this._render();
   }
 
+
+  _measurementSignature142(cfg){
+    const section=(value,keys)=>Object.fromEntries(keys.map(k=>[k,String(value?.[k]??'').trim()]));
+    const item=row=>({...section(row,['power_entity','energy_entity','power_transform']),loads:(row.loads||[]).map(item)});
+    return JSON.stringify({
+      site:section(cfg?.site,['phases','house_power_entity','house_energy_entity','generation_energy_entity']),
+      grid:section(cfg?.grid,['mode','net_sign','net_power_entity','import_power_entity','export_power_entity','import_energy_entity','export_energy_entity']),
+      generation:(cfg?.generation||[]).map(item),boards:(cfg?.boards||[]).map(item)
+    });
+  }
+
   async _save(){
     this._syncDraft();
     const issues=this._mappingIssues(this._cfg);
@@ -689,16 +700,21 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     this._render();
 
     try{
+      const expected=this._measurementSignature142(this._cfg);
       await this._ws(
         "cloudpelizzon/energy/config/save",
         {config_json:JSON.stringify(this._cfg)}
       );
-
+      const saved=await this._ws("cloudpelizzon/energy/config/get");
+      if(!saved?.config?.configured||this._measurementSignature142(saved.config)!==expected){
+        throw Error("A leitura de confirmação retornou um mapeamento diferente. A configuração não foi confirmada; mantenha esta tela para conferir o erro.");
+      }
+      this._cfg=saved.config;this._normalized=saved.normalized_entities||this._normalized;
       this._loaded=false;
       this._loading=false;
       this._renderMessage(
         "Configuração salva",
-        "O CloudPelizzon está recarregando o CP-ENERGY e criando os sensores normalizados."
+        "Mapeamento gravado e conferido no motor privado. O CP-ENERGY está atualizando os sensores normalizados."
       );
     }catch(error){
       this._loading=false;
