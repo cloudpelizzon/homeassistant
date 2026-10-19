@@ -63,7 +63,7 @@ async def forward(hass,domain,service,data):
  while True:
   after=await source_state(mirror,target);mirror.apply(after);mirror.last_command['after']=after['state']
   if expected and after['state'] in expected:
-   mirror.last_command['outcome']='already_in_state' if already else 'state_verified';mirror.status('connected');return True
+   mirror.last_command['outcome']='arming' if after['state']=='arming' else 'already_in_state' if already else 'state_verified';mirror.status('connected');return True
   if time.monotonic()>=until:break
   await asyncio.sleep(.5)
  mirror.last_command['outcome']='no_state_change';mirror.status('connected')
@@ -92,7 +92,7 @@ def expected_states(service,data):
  if service=='turn_on':return {'on'}
  if service=='turn_off':return {'off'}
  if service=='select_option':return {data['option']} if isinstance(data.get('option'),str) else set()
- return {'alarm_disarm':{'disarmed'},'alarm_arm_home':{'armed_home'},'alarm_arm_away':{'armed_away'},'alarm_arm_night':{'armed_night'},'alarm_trigger':{'triggered'},'open_cover':{'open','opening'},'close_cover':{'closed','closing'},'stop_cover':{'open','closed'}}.get(service,set())
+ return {'alarm_disarm':{'disarmed'},'alarm_arm_home':{'armed_home','arming'},'alarm_arm_away':{'armed_away','arming'},'alarm_arm_night':{'armed_night','arming'},'alarm_trigger':{'triggered'},'open_cover':{'open','opening'},'close_cover':{'closed','closing'},'stop_cover':{'open','closed'}}.get(service,set())
 
 async def source_state(mirror,eid):
  if not re.fullmatch(r'[a-z_]+\.[a-z0-9_]+',eid):raise ValueError('source_entity_invalid')

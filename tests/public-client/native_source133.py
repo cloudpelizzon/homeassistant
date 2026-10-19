@@ -60,6 +60,7 @@ class DeliveryTests(unittest.IsolatedAsyncioTestCase):
    finally:source.DELIVERY_CHECK.reset(token)
    self.assertEqual(production.states.get(eid).state,after);self.assertEqual(m.last_command['outcome'],'state_verified');self.assertEqual(calls[-1][2]['entity_id'],eid)
   self.assertEqual(len(calls),4)
+  self.assertIn('arming',source.expected_states('alarm_arm_home',{}));self.assertIn('arming',source.expected_states('alarm_arm_away',{}))
  async def test133_daily_uses_source_timezone_and_one_count_per_context(self):
   m=await self.mirror();m.apply(state('automation.synthetic','on'))
   start=datetime(2026,10,19,3,tzinfo=timezone.utc).timestamp();now=datetime(2026,10,19,15,tzinfo=timezone.utc)

@@ -240,7 +240,13 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     if(this._ruleBulk==='all')for(const n of this._native())prev.add(n.entity_id);
     else if(this._ruleBulk==='none')prev.clear();
     else this.shadowRoot.querySelectorAll('.nativebox').forEach(e=>e.checked?prev.add(e.dataset.id):prev.delete(e.dataset.id));
-    const scope=this._scopeDraft||current.scope;
+    const scope=origin==='categories'?'selected':this._scopeDraft||current.scope;
+    if(origin==='categories'){
+      // A category change replaces the monitored set; stale individual choices
+      // must not reintroduce an explicitly excluded category into any KPI.
+      prev.clear();
+      for(const n of this._native())if(catSel.includes(n.category))prev.add(n.entity_id);
+    }
     const payload={scope,category_selection:origin==='categories'?catSel:current.category_selection,
       native_selection:[...prev],category_names:origin==='categories'?names:current.category_names||{},
       // Preserve existing module-created rule selection; never activate or modify private imports.
@@ -349,6 +355,6 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     finally{this._busyEditor=false}
   }
 
-    _change(e){const node=e.target;if(node.classList?.contains('kind')){this._readBlocks();const block=node.closest('[data-section]');const s=block.dataset.section;const i=Number(block.dataset.index);this._blocks[s][i]={kind:node.value};this._renderBlocks();return}if(node.matches('.catbox,.rulebox,.nativebox')){this._scopeDraft='selected'}}
+    _change(e){const node=e.target;if(node.classList?.contains('kind')){this._readBlocks();const block=node.closest('[data-section]');const s=block.dataset.section;const i=Number(block.dataset.index);this._blocks[s][i]={kind:node.value};this._renderBlocks();return}if(node.matches('.catbox,.rulebox,.nativebox')){this._scopeDraft='selected';this._toast('Seleção alterada. Clique em Salvar preferências para aplicar ao dashboard.');}}
 }
 if(!customElements.get('cloudpelizzon-automation-panel'))customElements.define('cloudpelizzon-automation-panel',CloudPelizzonAutomationPanel);
