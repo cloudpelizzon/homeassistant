@@ -38,3 +38,7 @@ class NativeSecurity134Tests(unittest.IsolatedAsyncioTestCase):
   def snapshot(reads):sequence.append('snapshot');return {}
   edge=Edge(SDK(),executor=executor,snapshot=snapshot,read_policy=lambda:policy,save_policy=lambda x:None,service=None,relay_factory=None,before_snapshot=refresh)
   await edge.cycle();self.assertEqual(sequence,['refresh','snapshot','feed'])
+
+ async def test_partial_bypass_and_blockers_are_server_projections(self):
+  edge=self.edge();edge.native.update(partial_open_bypass=True,bypassed_sensors=['binary_sensor.window'],arm_blockers={'partial_closed':['binary_sensor.door']});entity=PrivateAlarm(edge)
+  attrs=entity.extra_state_attributes;self.assertEqual(attrs['bypassed_sensors'],['binary_sensor.window']);self.assertEqual(attrs['arm_blockers'],{'partial_closed':['binary_sensor.door']});self.assertTrue(attrs['partial_open_bypass'])
