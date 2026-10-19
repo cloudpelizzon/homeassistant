@@ -48,20 +48,19 @@ class NativeSecurity134Tests(unittest.IsolatedAsyncioTestCase):
   from pathlib import Path
   from homeassistant import loader,config_entries
   from homeassistant.core import HomeAssistant
-  from homeassistant.helpers import issue_registry,entity_registry
+  from homeassistant.helpers import issue_registry,entity_registry,device_registry
   from homeassistant.setup import async_setup_component
   from homeassistant.components.alarm_control_panel.const import DATA_COMPONENT
   root=Path('/tmp')/('native-alarm137-'+uuid.uuid4().hex);root.mkdir()
   hass=HomeAssistant(str(root));loader.async_setup(hass)
   hass.config_entries=config_entries.ConfigEntries(hass,{})
-  await issue_registry.async_load(hass);await hass.config_entries.async_initialize()
+  await issue_registry.async_load(hass);await device_registry.async_load(hass);await entity_registry.async_load(hass);await hass.config_entries.async_initialize()
   self.assertTrue(await async_setup_component(hass,'alarm_control_panel',{}));await hass.async_start()
   edge=object.__new__(Edge);edge.closed=False;edge.connected=True;edge.native=None;edge.native_at=None;edge.native_listeners=set();edge.clock=lambda:datetime.now(timezone.utc)
   edge.native_update({'alarm':'disarmed','mode':'Casa','pending':None,'revision':1})
   entity=PrivateAlarm(edge);component=hass.data[DATA_COMPONENT]
   try:
-   platform=component._platforms['alarm_control_panel']
-   await platform._async_add_entity(entity,False,entity_registry.async_get(hass),None)
+   await component.async_add_entities([entity])
    self.assertEqual(hass.states.get(entity.entity_id).state,'disarmed')
    edge.native_update({'alarm':'arming','mode':'Casa','pending':{'kind':'exit','target':'armed_home','due':edge.clock().timestamp()+60},'revision':2})
    self.assertEqual(hass.states.get(entity.entity_id).state,'arming');self.assertEqual(hass.states.get(entity.entity_id).attributes['pending']['target'],'armed_home')
