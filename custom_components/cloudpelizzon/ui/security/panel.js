@@ -4026,7 +4026,7 @@ class CloudPelizzonSecurityPanel extends HTMLElement {
           </div>
 
 
-          <div class="hero-status">
+          <div class="hero-status"><button id="cp-back-dashboard" class="secondary"><ha-icon icon="mdi:view-dashboard-outline"></ha-icon>Dashboard</button>
 
             <span class="${
               modoSombra
@@ -5462,8 +5462,8 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
   }
 
   function cameraIds(host) {
-    const ids = configuredIds(host,['camera']);
-    return ids.filter(id=>state(host,id)).slice(0,12);
+    const ignored=new Set(arr(host?._config?.descoberta?.ignorados?.cameras));
+    return Object.keys(host?._hass?.states||{}).filter(id=>id.startsWith('camera.')&&!ignored.has(id)).sort((a,b)=>String(state(host,a)?.attributes?.friendly_name||a).localeCompare(String(state(host,b)?.attributes?.friendly_name||b),'pt-BR')).slice(0,24);
   }
 
   function batterySensors(host) {
@@ -5551,6 +5551,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
     const cls=raw==='home'?'home':raw==='not_home'?'away':(['unknown','unavailable'].includes(raw)?'unknown':'zone');
     const label=raw==='home'?'Em casa':raw==='not_home'?'Fora de casa':raw==='unknown'?'Desconhecido':raw==='unavailable'?'Indisponível':raw;
     const pic=String(st?.attributes?.entity_picture||'');
+    const picture=pic.startsWith('/api/camera_proxy/')?pic+(pic.includes('?')?'&':'?')+'cp_frame='+Math.floor(Date.now()/15000):pic;
     const ts=new Date(st?.last_changed||0).getTime(); const mins=Number.isFinite(ts)?Math.max(0,Math.floor((Date.now()-ts)/60000)):0;
     const since=mins<1?'agora':mins<60?`há ${mins} min`:`há ${Math.floor(mins/60)}h ${mins%60}min`;
     return {raw,cls,label,pic,since};
@@ -5589,8 +5590,9 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function cameraCard(host,id,small=false){
     const st=state(host,id), name=String(st?.attributes?.friendly_name||fmtName(id)), pic=String(st?.attributes?.entity_picture||'');
+    const picture=pic.startsWith('/api/camera_proxy/')?pic+(pic.includes('?')?'&':'?')+'cp_frame='+Math.floor(Date.now()/15000):pic;
     const raw=String(st?.state||'unknown'); const online=!['unknown','unavailable'].includes(raw);
-    return `<button class="cp60-camera ${small?'small':''}" data-entity="${esc(id)}"><div class="cp60-cam-media">${pic?`<img src="${esc(pic)}" alt="${esc(name)}">`:''}<div class="cp60-cam-fallback" style="display:${pic?'none':'grid'}"><ha-icon icon="mdi:cctv"></ha-icon></div><span class="cp60-live ${online?'on':'off'}">${online?(raw==='recording'?'GRAVANDO':'AO VIVO'):'OFFLINE'}</span></div><div class="cp60-cam-name">${esc(name)}</div></button>`;
+    return `<button class="cp60-camera ${small?'small':''}" data-entity="${esc(id)}"><div class="cp60-cam-media">${pic?`<img src="${esc(picture)}" alt="${esc(name)}">`:''}<div class="cp60-cam-fallback" style="display:${pic?'none':'grid'}"><ha-icon icon="mdi:cctv"></ha-icon></div><span class="cp60-live ${online?'on':'off'}">${online?(!pic?'SEM IMAGEM':st?.attributes?.cloudpelizzon_read_only?'IMAGEM RECENTE':raw==='recording'?'GRAVANDO':'AO VIVO'):'OFFLINE'}</span></div><div class="cp60-cam-name">${esc(name)}</div></button>`;
   }
 
   function personCard(host,r){
@@ -5780,9 +5782,10 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function render(host){
     const root=host?.shadowRoot; if(!root)return; window.__cp60Host=host;
-    let mount=root.querySelector('#cp60-root'); if(!mount){mount=document.createElement('div');mount.id='cp60-root';root.appendChild(mount);mount.addEventListener('click',e=>handleClick(host,e));mount.addEventListener('change',()=>capturePermissions127(host));}
+    let mount=root.querySelector('#cp60-root'); if(!mount){mount=document.createElement('div');mount.id='cp60-root';root.appendChild(mount);mount.addEventListener('click',e=>handleClick(host,e));mount.addEventListener('change',()=>capturePermissions127(host));mount.addEventListener('error',e=>{const img=e.target;if(img?.tagName==='IMG'&&img.parentElement?.classList.contains('cp60-cam-media')){img.style.display='none';const fallback=img.parentElement.querySelector('.cp60-cam-fallback');if(fallback)fallback.style.display='grid';const label=img.parentElement.querySelector('.cp60-live');if(label)label.textContent='SEM IMAGEM';}},true);}
+    let back=root.querySelector('#cp-back-dashboard');if(back&&!back.__cpBound){back.__cpBound=true;back.addEventListener('click',()=>{host.__cp60NativeMode=false;host.__cp60View='overview';try{localStorage.setItem(VIEW_KEY,'overview')}catch(_){};render(host)});}
     if(host.__cp60NativeMode){mount.style.display='none';return;}
-    mount.style.display='block'; mount.innerHTML=mainMarkup(host); fit(host,mount);
+    mount.style.display='block'; const markup=mainMarkup(host);if(mount.__cpMarkup!==markup){mount.innerHTML=markup;mount.__cpMarkup=markup;}fit(host,mount);
   }
 
   function fit(host,mount){
@@ -5805,7 +5808,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function toast(host,msg,tone='info'){const el=host.shadowRoot?.querySelector('#cp60-root [data-toast]');if(!el)return;el.textContent=msg;el.className=`cp60-toast show ${tone}`;clearTimeout(host.__cp60Toast);host.__cp60Toast=setTimeout(()=>el.className='cp60-toast',2500);}
 
-  async function service(host,domain,svc,data){try{const result=await host._hass.callWS({type:'cloudpelizzon/security/command',service:domain+'.'+svc,data:data||{}});if(result.delivered!==true)throw Error('Comando não confirmado');return true}catch(e){toast(host,String(e?.message||e),'error');return false}}
+  async function service(host,domain,svc,data){const targets=Array.isArray(data?.entity_id)?data.entity_id:[data?.entity_id];if(targets.some(id=>state(host,id)?.attributes?.cloudpelizzon_read_only)){toast(host,'Somente leitura: este dispositivo é espelhado da produção. Nenhum comando foi enviado.','error');return false;}try{const result=await host._hass.callWS({type:'cloudpelizzon/security/command',service:domain+'.'+svc,data:data||{}});if(result.delivered!==true)throw Error('Comando não confirmado');return true}catch(e){toast(host,String(e?.message||e),'error');return false}}
   async function handleClick(host,e){
     const t=e.composedPath().find(n=>n?.dataset && Object.keys(n.dataset).length) || e.target;
     const btn=e.composedPath().find(n=>n?.matches?.('button,[data-entity]')) || e.target.closest?.('button,[data-entity]'); if(!btn)return;
@@ -5909,6 +5912,19 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 @keyframes cp129Edge{0%,100%{opacity:.55}50%{opacity:1}}
 @media(prefers-reduced-motion:reduce){#cp60-root .cp60-map:before{animation:none;opacity:.85}}
 
+
+#cp60-root .cp60-camera-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:minmax(190px,1fr);align-content:start;gap:8px;height:100%;padding:3px}
+#cp60-root .cp60-camera{display:grid;grid-template-rows:minmax(0,1fr) 26px;min-width:0;width:100%;min-height:110px;padding:0;overflow:hidden;border:1px solid #087a99;border-radius:10px;background:#020d15;color:#f3fbff;text-align:left}
+#cp60-root .cp60-cam-media{position:relative;min-height:0;height:100%;overflow:hidden}
+#cp60-root .cp60-cam-media img{display:block;width:100%;height:100%;object-fit:cover}
+#cp60-root .cp60-cam-fallback{position:absolute;inset:0;place-items:center;background:radial-gradient(ellipse at center,#073142,#020d15)}
+#cp60-root .cp60-cam-fallback ha-icon{--mdc-icon-size:34px}
+#cp60-root .cp60-cam-name{font-size:11px;line-height:16px;padding:4px 8px}
+#cp60-root .cp60-map:before{background:linear-gradient(90deg,transparent,#7beeff,transparent) 0 0/45% 3px no-repeat,linear-gradient(270deg,transparent,#25ffd0,transparent) 100% 100%/45% 3px no-repeat,linear-gradient(180deg,#51e5ff88,transparent 40%,transparent 60%,#28ffd077) 0 0/3px 100% no-repeat,linear-gradient(180deg,#51e5ff88,transparent 40%,transparent 60%,#28ffd077) 100% 0/3px 100% no-repeat;animation:cp131Perimeter 5s ease-in-out infinite;opacity:1;box-shadow:inset 0 0 28px #19c8ed22}
+#cp60-root .cp60-map{box-shadow:0 0 0 1px #42e7ff99,0 0 22px #00caff44,inset 0 0 34px #00b4dd33}
+@keyframes cp131Perimeter{0%,100%{background-position:0 0,100% 100%,0 0,100% 0;filter:brightness(1)}50%{background-position:100% 0,0 100%,0 0,100% 0;filter:brightness(1.6)}}
+@media(max-width:760px){#cp60-root .cp60-camera-grid{grid-template-columns:1fr}}
+
 @media(prefers-reduced-motion:reduce){#cp60-root *{animation:none!important;transition:none!important}}
 @keyframes cp60Pulse{0%,100%{filter:drop-shadow(0 0 4px #00ddff)}50%{filter:drop-shadow(0 0 13px #00ffca);transform:scale(1.045)}}
 @keyframes cp60Ring{0%{transform:scale(.9);opacity:.6}100%{transform:scale(1.15);opacity:0}}
@@ -5923,7 +5939,7 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
     customElements.whenDefined(TAG).then(()=>{
       const K=customElements.get(TAG); if(!K||K.prototype.__cp60Installed)return; K.prototype.__cp60Installed=true;
       const r=K.prototype.render; if(typeof r==='function')K.prototype.render=function(...a){const out=r.apply(this,a);schedule(this);return out};
-      const c=K.prototype.connectedCallback; K.prototype.connectedCallback=function(...a){const out=typeof c==='function'?c.apply(this,a):undefined;this.__cp60NativeMode=false;this.__cp60View=localStorage.getItem(VIEW_KEY)||'overview';window.__cp60Host=this;clearInterval(this.__cp61Clock);this.__cp61Clock=setInterval(()=>schedule(this),30000);schedule(this);return out};
+      const c=K.prototype.connectedCallback; K.prototype.connectedCallback=function(...a){const out=typeof c==='function'?c.apply(this,a):undefined;this.__cp60NativeMode=false;this.__cp60View=localStorage.getItem(VIEW_KEY)||'overview';window.__cp60Host=this;clearInterval(this.__cp61Clock);this.__cp61Clock=setInterval(()=>schedule(this),15000);schedule(this);return out};
       const d=K.prototype.disconnectedCallback; K.prototype.disconnectedCallback=function(...a){cancelAnimationFrame(this.__cp60Frame);clearInterval(this.__cp61Clock);return typeof d==='function'?d.apply(this,a):undefined};
       document.querySelectorAll(TAG).forEach(h=>{h.__cp60NativeMode=false;schedule(h)});
     });

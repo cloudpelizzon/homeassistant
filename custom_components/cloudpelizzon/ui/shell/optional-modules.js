@@ -12,12 +12,12 @@ const OPTIONAL_MODULES = {
   "CP-SOLAR": {
     tag: "cloudpelizzon-energy-panel",
     title: "Inteligência Solar",
-    url: "/cloudpelizzon-solar/frontend/panel.js?v=20261012-cpsolar-compat-v6214",
+    url: "/cloudpelizzon-solar/frontend/panel.js?v=5fb2e0743da8",
   },
   "CP-SECURITY": {
     tag: "cloudpelizzon-security-panel",
     title: "Segurança",
-    url: "/cloudpelizzon-security/frontend/panel.js?v=73278c7daf43",
+    url: "/cloudpelizzon-security/frontend/panel.js?v=4c7f32d25994",
   },
   "CP-AUTOMATION": {
     tag: "cloudpelizzon-automation-panel",

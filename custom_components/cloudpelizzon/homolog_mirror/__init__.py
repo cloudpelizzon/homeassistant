@@ -8,12 +8,20 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from .policy import DOMAIN,STORE,clean,outgoing,check_peer,source_url
 _LOGGER=logging.getLogger(__name__)
 
-async def stop(hass,entry):
+async def stop(hass,entry,*,unload_platform=False):
  mirror=hass.data.get(DOMAIN,{}).pop(entry.entry_id,None)
+ if unload_platform:
+  from ..camera import ADDERS
+  if entry.entry_id in hass.data.get(ADDERS,{}):
+   await hass.config_entries.async_unload_platforms(entry,['camera']);hass.data[ADDERS].pop(entry.entry_id,None)
  if mirror is None:return
- mirror.stopping=True;mirror.task.cancel()
- try:await mirror.task
- except asyncio.CancelledError:pass
+ mirror.stopping=True
+ if mirror.task is not None:
+  mirror.task.cancel()
+  try:await mirror.task
+  except asyncio.CancelledError:pass
+ for camera in mirror.cameras.values():
+  if camera.hass is not None and not unload_platform:await camera.async_remove()
  for eid in mirror.owned:
   state=hass.states.get(eid)
   if state and state.attributes.get('mirror_source')=='production_observer':hass.states.async_remove(eid)
@@ -29,16 +37,20 @@ async def start_saved(hass,entry):
   _LOGGER.error('Mirror refused: local identity changed');return
  source=source_url(saved['source_base'])
  mirror=Mirror(hass,entry,saved['token'],source);hass.data.setdefault(DOMAIN,{})[entry.entry_id]=mirror
+ from ..camera import ADDERS
+ if entry.entry_id not in hass.data.get(ADDERS,{}):await hass.config_entries.async_forward_entry_setups(entry,['camera'])
  mirror.task=entry.async_create_background_task(hass,mirror.run(),'Production observations',eager_start=False)
 
 class Mirror:
  def __init__(self,hass,entry,token,source):
+  self.cameras={};self.source_devices={};self.image_slots=asyncio.Semaphore(3)
   self.token=token;self.source=source
   self.hass=hass;self.entry=entry;self.owned=set();self.blocked=set();self.mapping={};self.stopping=False;self.task=None
  def status(self,state):
-  self.hass.states.async_set('sensor.cloudpelizzon_homolog_mirror',state,{'friendly_name':'Espelho da produÃ§Ã£o â€” somente leitura','entities':len(self.owned),'collisions_skipped':len(self.blocked),'source':self.source.split('/api/')[0],'commands_forwarded':0})
+  self.hass.states.async_set('sensor.cloudpelizzon_homolog_mirror',state,{'friendly_name':'Espelho da produção — somente leitura','entities':len(self.owned),'collisions_skipped':len(self.blocked),'source':self.source.split('/api/')[0],'commands_forwarded':0})
  def offline(self):
   for eid in self.owned:
+   if eid in self.cameras:self.cameras[eid].update_source('unavailable');continue
    st=self.hass.states.get(eid)
    if st and st.attributes.get('mirror_source')=='production_observer':self.hass.states.async_set(eid,'unavailable',dict(st.attributes))
   self.status('disconnected')
@@ -49,7 +61,18 @@ class Mirror:
   if eid in self.blocked or (eid not in self.owned and len(self.owned)>=10000):return
   existing=self.hass.states.get(eid)
   registry=er.async_get(self.hass);reg=registry.async_get(eid)
-  if (existing and eid not in self.owned and not (reg and reg.config_entry_id==self.entry.entry_id and existing.attributes.get('mirror_source')=='production_observer')) or (reg and reg.config_entry_id!=self.entry.entry_id):self.blocked.add(eid);return
+  owned_registry=bool(reg and reg.config_entry_id==self.entry.entry_id and ((reg.platform==DOMAIN and reg.unique_id==eid) or (eid.startswith('camera.') and reg.unique_id=='production_observation:'+eid)))
+  if (existing and eid not in self.owned and not owned_registry and not (reg and reg.config_entry_id==self.entry.entry_id and existing.attributes.get('mirror_source')=='production_observer')) or (reg and reg.config_entry_id!=self.entry.entry_id):self.blocked.add(eid);return
+  if eid.startswith('camera.'):
+   from ..camera import ADDERS,ObservationCamera
+   if eid in self.cameras:self.cameras[eid].update_source(value);return
+   add=self.hass.data.get(ADDERS,{}).get(self.entry.entry_id)
+   if add is not None:
+    # Migrate only observer-owned placeholder registry rows from alpha.28.
+    if reg and reg.platform==DOMAIN and reg.unique_id==eid:
+     registry.async_remove(eid)
+     if existing:self.hass.states.async_remove(eid)
+    camera=ObservationCamera(self,eid,value,attrs);self.cameras[eid]=camera;self.owned.add(eid);add([camera]);return
   if not reg:
    original=self.mapping.get(eid,{})
    reg=registry.async_get_or_create(eid.split('.')[0],DOMAIN,eid,config_entry=self.entry,suggested_object_id=eid.split('.',1)[1],original_name=attrs.get('friendly_name'),device_id=original.get('device_id'),original_device_class=attrs.get('device_class'),original_icon=attrs.get('icon'))
@@ -97,6 +120,7 @@ class Mirror:
     if not isinstance(source_id,str):continue
     data={k:dev[k][:150] for k in ('name','manufacturer','model','sw_version') if isinstance(dev.get(k),str)}
     local=registry.async_get_or_create(config_entry_id=self.entry.entry_id,identifiers={(DOMAIN,source_id)},**data);device_ids[source_id]=local.id
+   self.source_devices={e['entity_id']:e.get('device_id') for e in entities if isinstance(e,dict) and isinstance(e.get('entity_id'),str)}
    self.mapping={e['entity_id']:{'device_id':device_ids.get(e.get('device_id'))} for e in entities if isinstance(e,dict) and isinstance(e.get('entity_id'),str) and e.get('platform') not in {'cloudpelizzon',DOMAIN}}
    excluded={e['entity_id'] for e in entities if isinstance(e,dict) and e.get('platform')=='cloudpelizzon'}
    self.blocked.update(excluded)

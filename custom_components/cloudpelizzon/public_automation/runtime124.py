@@ -17,7 +17,7 @@ def create(hass,entry,context):
         for entity in entities:
             value=hass.states.get(entity)
             if value is None:continue
-            row={'state':value.state,'attributes':dict(value.attributes)}
+            row={'state':value.state,'attributes':{k:v for k,v in value.attributes.items() if k not in ('access_token','entity_picture','password','token','api_key')}}
             # Unsupported attributes are omitted, never serialized as Python repr.
             try:raw=json.dumps(row,allow_nan=False)
             except (TypeError,ValueError):row['attributes']={};raw=json.dumps(row,allow_nan=False)

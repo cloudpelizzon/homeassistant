@@ -100,7 +100,7 @@ class MirrorTests(unittest.IsolatedAsyncioTestCase):
   await Store(self.hass,1,policy.STORE,private=True).async_save(saved)
   began=asyncio.Event()
   async def wait_forever(_self):began.set();await asyncio.Event().wait()
-  with patch.object(Mirror,'run',wait_forever):
+  with patch.object(Mirror,'run',wait_forever),patch.object(self.hass.config_entries,'async_forward_entry_setups',AsyncMock()):
    await start_saved(self.hass,entry);await asyncio.wait_for(began.wait(),1)
    mirror=self.hass.data[policy.DOMAIN][entry.entry_id];self.assertFalse(mirror.task.done())
    await module.stop(self.hass,entry);self.assertTrue(mirror.task.cancelled())

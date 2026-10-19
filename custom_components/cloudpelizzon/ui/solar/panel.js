@@ -236,6 +236,13 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
   }
 
 
+  async _refreshDiscovery(){
+    this._syncDraft();this._detecting=true;this._detectFeedback='Consultando sensores de energia do Home Assistant…';this._render();
+    try{this._discovery=await this._ws('cloudpelizzon/energy/discover');this._autoDetect(false);const n=(this._discovery.power||[]).length,e=(this._discovery.energy||[]).length;this._detectFeedback=`Detecção concluída: ${n} sensores de potência e ${e} de energia. Revise a seleção e salve.`;}
+    catch(error){this._detectFeedback=`Não foi possível detectar: ${error?.message||String(error)}`;}
+    finally{this._detecting=false;this._render();}
+  }
+
   _autoDetect(render=true){
     this._ensureCfg();
 
@@ -980,10 +987,10 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
         <section class="auto-setup">
           <div class="auto-setup-top">
             <div>
-              <h2>Configuração automática</h2>
+              <h2>Configuração automática</h2>${this._detectFeedback?`<p role="status">${this._esc(this._detectFeedback)}</p>`:""}
               <p>Não é necessário conhecer entity_id, acumuladores ou tratamento de sinal. Revise o resumo e salve. Os detalhes técnicos ficam em “Configuração avançada”.</p>
             </div>
-            <button id="autodetect" class="primary">
+            <button id="autodetect" class="primary" ${this._detecting?"disabled":""}>
               <ha-icon icon="mdi:radar"></ha-icon>
               ${generation.length||boards.length||this._cfg.site.house_power_entity?"Refazer detecção automática":"Detectar e configurar automaticamente"}
             </button>
@@ -1258,7 +1265,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
       </main>
     `;
 
-    this.shadowRoot.querySelector("#autodetect")?.addEventListener("click",()=>this._autoDetect(true));
+    this.shadowRoot.querySelector("#autodetect")?.addEventListener("click",()=>this._refreshDiscovery());
     this.shadowRoot.querySelector("#add-source")?.addEventListener("click",()=>this._addSource());
     this.shadowRoot.querySelector("#add-board")?.addEventListener("click",()=>this._addBoard());
     this.shadowRoot.querySelector("#save")?.addEventListener("click",()=>this._save());

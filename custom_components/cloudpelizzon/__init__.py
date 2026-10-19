@@ -53,5 +53,5 @@ async def async_unload_entry(hass, entry):
     if not isinstance(manager, Runtime) or manager.entry.entry_id != entry.entry_id:
         return False
     from .homolog_mirror import stop
-    await stop(hass, entry)
+    await stop(hass, entry, unload_platform=True)
     return await manager.unload()
