@@ -20,5 +20,21 @@
     "abort": {
       "already_configured": "A CloudPelizzon já está configurada."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Espelho de produção — somente leitura",
+        "description": "Configure somente na homologação. Recebe estados e dispositivos, sem encaminhar comandos. As automações de produção não são copiadas nem executadas. Imagens de câmeras e histórico anterior não são incluídos. O token fica no armazenamento privado local. Para desativar, desmarque a opção abaixo.",
+        "data": {
+          "enabled": "Ativar espelhamento somente leitura",
+          "source_url": "Endereço do Home Assistant de produção (http://IP:porta)",
+          "token": "Token da produção (vazio mantém o atual)"
+        }
+      }
+    },
+    "error": {
+      "mirror_cannot_connect": "Não foi possível validar a origem, identidade local ou acesso de leitura. Confira o endereço e o token."
+    }
   }
 }

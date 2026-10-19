@@ -20,5 +20,21 @@
     "abort": {
       "already_configured": "CloudPelizzon is already configured."
     }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Read-only production observations",
+        "description": "Configure on homologation only. Receives live states and device metadata without forwarding commands. Source automation actions, camera images and previous history are not copied. Token stays in local private storage. Uncheck to disable.",
+        "data": {
+          "enabled": "Enable read-only observations",
+          "source_url": "Production Home Assistant URL (http://IP:port)",
+          "token": "Production token (blank keeps current)"
+        }
+      }
+    },
+    "error": {
+      "mirror_cannot_connect": "Unable to validate source, local identity or read access. Check URL and token."
+    }
   }
 }

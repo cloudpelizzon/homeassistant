@@ -21,8 +21,10 @@ with tempfile.TemporaryDirectory(prefix='cp-public-native81-',dir='/tmp') as fol
     shutil.copyfile('/checks/native_automation125.py',case/'native_automation125.py')
     shutil.copyfile('/checks/test_security_edge127.py',case/'test_security_edge127.py')
     shutil.copyfile('/checks/native_security127.py',case/'native_security127.py')
+    shutil.copyfile('/checks/native_mirror130.py',case/'native_mirror130.py')
     sys.path.insert(0,str(case))
     import native_setup, native_trial83, public_transport87, native_enrollment106, test_edge125, native_automation125, test_security_edge127, native_security127
+    import native_mirror130
     suite=unittest.defaultTestLoader.loadTestsFromTestCase(native_setup.NativeSetupTests)
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_trial83.TrialCommandTests))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(public_transport87.TransportTests))
@@ -31,6 +33,7 @@ with tempfile.TemporaryDirectory(prefix='cp-public-native81-',dir='/tmp') as fol
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_automation125.NativeAutomationTests))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(test_security_edge127.SecurityEdgeTests))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_security127.NativeSecurityTests))
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_mirror130.MirrorTests))
     result=unittest.TextTestRunner(verbosity=2).run(suite)
     report={'schema':'cp.public.setup_and_activation83.github.native.v1','tests':result.testsRun,
         'failures':len(result.failures),'errors':len(result.errors),'skipped':len(result.skipped),
