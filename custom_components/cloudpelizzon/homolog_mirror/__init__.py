@@ -48,7 +48,7 @@ class Mirror:
   self.token=token;self.source=source;self.forward_commands=False;self.commands_forwarded=0
   self.hass=hass;self.entry=entry;self.owned=set();self.blocked=set();self.mapping={};self.stopping=False;self.task=None
  def status(self,state):
-  self.hass.states.async_set('sensor.cloudpelizzon_homolog_mirror',state,{'friendly_name':'Espelho da produção', 'forward_commands':self.forward_commands,'entities':len(self.owned),'collisions_skipped':len(self.blocked),'source':self.source.split('/api/')[0],'commands_forwarded':self.commands_forwarded})
+  self.hass.states.async_set('sensor.cloudpelizzon_homolog_mirror',state,{'friendly_name':'Espelho da produção', 'forward_commands':self.forward_commands,'entities':len(self.owned),'collisions_skipped':len(self.blocked),'source':self.source.split('/api/')[0],'commands_forwarded':self.commands_forwarded,'last_command':getattr(self,'last_command',None)})
  def offline(self):
   for eid in self.owned:
    if eid in self.cameras:self.cameras[eid].update_source('unavailable');continue

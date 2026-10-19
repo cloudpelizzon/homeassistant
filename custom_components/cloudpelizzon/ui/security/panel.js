@@ -5827,12 +5827,13 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
           await host._hass.callWS({type:'cloudpelizzon/security/permissions/save',policy,confirmed:true});
         }
       }
+      if(domain==='input_select'&&!state(host,targets[0])?.attributes?.options?.includes(data.option))throw Error('Este modo não existe no seletor da produção. Confira a entidade configurada.');
       if(domain==='alarm_control_panel'&&state(host,targets[0])?.attributes?.code_format&&(svc==='alarm_disarm'||state(host,targets[0])?.attributes?.code_arm_required)){
         const code=window.prompt('Código da central de alarme (usado somente neste comando):');if(code===null)return false;data={...data,code};
       }
       const result=await host._hass.callWS({type:'cloudpelizzon/security/command',service:domain+'.'+svc,data:data||{}});
       if(result.delivered!==true)throw Error('Comando não confirmado. Não será repetido automaticamente.');
-      toast(host,mirrored?'Comando confirmado pelo Home Assistant de produção.':'Comando confirmado.','success');return true;
+      toast(host,result.production?(result.production.outcome==='already_in_state'?'A produção já estava neste estado: ':'Estado confirmado na produção: ')+result.production.after:'Comando confirmado.','success');return true;
     }catch(e){toast(host,String(e?.message||e),'error');return false}
   }
 

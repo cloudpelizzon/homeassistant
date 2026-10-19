@@ -28,16 +28,16 @@ class SourceTests(unittest.IsolatedAsyncioTestCase):
   ws=FakeWS([{'type':'auth_required'},{'type':'auth_ok'},result(1,{})]);check=[]
   token=source.DELIVERY_CHECK.set(lambda:check.append(True))
   try:
-   with patch.object(source,'async_get_clientsession',return_value=Session(ws)):
+   with patch.object(source,'async_get_clientsession',return_value=Session(ws)),patch.object(source,'source_state',AsyncMock(side_effect=[state('switch.test_fence','off'),state('switch.test_fence','on')])):
     self.assertTrue(await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'}))
   finally:source.DELIVERY_CHECK.reset(token)
   self.assertEqual(check,[True]);self.assertEqual(m.commands_forwarded,1)
-  self.assertEqual(ws.sent[-1],{'id':1,'type':'call_service','domain':'switch','service':'turn_on','service_data':{'entity_id':'switch.test_fence'}})
+  self.assertEqual(ws.sent[-1],{'id':1,'type':'call_service','domain':'switch','service':'turn_on','target':{'entity_id':'switch.test_fence'},'service_data':{}})
  async def test132_denied_source_ack_never_retries(self):
   m=await self.mirror();m.forward_commands=True
   ws=FakeWS([{'type':'auth_required'},{'type':'auth_ok'},{'type':'result','id':1,'success':False}]);token=source.DELIVERY_CHECK.set(lambda:None)
   try:
-   with patch.object(source,'async_get_clientsession',return_value=Session(ws)):
+   with patch.object(source,'async_get_clientsession',return_value=Session(ws)),patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','off'))):
     with self.assertRaises(PermissionError):await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'})
   finally:source.DELIVERY_CHECK.reset(token)
   self.assertEqual(sum(x['type']=='call_service' for x in ws.sent),1);self.assertEqual(m.commands_forwarded,0)
@@ -47,7 +47,7 @@ class SourceTests(unittest.IsolatedAsyncioTestCase):
   def expired():raise PermissionError('expired')
   token=source.DELIVERY_CHECK.set(expired)
   try:
-   with patch.object(source,'async_get_clientsession',return_value=Session(ws)):
+   with patch.object(source,'async_get_clientsession',return_value=Session(ws)),patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','off'))):
     with self.assertRaises(PermissionError):await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'})
   finally:source.DELIVERY_CHECK.reset(token)
   self.assertEqual([x['type'] for x in ws.sent],['auth'])
@@ -64,8 +64,8 @@ class SourceTests(unittest.IsolatedAsyncioTestCase):
    send.assert_not_called()
  async def test132_counts_actual_triggers_not_last_state_or_duplicate_codes(self):
   start=datetime(2026,10,19,tzinfo=timezone.utc);end=start+timedelta(hours=12);t=start.timestamp()+3600
-  rows=[{'entity_id':'automation.a','when':t+i,'message':'triggered by state','context_id':str(i)} for i in range(7)]
-  rows+=[rows[0],{'entity_id':'automation.a','when':t+10,'message':'turned off'},{'entity_id':'automation.b','when':t,'message':'triggered'},{'entity_id':'automation.a','when':t-90000,'message':'triggered'}]
+  rows=[{'entity_id':'automation.a','when':t+i,'domain':'automation','message':'triggered by state','context_id':str(i)} for i in range(7)]
+  rows+=[rows[0],{'entity_id':'automation.a','when':t+10,'message':'turned off'},{'entity_id':'automation.b','when':t,'message':'triggered','domain':'automation','context_id':'b1'},{'entity_id':'automation.a','when':t-90000,'message':'triggered'}]
   counts,hours=source.count_events(rows,['automation.a','automation.b'],start,end,timezone.utc)
   self.assertEqual(counts,{'automation.a':7,'automation.b':1});self.assertEqual(sum(hours),8);self.assertEqual(hours[1],8)
  async def test132_config_only_copies_measurement_fields(self):

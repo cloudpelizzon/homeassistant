@@ -20,12 +20,27 @@ async def dispatch(hass,connection,msg):
   elif msg['type']==SAVE:
    if msg['confirmed'] is not True:raise PermissionError('explicit_consent_required')
    result=await edge.prepare(new_policy=msg['policy'],confirmed=True,authorized=authorized)
-  elif msg['type']==MANUAL:result=await edge.manual(msg['service'],msg['data'],authorized=authorized)
+  elif msg['type']==MANUAL:
+   result=await edge.manual(msg['service'],msg['data'],authorized=authorized)
+   from ..homolog_mirror.source132 import observer
+   try:detail=getattr(observer(hass),'last_command',None)
+   except PermissionError:detail=None
+   if detail and detail.get('entity_id')==msg['data'].get('entity_id') and detail.get('service')==msg['service']:result={**result,'production':detail}
   else:raise ValueError('unknown_command')
   if not authorized():raise PermissionError('session_changed')
   connection.send_result(msg['id'],result)
  except asyncio.CancelledError:raise
- except Exception:connection.send_error(msg['id'],'cloud_denied_or_unavailable','Operação não confirmada. Verifique conexão, licença e permissões de Segurança.')
+ except Exception:
+  message='Operação não confirmada. Verifique conexão, licença e permissões de Segurança.'
+  if msg['type']==MANUAL:
+   from ..homolog_mirror.source132 import observer
+   import time
+   try:detail=getattr(observer(hass),'last_command',None)
+   except PermissionError:detail=None
+   if detail and time.time()-detail.get('at',0)<30 and detail.get('entity_id')==msg['data'].get('entity_id') and detail.get('service')==msg['service']:
+    if detail.get('outcome')=='no_state_change':message=f"A produção recebeu a chamada, mas {detail['entity_id']} continuou em {detail.get('after')}. A ação não foi confirmada e não será repetida automaticamente."
+    elif detail.get('outcome')=='source_unavailable':message=f"{detail['entity_id']} está {detail.get('after')} no Home Assistant de produção. Nenhum comando foi enviado."
+  connection.send_error(msg['id'],'cloud_denied_or_unavailable',message)
 
 def register(hass,edge):
  current=hass.data.get(websocket_api.DOMAIN,{})

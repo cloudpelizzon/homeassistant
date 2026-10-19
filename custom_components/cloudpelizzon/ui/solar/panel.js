@@ -1,4 +1,4 @@
-import "/cloudpelizzon-energy/frontend/energy-card.js?v=4a5c509eda29";
+import "/cloudpelizzon-energy/frontend/energy-card.js?v=974f2c679f2d";
 
 class CloudPelizzonEnergyPanel extends HTMLElement {
   constructor() {
@@ -29,8 +29,16 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
   }
 
   connectedCallback(){
+    this._resizeViewport=()=>this._fitViewport();window.addEventListener('resize',this._resizeViewport);
     this._render();
     if(this._hass&&!this._loaded&&!this._loading)this._load();
+  }
+
+  disconnectedCallback(){window.removeEventListener('resize',this._resizeViewport);this._viewportObserver?.disconnect();}
+  _fitViewport(){
+    const shell=this.shadowRoot?.querySelector('.energy-shell');if(!shell)return;
+    const top=Math.max(0,this.getBoundingClientRect().top),height=Math.max(260,window.innerHeight-top-3);
+    if(shell.style.height!==height+'px')shell.style.height=height+'px';
   }
 
   async _ws(type,payload={}){
@@ -154,6 +162,14 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     const rows=Array.isArray(this._discovery?.energy)?this._discovery.energy:[];
     const scoreRow=row=>{
       const text=this._rowText(row);
+      if(role==='consumption'&&(!this._hasAny(text,['casa','house','consumo total','total consumption','consumption'])||this._hasAny(text,['tomada','plug'])))return -100;
+      if(role==='board'&&!this._hasAny(text,['quadro','qd','board']))return -100;
+      if(role==='source'){
+        const micro=/\b(micro|microinversor|deye|hoymiles)\b/.test(base),targetMicro=/\b(micro|microinversor|deye|hoymiles)\b/.test(text);
+        if(micro!==targetMicro||!this._hasAny(text,['inversor','inverter','micro','solar','geracao','production','produced']))return -100;
+      }
+      if(role==='grid_import'&&!this._hasAny(text,['import','importacao','importada']))return -100;
+      if(role==='grid_export'&&!this._hasAny(text,['export','exportacao','exportada','injecao']))return -100;
       let score=0;
 
       for(const token of base.split(" ").filter(x=>x.length>2)){
@@ -204,6 +220,10 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
       if(this._hasAny(t,["hoje","today","daily","dia","diaria","diario","day"]))score+=30;
       if(["total","total_increasing"].includes(String(row.state_class||"")))score+=8;
 
+      if(kind==='generation'&&!this._hasAny(t,['geracao total','generation total','solar total','energia solar gerada','solar energia gerada','producao solar total']))return -100;
+      if(kind==='consumption'&&(!this._hasAny(t,['consumo total','consumo casa','house','casa','residencia','total consumption'])||this._hasAny(t,['tomada','plug','quadro','qd1','qd2'])))return -100;
+      if(kind==='grid_import'&&!this._hasAny(t,['importacao','import','importada']))return -100;
+      if(kind==='grid_export'&&!this._hasAny(t,['exportacao','export','exportada','injecao']))return -100;
       if(kind==="generation"){
         if(this._hasAny(t,["geracao total","generation total","solar hoje","solar total hoje","energia solar gerada","producao solar","geracao hoje"]))score+=34;
         if(this._hasAny(t,["solar","geracao","generation","produced","inversor","microinversor"]))score+=14;
@@ -245,7 +265,21 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
 
   async _refreshDiscovery(){
     this._syncDraft();this._detecting=true;this._detectFeedback='Consultando sensores de energia do Home Assistant…';this._render();
-    try{this._discovery=await this._ws('cloudpelizzon/energy/discover');this._autoDetect(false);const n=(this._discovery.power||[]).length,e=(this._discovery.energy||[]).length;this._detectFeedback=`Detecção concluída: ${n} sensores de potência e ${e} de energia. Revise a seleção e salve.`;}
+    try{
+      this._discovery=await this._ws('cloudpelizzon/energy/discover');
+      let imported=false;
+      if(this._hass?.states?.['sensor.cloudpelizzon_homolog_mirror']){
+        try{const source=await this._ws('cloudpelizzon/energy/production_config');
+          if(source.config?.configured&&((source.config.generation||[]).length||(source.config.boards||[]).length)){
+            this._cfg=source.config;this._ensureCfg();imported=true;
+          }
+        }catch(_){/* No source configuration: retain normal local discovery. */}
+      }
+      if(!imported)this._autoDetect(false);
+      const n=(this._discovery.power||[]).length,e=(this._discovery.energy||[]).length;
+      const loads=(this._cfg.boards||[]).reduce((sum,b)=>sum+(b.loads||[]).length,0);
+      this._detectFeedback=`${imported?'Mapeamento da produção recuperado':'Detecção concluída'}: ${this._cfg.generation.length} fontes, ${this._cfg.boards.length} quadros, ${loads} cargas. ${n} sensores de potência e ${e} de energia disponíveis. Revise e salve.`;
+    }
     catch(error){this._detectFeedback=`Não foi possível detectar: ${error?.message||String(error)}`;}
     finally{this._detecting=false;this._render();}
   }
@@ -276,35 +310,36 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     };
 
     const boardKey=text=>{
-      const qd=text.match(/qd\s*(\d+)/);
+      const qd=text.match(/\bqd\s*(\d+)\b/);
       if(qd)return `qd_${qd[1]}`;
       const quadro=text.match(/quadro\s*(\d+)/);
       if(quadro)return `quadro_${quadro[1]}`;
       return text
-        .replace(/(sensor|power|potencia|potencia consumida|telemetria|energia|energy|consumo|consumida|quadro|board|fase|phase|l1|l2|l3)/g," ")
+        .replace(/\b(sensor|power|potencia|potencia consumida|telemetria|energia|energy|consumo|consumida|quadro|board|fase|phase|l1|l2|l3)\b/g," ")
         .replace(/\s+/g," ")
         .trim();
     };
 
     const sourceKey=text=> text
-      .replace(/(sensor|power|potencia|energia|energy|geracao|generation|solar|inversor|inverter|microinversor|micro inverter|today|hoje|daily|ct|ctl|external|battery|l1|l2|l3|fase|phase)/g," ")
+      .replace(/\b(sensor|power|potencia|energia|energy|geracao|generation|solar|inversor|inverter|microinversor|micro inverter|today|hoje|daily|ct|ctl|external|battery|l1|l2|l3|fase|phase)\b/g," ")
       .replace(/\s+/g," ")
       .trim() || (text.includes("microinversor")?"microinversor":text.includes("inversor")?"inversor":"source");
 
     const generationScored=sortScored(power.map(row=>{
       const t=rowText(row);
       let score=0;
-      if(t.includes("microinversor")||t.includes("micro inverter"))score+=44;
+      if(/\b(micro|microinversor|microinverter|hoymiles|deye)\b/.test(t)||t.includes("micro inverter"))score+=44;
+      if(/^sensor\.(inverter|micro)_power$/.test(row.entity_id))score+=50;
       if(t.includes("inversor")||t.includes("inverter"))score+=38;
       if(t.includes("solar"))score+=24;
-      if(/pv/.test(t))score+=18;
+      if(/\bpv\b/.test(t))score+=18;
       if(t.includes("geracao")||t.includes("generation"))score+=18;
       if(t.includes("production")||t.includes("produced"))score+=16;
       if(t.includes("power")||t.includes("potencia"))score+=4;
 
       if(hasAny(t,["battery","bateria","ct l1","ct l2","ctl 1","ctl 2","external ct","fase 1","fase 2","phase 1","phase 2","telemetria"]))score-=28;
       if(hasAny(t,["rede","grid","copel","importacao","import","exportacao","export"]))score-=42;
-      if(/qd ?\d+/.test(t)||hasAny(t,["quadro","distribution board"]))score-=38;
+      if(/\bqd ?\d+\b/.test(t)||hasAny(t,["quadro","distribution board"]))score-=38;
       if(hasAny(t,["consumo","consumption","casa","house","home"]))score-=30;
       if(hasAny(t,["temperatura","temperature","frequencia","frequency","tensao","voltage","corrente","current","fator","factor"]))score-=32;
 
@@ -314,12 +349,15 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     let generationPick=uniqueByKey(generationScored.filter(x=>x.score>=20), x=>sourceKey(x.text));
     const cleanPrimary=generationPick.filter(x=>!hasAny(x.text,["battery","bateria","ct l1","ct l2","ctl 1","ctl 2","external ct","fase 1","fase 2","phase 1","phase 2","telemetria"]));
     if(cleanPrimary.length)generationPick=cleanPrimary;
-    generationPick=generationPick.slice(0,2);
+    const isMicro=item=>/\b(micro|microinversor|microinverter|hoymiles|deye)\b/.test(item.text)||item.text.includes('micro inverter');
+    const primary=generationPick.find(item=>!isMicro(item)),micro=generationPick.find(isMicro);
+    generationPick=[primary,micro].filter(Boolean);
+    if(!generationPick.length)generationPick=generationScored.filter(x=>x.score>=20).slice(0,2);
 
     const boardScored=sortScored(power.map(row=>{
       const t=rowText(row);
       let score=0;
-      if(/qd ?\d+/.test(t))score+=46;
+      if(/\bqd ?\d+\b/.test(t))score+=46;
       if(/quadro ?\d+/.test(t))score+=40;
       if(t.includes("potencia consumida")||t.includes("consumo quadro"))score+=28;
       if(t.includes("quadro"))score+=20;
@@ -345,7 +383,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
       if(t.includes("consumo"))score+=12;
       if(t.includes("casa")||t.includes("house")||t.includes("home"))score+=10;
 
-      if(/qd ?\d+/.test(t)||t.includes("quadro"))score-=32;
+      if(/\bqd ?\d+\b/.test(t)||t.includes("quadro"))score-=32;
       if(hasAny(t,["solar","inversor","inverter","microinversor","geracao","generation"]))score-=34;
       if(hasAny(t,["rede","grid","copel","importacao","import","exportacao","export"]))score-=30;
       if(hasAny(t,["tomada","plug","tv","geladeira","lavadora","washer","freezer","router","roteador"]))score-=22;
@@ -846,6 +884,11 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
       </main>
     `;
 
+    this.shadowRoot.querySelector('#energy-card')?.setAttribute('viewport-fit','');
+    this._fitViewport();
+    if(typeof ResizeObserver!=='undefined'){
+      this._viewportObserver?.disconnect();this._viewportObserver=new ResizeObserver(()=>this._fitViewport());this._viewportObserver.observe(this);
+    }
     this.shadowRoot.querySelector("#configure")?.addEventListener("click",()=>{
       this._mode="config";
       this._render();
@@ -1398,7 +1441,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
       <style>
         :host{
           display:block;
-          min-height:100vh;
+          min-height:0;
           background:#020914;
           color:#eefaff;
           font-family:Inter,Segoe UI,Arial,sans-serif;
@@ -1415,11 +1458,20 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
         button{cursor:pointer}
 
         .energy-shell,.config-shell{
-          max-width:1800px;
+          max-width:none;
           margin:0 auto;
           padding:14px;
         }
 
+        .energy-shell{width:100%;min-width:0;padding:4px!important;display:grid;grid-template-rows:28px minmax(0,1fr);gap:4px;overflow:hidden}
+        .energy-shell .modulebar{min-height:0;padding:3px 8px;border-radius:8px;gap:8px}
+        .energy-shell .modulebar>div>span,.energy-shell .modulebar>div>small{display:none}
+        .energy-shell .modulebar>div>b{font-size:12px;margin:0}
+        .energy-shell .module-actions{gap:6px}
+        .energy-shell .module-actions button{padding:3px 8px;font-size:10px;min-height:0}
+        .energy-shell .legacy-wrap{min-height:0;min-width:0;height:100%;padding:0;margin:0;overflow:hidden}
+        .energy-shell .compat{display:none}
+        .energy-shell #energy-card{height:100%;min-height:0;width:100%;display:block}
         .modulebar,.config-hero{
           display:flex;
           justify-content:space-between;

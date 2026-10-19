@@ -2,7 +2,7 @@
  * Every customer-facing editor control is visual: no JSON/YAML editing.
  * Selection is monitoring scope, NOT automatic engine activation.
  */
-import './legacy-v1044.js?v=bc9da8dd7a3c';
+import './legacy-v1044.js?v=20699430ac6d';
 
 // CP_CLIENT_EXPERIENCE_V025 — default immersive panel; no misleading demo KPIs.
 // CP_AUTO_CLIENT_NATIVE_V026 — client reads automation.* from current Home Assistant only.
@@ -50,13 +50,14 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
   disconnectedCallback(){if(this._timer)clearInterval(this._timer);this._timer=null;}
   async ws(type,data={}){if(!this._hass)throw Error('Home Assistant não conectado.');return this._hass.callWS({type,...data})}
   _build(){this.shadowRoot.innerHTML=`<style>${STYLES}</style><header class="top"><div><div class="brand">◉ CLOUDPELIZZON · AUTOMATION</div><div class="subbrand">CENTRAL INTELIGENTE · CLOUDPELIZZON</div></div><nav class="tabs">${[['overview','Visão geral'],['categories','Categorias'],['rules','Automações'],['builder','Criar e editar'],['settings','Preferências']].map(([v,t])=>`<button data-tab="${v}" class="${v==='overview'?'active':''}">${t}</button>`).join('')}</nav><span class="statusbar" id="online">Carregando...</span></header><main>
-<section class="view active" id="view-overview"><div class="cp-viewbar"><button type="button" data-action="toggleOverview" id="cp-toggle-overview" aria-controls="cp-overview-manager" aria-expanded="false">Mostrar configurações e categorias</button><span class="cp-ha-badge">● Leitura automática das automações deste Home Assistant</span></div><div id="cp-source-note" class="cp-datanote"></div><div id="cp-overview-manager" class="client-overview-managed" hidden><div class="explain"><b>Seu centro de automações, do seu jeito.</b> Escolha as categorias e regras que deseja acompanhar. <b>Selecionar não modifica suas automações:</b> nenhuma automação nativa será alterada.</div><div id="metrics" class="grid"></div><div class="toolrow"><button class="primary" data-tab="categories">Personalizar categorias</button><button data-tab="builder">Criar automação sem código</button><button data-action="refresh">Atualizar painel</button></div><div class="panel" id="visual-network"><h3>Mapa inteligente de categorias</h3><p class="small">Mapa dinâmico: selecione uma categoria para abrir as automações relacionadas.</p><div id="dynamic-map"></div></div></div><div id="cp-no-native" class="explain" hidden></div><div class="legacy" id="legacy"></div></section>
+<section class="view active" id="view-overview"><div class="cp-viewbar"><button type="button" data-action="toggleOverview" id="cp-toggle-overview" aria-controls="cp-overview-manager" aria-expanded="false">Mostrar configurações e categorias</button><label>Exibir <select id="cp-count-scope"><option value="all">Todas as automações</option><option value="home">Rotinas da casa</option><option value="technical">Diagnósticos NOC/DIA</option></select></label><span class="cp-ha-badge">● Leitura automática das automações deste Home Assistant</span></div><div id="cp-source-note" class="cp-datanote"></div><div id="cp-overview-manager" class="client-overview-managed" hidden><div class="explain"><b>Seu centro de automações, do seu jeito.</b> Escolha as categorias e regras que deseja acompanhar. <b>Selecionar não modifica suas automações:</b> nenhuma automação nativa será alterada.</div><div id="metrics" class="grid"></div><div class="toolrow"><button class="primary" data-tab="categories">Personalizar categorias</button><button data-tab="builder">Criar automação sem código</button><button data-action="refresh">Atualizar painel</button></div><div class="panel" id="visual-network"><h3>Mapa inteligente de categorias</h3><p class="small">Mapa dinâmico: selecione uma categoria para abrir as automações relacionadas.</p><div id="dynamic-map"></div></div></div><div id="cp-no-native" class="explain" hidden></div><div class="legacy" id="legacy"></div></section>
 <section class="view" id="view-categories"><h2>Quais categorias quer gerenciar?</h2><p>Você escolhe. O botão <b>Todas</b> apresenta tudo que estiver disponível; <b>Personalizar</b> permite selecionar apenas o que deseja.</p><div class="toolrow"><button data-action="all" class="primary">✓ Todas</button><button data-action="selected">Personalizar</button><button data-action="clear">Nenhuma</button><button data-action="saveCategories">Salvar preferências</button></div><div class="catgrid" id="categories"></div></section>
 <section class="view" id="view-rules"><h2>Minhas automações</h2><p>Escolha quais automações desta instalação deseja acompanhar. A seleção não liga, desliga nem altera suas rotinas.</p><div class="toolrow"><input type="search" id="filter" placeholder="Buscar nome, código ou categoria"><select id="filter-cat" style="max-width:260px"><option value="">Todas as categorias</option></select><button data-action="ruleAll">Todas</button><button data-action="ruleNone">Nenhuma</button><button data-action="saveRules">Salvar seleção</button></div><div class="panel"><div id="rule-table" hidden></div></div><div class="panel"><h3>Automações do seu Home Assistant</h3><p class="small">Os dados são descobertos automaticamente nesta instalação. Use Todas, Nenhuma ou a seleção individual.</p><div id="native-table" class="tablewrap"></div></div></section>
 <section class="view" id="view-builder"><h2>Assistente de automações</h2><p>Descreva o que deve acontecer, em que situação e o que a casa deve fazer. Nenhum código é necessário.</p><div class="panel"><div class="toolrow"><button data-action="new" class="primary">+ Nova automação</button><select id="choose-rule" style="flex:1;min-width:220px"><option value="">Ou escolha uma automação para editar</option></select></div><div id="editor" class="empty">Selecione uma regra existente ou clique em Nova automação.</div><div id="feedback" class="feedback">Alterações só são aplicadas após salvar. Regras novas começam desativadas.</div></div></section>
 <section class="view" id="view-settings"><h2>Preferências do cliente</h2><div class="panel"><h3>Permissões de execução</h3><p>Escolha separadamente os sensores cujos estados poderão ser enviados ao servidor e os dispositivos que poderão receber comandos. Nenhum dispositivo vem autorizado. Limite: 200 entidades em cada lista. As seleções de categorias e do inventário continuam sendo apenas preferências de visualização.</p><p id="cp-execution-status">Consultando conexão...</p><div class="formgrid"><label>Leitura de estados e atributos<select multiple size="10" id="cp-read-permissions"></select></label><label>Dispositivos que podem receber comandos<select multiple size="10" id="cp-effect-permissions"></select></label></div><p class="small">Use Ctrl ou Shift para selecionar vários itens. Remover uma permissão interrompe a sessão anterior.</p><button data-action="permissionsSave">Salvar permissões de execução</button></div><div class="panel"><p class="small">O painel acompanha exclusivamente as automações locais do Home Assistant. Selecione categorias e regras nas respectivas abas.</p><input id="native-visible" type="checkbox" checked hidden></div><div class="panel"><h3>Segurança e funcionamento</h3><p>Este painel consulta suas automações existentes sem modificá-las. Os recursos de criação e edição permanecem supervisionados e exigem confirmação separada.</p><div class="toolrow"><button data-action="export">Exportar configurações e inventário</button><button data-action="refresh">Atualizar diagnóstico</button></div></div></section></main><datalist id="entities"></datalist>`;
     this.shadowRoot.addEventListener('click',e=>this._click(e));
     this.shadowRoot.addEventListener('change',e=>this._change(e));
+    this.shadowRoot.getElementById('cp-count-scope').addEventListener('change',e=>{this._countScope=e.target.value;this._updateCockpitSource(true)});
     this._updateManagementVisibility();
     this.shadowRoot.getElementById('filter').addEventListener('input',e=>{this._filter=e.target.value.toLowerCase();this._renderRules()});
     this.shadowRoot.getElementById('filter-cat').addEventListener('change',()=>this._renderRules());
@@ -73,10 +74,10 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
   _updateCockpitSource(force=false){
     if(!this._cockpit||!this._hass)return;
     const native=this._native();
-    const selected=native.filter(n=>n.selected);
+    const selected=native.filter(n=>n.selected&&this._inCountScope(n));
     const message=this.shadowRoot.getElementById('cp-source-note');
     if(message){
-      message.textContent=`Monitoramento local do Home Assistant: ${native.length} automações encontradas • ${selected.length} selecionadas. ${this._daily?.complete?'Contagem de disparos de hoje pelo registro de atividades ('+this._daily.day+').':'Contagem diária indisponível: '+(this._dailyError||'consultando registro de atividades…')}`;
+      message.textContent=`Monitoramento local do Home Assistant: ${native.length} automações encontradas • ${selected.length} selecionadas. ${this._daily?.complete?'Contagem por contexto único de execução em '+this._daily.time_zone+' ('+this._daily.day+'). Diagnósticos NOC/DIA: '+native.filter(n=>['NOC','DIA'].includes(n.category)).reduce((sum,n)=>sum+(this._daily.counts[n.entity_id]||0),0).toLocaleString('pt-BR')+' disparos. Em exibição: '+selected.length+' automações.':'Contagem diária indisponível: '+(this._dailyError||'consultando registro de atividades…')}`;
     }
     const empty=this.shadowRoot.getElementById('cp-no-native');
     const box=this.shadowRoot.getElementById('legacy');
@@ -85,16 +86,17 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     if(!selected.length)return;
     // Never use owner-specific CMDB counters or rule-engine inventory as the client source.
     this._cockpit.config.daily_counts=this._daily?.counts||{};
-    this._cockpit.config.daily_hours=this._daily?.hours||null;
+    this._cockpit.config.daily_hours=this._daily?.entity_hours?selected.reduce((hours,n)=>hours.map((v,i)=>v+(this._daily.entity_hours[n.entity_id]?.[i]||0)),Array(24).fill(0)):this._daily?.hours||null;
     this._cockpit.config.daily_complete=this._daily?.complete===true;
     this._cockpit.config.inventory_sensor='';
     this._cockpit.config.category_registry_sensor='';
     if(force)this._cockpit._last=0;
     this._cockpit.hass=this._observedHass();
   }
+  _inCountScope(n){const technical=['NOC','DIA'].includes(n.category);return this._countScope==='home'?!technical:this._countScope==='technical'?technical:true;}
   _observedHass(){
     if(!this._hass)return this._hass;
-    const selected=new Set(this._native().filter(n=>n.selected).map(n=>n.entity_id));
+    const selected=new Set(this._native().filter(n=>n.selected&&this._inCountScope(n)).map(n=>n.entity_id));
     const states={...this._hass.states};
     for(const id of Object.keys(states)){
       if(id.startsWith('automation.')&&!selected.has(id))delete states[id];
@@ -156,7 +158,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
       if(this._hass.states?.['sensor.cloudpelizzon_homolog_mirror'])this._daily=await this.ws('cloudpelizzon/automation/daily_counts');
       else{
         const now=new Date(),start=new Date(now);start.setHours(0,0,0,0);const ids=this._native().map(x=>x.entity_id),counts=Object.fromEntries(ids.map(id=>[id,0])),hours=Array(24).fill(0),seen=new Set();
-        for(let offset=0;offset<ids.length;offset+=40){const rows=await this.ws('logbook/get_events',{start_time:start.toISOString(),end_time:now.toISOString(),entity_ids:ids.slice(offset,offset+40)});if(!Array.isArray(rows))throw Error('Formato de histórico indisponível');for(const row of rows){const key=JSON.stringify([row.entity_id,row.context_id,row.when]);if(Object.hasOwn(counts,row.entity_id)&&/^triggered(?: by |$)/.test(row.message||'')&&row.when>=start.getTime()/1000&&row.when<now.getTime()/1000&&!seen.has(key)){seen.add(key);counts[row.entity_id]++;hours[new Date(row.when*1000).getHours()]++;}}}
+        for(let offset=0;offset<ids.length;offset+=40){const rows=await this.ws('logbook/get_events',{start_time:start.toISOString(),end_time:now.toISOString(),entity_ids:ids.slice(offset,offset+40)});if(!Array.isArray(rows))throw Error('Formato de histórico indisponível');for(const row of rows){const key=JSON.stringify([row.entity_id,row.context_id]);if(row.domain==='automation'&&typeof row.context_id==='string'&&row.context_id&&Object.hasOwn(counts,row.entity_id)&&/^triggered(?: by |$)/.test(row.message||'')&&row.when>=start.getTime()/1000&&row.when<now.getTime()/1000&&!seen.has(key)){seen.add(key);counts[row.entity_id]++;hours[new Date(row.when*1000).getHours()]++;}}}
         this._daily={counts,hours,complete:true,day:start.toLocaleDateString('pt-BR')};
       }
       this._dailyError='';
