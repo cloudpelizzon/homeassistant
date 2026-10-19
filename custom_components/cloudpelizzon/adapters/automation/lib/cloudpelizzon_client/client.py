@@ -336,7 +336,9 @@ class Client:
     def security(self,action,payload,*,request_id):
         operations={'config.read':'security.config.read','config.write':'security.config.write',
             'engines.read':'security.config.read','engines.update':'security.config.write',
-            'feed':'security.dashboard.read','manual':'security.engine.delayed_action','effects':'security.engine.delayed_action'}
+            'feed':'security.dashboard.read','manual':'security.engine.delayed_action','effects':'security.engine.delayed_action',
+            'native.read':'security.dashboard.read','native.mode':'security.engine.delayed_action',
+            **{'alarm.'+name:'security.alarm.'+name for name in ('arm_home','arm_away','disarm','trigger','panic')}}
         if action not in operations or type(payload) is not dict:raise ClientError('security_action')
         return self._attempt('CP-SECURITY',operations[action],{'action':action,'payload':payload},request_id=request_id,security=True)
 

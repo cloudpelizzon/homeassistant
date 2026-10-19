@@ -15,7 +15,7 @@ class Edge:
         self.read_policy=read_policy;self.save_policy=save_policy;self.service=service;self.relay_factory=relay_factory
         self.clock=clock or (lambda:datetime.now(timezone.utc));self.closed=False;self.lock=asyncio.Lock()
         self.generation=uuid.uuid4().hex;self.task=None;self.connected=False;self.fault=None;self.relay=None;self.consent=None
-        self.refresh_status=True;self.prepared_until=None
+        self.refresh_status=True;self.prepared_until=None;self.native=None;self.native_at=None;self.native_listeners=set()
     def check(self,generation=None):
         if self.closed or generation is not None and generation!=self.generation:raise PermissionError('runtime_or_permissions_changed')
         return policy(self.read_policy())
@@ -79,12 +79,28 @@ class Edge:
             self.check(token)
             if self.check()!=approved or type(result) is not dict or result.get('connected') is not True or type(result.get('faults')) is not list:raise PermissionError('security_feed_binding')
             self.connected=True;self.consent=approved
+            if 'native' in result:self.native_update(result['native'])
             self.fault='some_engines_require_configuration_or_permissions' if result['faults'] else None
             if approved['effects'] and result.get('shadow_mode') is False:
                 pending=await self.call('security','effects',{'stage':'pending'},request_id=uuid.uuid4().hex);self.check(token)
                 if type(pending.get('commands')) is not list or len(pending['commands'])>20:raise PermissionError('security_queue_response')
                 for item in pending['commands']:await self.deliver(item,approved,token)
 
+    def native_update(self,value):
+        allowed={'disarmed','arming','armed_home','armed_away','pending','triggered','panic','unknown'}
+        if type(value) is not dict or value.get('alarm') not in allowed or value.get('mode') not in {'Casa','Ausente','Dormindo','Viagem','Férias','Visitantes'}:raise ValueError('native_state_binding')
+        self.native=json.loads(json.dumps(value,allow_nan=False));self.native_at=self.clock()
+        for listener in tuple(self.native_listeners):listener()
+    async def native_command(self,action,payload,*,authorized=lambda:True):
+        async with self.lock:
+            self.check();token=self.generation
+            if not authorized():raise PermissionError('active_admin_required')
+            if action not in {'alarm.arm_home','alarm.arm_away','alarm.disarm','alarm.panic','alarm.trigger','native.mode'}:raise ValueError('native_action')
+            result=await self.call('security',action,payload,request_id=uuid.uuid4().hex)
+            self.check(token)
+            if not authorized():raise PermissionError('session_changed')
+            self.native_update(result['native'])
+            return {'native':self.native,'effects_queued':result['queued']}
     async def manual(self,service,data,*,authorized):
         async with self.lock:
             approved=self.check();token=self.generation
@@ -103,6 +119,8 @@ class Edge:
             return {'delivered':True}
     async def disconnect(self):
         self.connected=False;self.consent=None;self.relay=None
+        self.native_at=None
+        for listener in tuple(self.native_listeners):listener()
         try:await self.executor(partial(self.client.security_session,{'action':'close'},request_id=uuid.uuid4().hex))
         except Exception:pass
     async def run(self):
@@ -128,4 +146,6 @@ class Edge:
         self.task=create_task(self.run())
     def close(self):
         self.closed=True;self.connected=False;self.consent=None;self.generation=uuid.uuid4().hex
+        self.native_at=None
+        for listener in tuple(self.native_listeners):listener()
         if self.task is not None:self.task.cancel()

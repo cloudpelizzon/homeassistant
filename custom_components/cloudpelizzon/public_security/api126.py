@@ -5,9 +5,10 @@ from homeassistant.components import websocket_api
 READ='cloudpelizzon/security/permissions'
 SAVE='cloudpelizzon/security/permissions/save'
 MANUAL='cloudpelizzon/security/command'
+NATIVE='cloudpelizzon/security/native'
 KEY='cloudpelizzon_security_connection126'
 SCHEMAS={READ:{probatio.Required('type'):READ},SAVE:{probatio.Required('type'):SAVE,probatio.Required('policy'):dict,probatio.Required('confirmed'):bool},
- MANUAL:{probatio.Required('type'):MANUAL,probatio.Required('service'):str,probatio.Required('data'):dict}}
+ MANUAL:{probatio.Required('type'):MANUAL,probatio.Required('service'):str,probatio.Required('data'):dict},NATIVE:{probatio.Required('type'):NATIVE,probatio.Required('action'):str,probatio.Required('payload'):dict}}
 
 async def dispatch(hass,connection,msg):
  user=connection.user;edge=hass.data.get(KEY)
@@ -20,6 +21,8 @@ async def dispatch(hass,connection,msg):
   elif msg['type']==SAVE:
    if msg['confirmed'] is not True:raise PermissionError('explicit_consent_required')
    result=await edge.prepare(new_policy=msg['policy'],confirmed=True,authorized=authorized)
+  elif msg['type']==NATIVE:
+   result=await edge.native_command(msg['action'],msg['payload'],authorized=authorized)
   elif msg['type']==MANUAL:
    result=await edge.manual(msg['service'],msg['data'],authorized=authorized)
    from ..homolog_mirror.source132 import observer

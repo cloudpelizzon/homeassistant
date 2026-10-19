@@ -18,6 +18,14 @@ def create(hass,entry,context):
             value=hass.states.get(entity)
             if value is None:continue
             row={'state':value.state,'attributes':{k:v for k,v in value.attributes.items() if k in ('device_class','friendly_name','entity_id')}}
+            if entity.startswith(('person.','device_tracker.','binary_sensor.')):
+                from datetime import datetime,timezone
+                stamp=value.attributes.get('mirror_observation_timestamp')
+                mirrored=value.attributes.get('mirror_source')=='production_observer'
+                try:reported=datetime.fromisoformat(stamp.replace('Z','+00:00')) if stamp else getattr(value,'last_reported',value.last_updated);age=(datetime.now(timezone.utc)-reported).total_seconds()
+                except (ValueError,TypeError,AttributeError):age=999999
+                if age<0 or mirrored and not stamp:age=999999
+                row['attributes']['observation_age_seconds']=str(max(0,min(age,999999)))
             if 'entity_id' in row['attributes']:row['attributes']['entity_id']=[e for e in row['attributes']['entity_id'] if e in entities]
             # Unsupported attributes are omitted, never serialized as Python repr.
             try:raw=json.dumps(row,allow_nan=False)

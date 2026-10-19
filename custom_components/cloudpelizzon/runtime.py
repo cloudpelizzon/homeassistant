@@ -59,6 +59,7 @@ class Runtime:
         self.closers = []
         self.closed = False
         self.sensor_forwarded = False
+        self.native_forwarded = False
         self.stage = 'created'
 
     async def start(self):
@@ -93,6 +94,9 @@ class Runtime:
             self.closers.append(await automation_ui(self.hass, self.entry, context))
             self.stage = 'security'
             self.closers.append(await security_ui(self.hass, self.entry, context))
+            self.stage = 'native_security_entities'
+            self.native_forwarded = True
+            await self.hass.config_entries.async_forward_entry_setups(self.entry, ['alarm_control_panel','select'])
             self.stage = 'frontend'
             self.closers.append(await frontend.register(self.hass, self.root))
             # Register public transports independently of display permission.
@@ -115,6 +119,9 @@ class Runtime:
             self.entry.async_on_unload(self.close)
             return self
         except BaseException:
+            if self.native_forwarded:
+                try:await self.hass.config_entries.async_unload_platforms(self.entry, ['alarm_control_panel','select'])
+                except Exception:pass
             if self.sensor_forwarded:
                 try:
                     await self.hass.config_entries.async_unload_platforms(self.entry, ['sensor'])
@@ -142,6 +149,8 @@ class Runtime:
     async def unload(self):
         if self.closed:
             return True
+        if self.native_forwarded:
+            if not await self.hass.config_entries.async_unload_platforms(self.entry, ['alarm_control_panel','select']):return False
         if self.sensor_forwarded:
             ok = await self.hass.config_entries.async_unload_platforms(self.entry, ['sensor'])
             if not ok:

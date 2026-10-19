@@ -59,6 +59,8 @@ class Mirror:
   sanitized=clean(row)
   if sanitized is None:return
   eid,value,attrs=sanitized
+  stamp=row.get('last_reported') or row.get('last_updated')
+  if isinstance(stamp,str):attrs['mirror_observation_timestamp']=stamp
   attrs['cloudpelizzon_read_only']=not self.forward_commands
   attrs['cloudpelizzon_forward_commands']=self.forward_commands
   if eid in self.blocked or (eid not in self.owned and len(self.owned)>=10000):return
