@@ -1,6 +1,7 @@
 """Native HA wiring for the public signed state/relay transport."""
 import json,os,stat
 from pathlib import Path
+from ..homolog_mirror.policy import deny_read_only_targets
 from .edge124 import Edge,policy
 from ..adapters.automation.lib.cloudpelizzon_relay import RelayClient
 
@@ -24,7 +25,8 @@ def create(hass,entry,context):
             result[entity]=row
         return result
     async def service(domain,name,data):
-        current();await hass.services.async_call(domain,name,data,blocking=True)
+        current();deny_read_only_targets(hass,data)
+        await hass.services.async_call(domain,name,data,blocking=True)
     folder=Path(hass.config.path('.storage/cloudpelizzon_relay124')).absolute()
     def relay(targets,gateway,call_service):
         # Called only from the executor; never block HA's event loop on SQLite.

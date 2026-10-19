@@ -40,3 +40,10 @@ def check_peer(url,expected):
  from urllib.parse import urlsplit
  peer=urlsplit(url);wanted=urlsplit(expected)
  if peer.hostname!=wanted.hostname or peer.port!=wanted.port or peer.scheme!=wanted.scheme or peer.path!='/api/websocket':raise ValueError('source_redirect_denied')
+
+def deny_read_only_targets(hass,data):
+ targets=data.get('entity_id',[])
+ if isinstance(targets,str):targets=[targets]
+ for eid in targets or []:
+  state=hass.states.get(eid)
+  if state is not None and state.attributes.get('cloudpelizzon_read_only') is True:raise PermissionError('production_mirror_read_only')

@@ -1,5 +1,6 @@
 """Thin HA adapter. Network, signing and SQLite stay off the HA event loop."""
 import asyncio,functools,hashlib,json,re,uuid
+from ...homolog_mirror.policy import deny_read_only_targets
 from .const import checked_options,PREFIXES,AUTOMATION_MANAGEMENT
 from .lib.cloudpelizzon_client import ClientError
 from .lib.cloudpelizzon_relay import RelayClient
@@ -52,6 +53,7 @@ class Adapter:
         for entity in targets:
             state=self.hass.states.get(entity)
             if state is None or state.state in ('unknown','unavailable'):raise AdapterError('target_unavailable')
+        deny_read_only_targets(self.hass,data)
         domain,name=service.split('.')
         if not self.hass.services.has_service(domain,name):raise AdapterError('service_unavailable')
         await self.hass.services.async_call(domain,name,detached(data),blocking=True,context=self.context)
