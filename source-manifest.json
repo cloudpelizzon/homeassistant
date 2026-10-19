@@ -176,7 +176,7 @@
     "hacs.json": "a2b1e174276aedd616907dbdc3acbc0a2764d7d44baaaf8d2522cf6743441c68",
     "tests/public-client/native_automation125.py": "91e71fc0479c6e28aeb44fe2e8c2783dd13cf44025b3d4549c243ef2bc475974",
     "tests/public-client/native_enrollment106.py": "9afbc6ae93e51be0159c1a181a6f413efc4bf84ab232714ede4dd82d1c1407ed",
-    "tests/public-client/native_mirror130.py": "03a4b85d3cc919c5fac4a1eb2e1e6962037ab19a11052cec1bdf069ebbff1248",
+    "tests/public-client/native_mirror130.py": "11f6734e04e523c8b880d5485fd79a16db67c1692355fbe7c18d48ee3f7a82e5",
     "tests/public-client/native_security127.py": "f2eddb8d69f08b9bab7290ff9098905fe88bc5b7fecd80de4247dafc722877d5",
     "tests/public-client/native_setup.py": "ac07fcc9052d1b2badcdd5ebe032692f32de912b7d79627578c36a8990328ccb",
     "tests/public-client/native_trial83.py": "4ed4884021687e76e647b9382d2fcc0b08f42e3135069701214abac2b323ec3f",

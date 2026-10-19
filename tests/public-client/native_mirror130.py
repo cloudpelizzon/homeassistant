@@ -32,6 +32,7 @@ def event(eid,value):return {'type':'event','event':{'data':{'entity_id':eid,'ne
 class MirrorTests(unittest.IsolatedAsyncioTestCase):
  async def asyncSetUp(self):
   await NativeSetupTests.asyncSetUp(self)
+  dr.async_setup(self.hass)
   await dr.async_load(self.hass)
   await er.async_load(self.hass)
  cleanup=NativeSetupTests.cleanup
