@@ -62,10 +62,10 @@
     "ui/security/cp-security-v035-extension.js": "f7ff1aa2e0e4ed25460186c24ab7dd8466d3d47949ff361f23bc401d78d66aac",
     "ui/security/cp-security-v036-extension.js": "bc2313060eb98c6a647d9447aca56c4f8a9c5b118e0761aa1151328753e5e162",
     "ui/security/cp-security-v037-extension.js": "91396ec238c8dafd5bb50eb5b1b822dd3644dfebbd21cbc1d84647ba8a431ca5",
-    "ui/security/panel.js": "c3fe6acdebd48cc5c6c112b8c8edd18d3a7ec134bab6a3589c445f5bdde758bc",
+    "ui/security/panel.js": "73278c7daf435afc96c9e01a7f9c8b908a3168e1d254061409b7224cfba6177b",
     "ui/shell/date-format-r51.js": "86319cce81b733583b633114e5c1f0ed431caa591f3f29cc5dc3e72106586e47",
-    "ui/shell/optional-modules.js": "3462d81501482e55bc7ba0a9d44443318ad271e09e71414522e78ab298feecf4",
-    "ui/shell/panel.js": "0fbc92d24116a8fc3ffecf28b06273a534842a9a24abaf7a02406a931b2010d8",
+    "ui/shell/optional-modules.js": "f3feb94be497c4bd52f53ff857b9f0e679167d0a3e10785e66891820acb8c1ac",
+    "ui/shell/panel.js": "9fca1adcca28250226131046818432d6fcad81a5dc92026ede0081aa55fac0dc",
     "ui/solar/energy-card.js": "14d311b1b29ebf5749f6f2fa5601809d89f799ba24649484a82c7d0825c2d71e",
     "ui/solar/panel.js": "aad57ae5617d766ba2cc64123a50551e0cd2b01fc0fd88d65b7fe3c5160297bd",
     "ui/updater/panel.js": "e1ec03718ec046c3146ec268e0b5955e00690d0ca9ef4f96d62c86e293c7c6cd"
