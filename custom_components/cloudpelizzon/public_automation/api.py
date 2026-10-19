@@ -4,7 +4,8 @@ import probatio
 from homeassistant.components import websocket_api
 from .bridge import STATUS, GET, SETTINGS, CONTRACTS as READ_CONTRACTS
 from .editor import CREATE, VALIDATE, SAVE, DELETE, EDITOR_CONTRACTS
-CONTRACTS = READ_CONTRACTS | EDITOR_CONTRACTS
+from .execution124 import ACTIVATE,DEACTIVATE,PERMISSIONS,APPROVE,CONTRACTS as EXECUTION_CONTRACTS
+CONTRACTS = READ_CONTRACTS | EDITOR_CONTRACTS | EXECUTION_CONTRACTS
 
 KEY = 'cloudpelizzon_automation76'
 SCHEMAS = {
@@ -14,7 +15,11 @@ SCHEMAS = {
     CREATE: {probatio.Required('type'): CREATE, probatio.Required('rule'): dict},
     VALIDATE: {probatio.Required('type'): VALIDATE, probatio.Required('code'): str, probatio.Required('rule'): dict},
     SAVE: {probatio.Required('type'): SAVE, probatio.Required('code'): str, probatio.Required('revision'): int, probatio.Required('rule'): dict},
-    DELETE: {probatio.Required('type'): DELETE, probatio.Required('code'): str, probatio.Required('revision'): int}}
+    DELETE: {probatio.Required('type'): DELETE, probatio.Required('code'): str, probatio.Required('revision'): int},
+    ACTIVATE: {probatio.Required('type'): ACTIVATE, probatio.Required('code'): str, probatio.Required('revision'): int},
+    DEACTIVATE: {probatio.Required('type'): DEACTIVATE, probatio.Required('code'): str, probatio.Required('revision'): int},
+    PERMISSIONS: {probatio.Required('type'): PERMISSIONS},
+    APPROVE: {probatio.Required('type'): APPROVE, probatio.Required('policy'): dict, probatio.Required('confirmed'): bool}}
 
 
 

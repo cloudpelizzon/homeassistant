@@ -120,8 +120,8 @@ class TrialCommandTests(unittest.IsolatedAsyncioTestCase):
         self.assertFalse(self.calls);self.assertFalse(self.results)
         self.assertEqual(self.errors[0][1],'trial_module_not_ready')
 
-    async def test104_automation_not_ready_never_calls_activation(self):
+    async def test125_automation_without_connection_callback_never_calls_activation(self):
         self.message['sku']='CP-AUTOMATION'
         await self.run_command()
         self.assertFalse(self.calls);self.assertFalse(self.results)
-        self.assertEqual(self.errors[0][1],'trial_module_not_ready')
+        self.assertEqual(self.errors[0][1],'trial_activation_denied_or_unconfirmed')

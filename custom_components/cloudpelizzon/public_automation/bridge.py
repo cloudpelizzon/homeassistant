@@ -73,8 +73,8 @@ class Bridge:
             if type(code) is not str or not CODE.fullmatch(code):raise ValueError('code_invalid')
             value=await self.request('automation.rules.read',{'code':code},authorized)
             if (value.get('code')!=code or type(value.get('revision')) is not int or value['revision']<1
-                    or type(value.get('rule')) is not dict or value.get('active') is not False):raise ValueError('rule_response_invalid')
-            return {'rule':value['rule'],'revision':value['revision'],'code':code,'active':False}
+                    or type(value.get('rule')) is not dict or type(value.get('active')) is not bool):raise ValueError('rule_response_invalid')
+            return {'rule':value['rule'],'revision':value['revision'],'code':code,'active':value['active']}
         if command==STATUS:
             value=await self.request('automation.rules.read',{},authorized)
             if (type(value.get('rules')) is not list or len(value['rules'])>1000
@@ -85,7 +85,7 @@ class Bridge:
             for row in value['rules']:
                 if (type(row) is not dict or type(row.get('code')) is not str or not CODE.fullmatch(row['code'])
                         or row['code'] in seen or type(row.get('revision')) is not int or row['revision']<1
-                        or type(row.get('alias')) is not str or len(row['alias'])>350 or row.get('active') is not False):
+                        or type(row.get('alias')) is not str or len(row['alias'])>350 or type(row.get('active')) is not bool):
                     raise ValueError('status_rule_invalid')
                 seen.add(row['code'])
                 rows.append({k:row[k] for k in ('code','revision','alias','active')}|{'origin':'customer'})
@@ -93,7 +93,7 @@ class Bridge:
             if type(remote) is not dict or set(remote)!={'scope','rule_selection'}:raise ValueError('remote_settings_invalid')
             settings=preferences({**DEFAULT,**self.read_local(),**remote})
             return {'rules':rows,'settings':settings,'native_rules':[],'categories':[],
-                    'total':len(rows),'active':0,'execution_available':False,'default_catalog_rules':0}
+                    'total':len(rows),'active':sum(row['active'] for row in rows),'execution_available':False,'default_catalog_rules':0}
         # Native HA entity selectors are UI preferences and remain on HA. Only
         # module rule selectors cross the gateway. No native automation content
         # or current states are read by this transport.

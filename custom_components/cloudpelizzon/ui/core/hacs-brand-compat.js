@@ -58,7 +58,7 @@
     const legacy=typeof oldPortal==='function'&&oldPortal.toString().includes('/portal/pair/start');
     if(!legacy)return;
     patched.add(prototype);
-    const ready=sku=>['CP-MAINTENANCE','CP-SOLAR'].includes(sku);
+    const ready=sku=>['CP-MAINTENANCE','CP-SOLAR','CP-AUTOMATION'].includes(sku);
     const oldButton=prototype.v2TrialButton,oldStatus=prototype.cpModuleStatus,oldStart=prototype.v2StartTrial;
     prototype.v2TrialButton=function(module){
       if(!ready(module?.sku)&&module?.trial?.verified===true&&module.trial.phase==='not_started'&&!module?.license?.allowed)

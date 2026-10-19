@@ -34,9 +34,9 @@ AUTHORITY = bytes.fromhex("3c6f1bfb75285e2077b95c421d18cf34c54d4714bce29e871f74e
 
 SKUS = frozenset({"CP-MAINTENANCE", "CP-SOLAR", "CP-SECURITY", "CP-AUTOMATION"})
 
-ROUTES = frozenset(['/v1/automation/effects', '/v1/automation/preview', '/v1/automation/run', '/v1/execute', '/v1/trial/activate', '/v1/trial/capability', '/v1/trial/status'])
+ROUTES = frozenset(['/v1/automation/session', '/v1/automation/poll', '/v1/automation/authorize', '/v1/automation/effects', '/v1/automation/preview', '/v1/automation/run', '/v1/execute', '/v1/trial/activate', '/v1/trial/capability', '/v1/trial/status'])
 
-TWO_PROOFS = frozenset({"automation.rules.create", "automation.rules.save", "automation.rules.validate"})
+TWO_PROOFS = frozenset({"automation.rules.create", "automation.rules.save", "automation.rules.validate", "automation.rules.activate"})
 
 PURPOSE = {"status": b"CP-TRIAL-LIFECYCLE-V1\n", "capability": b"CP-TRIAL-CAP-REFRESH-V1\n"}
 
@@ -218,9 +218,6 @@ class Client:
 
 
 
-    def enrollment_proof(self,claim):
-        return self._sign(claim,b'CP-TRIAL-ENROLL106\n','trial_signature')['trial_signature']
-
     def activate(self,sku,*,confirmed=False):
         if confirmed is not True or type(sku) is not str or sku not in SKUS:
             raise ClientError('explicit_module_activation_required')
@@ -322,10 +319,26 @@ class Client:
             or type(result.get('queued')) is not int or not 0<=result['queued']<=50):raise ClientError('manual_response_invalid')
         return result
 
+    def worker_session(self,args,*,request_id):
+        envelope=self._sign({'v':2,'installation_id':self._iid,'operation':'automation.worker.session',
+            'args':json.loads(canonical(args)),'request_id':request_id,'proof':{},
+            'timestamp':int(self._clock().timestamp()),'nonce':secrets.token_hex(32)},
+            b'CP-GATEWAY-EXECUTE-V2\n','signature')
+        value=self._send('/v1/automation/session',envelope)
+        if value.get('ok') is not True or value.get('operation')!='automation.worker.session' or value.get('request_id')!=request_id or type(value.get('result')) is not dict:
+            raise ClientError('worker_session_binding')
+        return value['result']
+
+    def worker_poll(self,args,*,request_id):
+        return self._attempt('CP-AUTOMATION','automation.rules.execute',args,request_id=request_id,worker=True)
+
+    def authorize_native(self,args,*,request_id):
+        return self._attempt('CP-AUTOMATION','automation.rules.execute',args,request_id=request_id,native=True)
+
     def effects(self,args,*,request_id):
         return self._attempt('CP-AUTOMATION','automation.rules.execute',args,request_id=request_id,channel='effects')
 
-    def _attempt(self, sku, operation, args, *, request_id, preview=False, channel=None):
+    def _attempt(self, sku, operation, args, *, request_id, preview=False, channel=None, native=False, worker=False):
 
         """One attempt, fresh online grant; callers retain request_id for deliberate retries.
 
@@ -391,7 +404,7 @@ class Client:
 
         envelope = self._sign(envelope, b'CP-GATEWAY-RUN-V1\n' if channel=='run' else b'CP-GATEWAY-EFFECTS-V1\n' if channel=='effects' else b"CP-GATEWAY-PREVIEW-V1\n" if preview else b"CP-GATEWAY-EXECUTE-V3\n" if bundle else b"CP-GATEWAY-EXECUTE-V2\n", "signature")
 
-        response = self._send("/v1/automation/"+channel if channel else "/v1/automation/preview" if preview else "/v1/execute", envelope)
+        response = self._send("/v1/automation/poll" if worker else "/v1/automation/authorize" if native else "/v1/automation/"+channel if channel else "/v1/automation/preview" if preview else "/v1/execute", envelope)
 
         if (response.get("ok") is not True or response.get("operation") != operation or response.get("request_id") != request_id
 
@@ -399,5 +412,12 @@ class Client:
 
             raise ClientError("execution_response_invalid")
 
+        if native:
+            try:
+                from .native_wire85 import verify
+                result=response['result']
+                if set(result)!={'receipt'}:raise ValueError()
+                verify(result['receipt'],self._iid,frozen,request_id,self._clock(),self._authority,proofs[0]['challenge'])
+            except Exception:raise ClientError('native_receipt_not_verified') from None
         return response["result"]
 

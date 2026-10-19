@@ -80,7 +80,11 @@ class Runtime:
             self.stage = 'core_websocket'
             self.closers.append(api.register(self.hass, self.bridge))
             self.stage = 'trial_websocket'
-            self.closers.append(public_trials.register(self.hass, context['client']))
+            async def prepare_trial(sku):
+                if sku=='CP-AUTOMATION':await context['automation_edge'].prepare()
+            def trial_activated(sku):
+                if sku=='CP-AUTOMATION':context['automation_edge'].refresh_status=True
+            self.closers.append(public_trials.register(self.hass, context['client'],prepare=prepare_trial,activated=trial_activated))
             self.stage = 'portal_fleet'
             handoff = await onboarding(self.hass, self.entry, context)
             self.closers.append(handoff.close)

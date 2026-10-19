@@ -19,13 +19,13 @@ const context={window:{},MutationObserver:class{observe(){}},URL,setTimeout:()=>
 vm.runInNewContext(fs.readFileSync(process.argv[2],'utf8'),context);
 (async()=>{
  assert(panel.rendered);checks++;
- for(const sku of ['CP-SECURITY','CP-AUTOMATION']){
+ for(const sku of ['CP-SECURITY']){
   const module={sku,trial:{verified:true,phase:'not_started'},license:{allowed:false}};
   assert(!panel.v2TrialButton(module).includes('old-trial-button'));
   assert.equal(panel.cpModuleStatus(module),'Teste ainda indisponível');
   panel.v2StartTrial(sku);assert.equal(activations,0);checks++;
  }
- panel.v2StartTrial('CP-SOLAR');assert.equal(activations,1);checks++;
+ panel.v2StartTrial('CP-SOLAR');panel.v2StartTrial('CP-AUTOMATION');assert.equal(activations,2);checks++;
  assert.equal(panel.cpModuleStatus({sku:'CP-SECURITY',trial:{phase:'trial_active',verified:true}}),'old status');checks++;
  await panel.cpOpenSecurePortal({preventDefault(){},stopPropagation(){}});
  assert.equal(posted.action,'https://cliente.cloudpelizzon.com.br/login');assert.equal(posted.method,'POST');
