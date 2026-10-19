@@ -35,6 +35,14 @@ jobs:
         run: python3 tests/public-client/test_fleet_reporter.py custom_components/cloudpelizzon
       - name: Verify trial offers match available modules
         run: node tests/public-client/test_trial_availability.cjs custom_components/cloudpelizzon/ui/core/panel.js
+      - name: Validate locked-by-default public lighting projection
+        run: node tests/public-client/test_lighting_projection.mjs staging/lighting/projection.mjs
+      - name: Validate read-only lighting view and staging boundary
+        run: node --test tests/public-client/test_lighting_readonly_view.mjs
+      - name: Verify inactive CP-LIGHTING native read scope and entity permissions
+        run: python3 -B tests/public-client/test_lighting_native_scope.py
+      - name: Validate GRAFITE FLUX and NEO SOFT read-only dashboards
+        run: node --test tests/public-client/test_lighting_dashboard.mjs
       - name: Verify legacy tabs receive updated trial and portal actions
         run: node tests/public-client/test_legacy_compat.cjs custom_components/cloudpelizzon/ui/core/hacs-brand-compat.js
       - name: Verify maintenance savings, financial retry and XLSX export
