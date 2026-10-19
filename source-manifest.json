@@ -2,7 +2,7 @@
   "schema": "cp.clean.source90.inventory.v1",
   "files": {
     ".github/workflows/hacs.yml": "6b737ea63358b22f7812bab3bfb323e3ca8b4cf143a41f9ead748adaab226150",
-    ".github/workflows/validate.yml": "7c34534b51386aacf2cf4e437316b5092a8f94930111035ee687f4d9711ef21c",
+    ".github/workflows/validate.yml": "58e36acfa59d12e896e9d9c8f7ede92b2d6ffbb152c25a51fdd4a62dd0d767e3",
     ".gitignore": "d4c6c5d0f925d1dee7cf69cb2672dbaf7d14bf236f37d64116336f9aa0d1702f",
     "LICENSE": "c1d1a38c99c48ccad170890ade6066e2e240bb6ce59861d4eb7f672eddd2a4c6",
     "README.md": "a6a9e1a3e89d296084b81012cace1318db49b376478d324a399f9d119218f98c",
@@ -187,7 +187,10 @@
     "tests/public-client/test_lighting_read_session.mjs": "bb2bdec8f2d8c829b0e858449ca7778a7b5cba2e6434f9c0f2d5f461c8bdb640",
     "staging/lighting/configuration-view.mjs": "45d5ad094cbf71a8abfb62a5146d1f9d2405aa2dd0afd6d492650bc3f6c444bf",
     "tests/public-client/test_lighting_configuration_view.mjs": "fdcedbb7c0ebb06588fa9eaf57f85ab37e3f6a27fb485b93271c6d219d90ca37",
-    "docs/lighting-configuration-read.md": "c56f66c454e806c407279d116f500ef1f859c7a3444ccdd548e8500f6f9d93c2"
+    "docs/lighting-configuration-read.md": "c56f66c454e806c407279d116f500ef1f859c7a3444ccdd548e8500f6f9d93c2",
+    "staging/lighting/native_scope.py": "acd1c9962dea999ce615660b7d7db19944c56718b03c135f1b3890f08e7e9718",
+    "tests/public-client/test_lighting_native_scope.py": "818934f4c11faca6eed14a7f0af5abfeaf0a1f872a16785cd314016a06f65a99",
+    "docs/lighting-native-scope.md": "1604b075f3db056bb7919e5d747402ecd0965d3dc47fb02b4789ac99e96cd3ce"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,
