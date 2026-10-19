@@ -13,9 +13,7 @@ class ObservationCamera(Camera):
  def __init__(self,mirror,eid,value,attrs):
   super().__init__();self.mirror=mirror;self.entity_id=eid;self.source_id=eid
   self._attr_unique_id='production_observation:'+eid;self._attr_name=attrs.get('friendly_name',eid)
-  self._mime='image/jpeg';self.value=value;self._last=None;self._at=0.;self._image_lock=asyncio.Lock()
- @property
- def content_type(self):return self._mime
+  self.content_type='image/jpeg';self.value=value;self._last=None;self._at=0.;self._image_lock=asyncio.Lock()
  @property
  def available(self):return not self.mirror.stopping and self.value not in {'unavailable','unknown'}
  @property
@@ -47,7 +45,7 @@ class ObservationCamera(Camera):
        if size>8388608:return None
        chunks.append(chunk)
       if self.mirror.stopping:return None
-      raw=b''.join(chunks);self._mime=response.headers['Content-Type'].split(';')[0]
+      raw=b''.join(chunks);self.content_type=response.headers['Content-Type'].split(';')[0]
       self._last=raw;self._at=time.monotonic();return raw
    except Exception:
     return None

@@ -78,3 +78,17 @@ class UsabilityTests(unittest.IsolatedAsyncioTestCase):
   with patch.object(module,'async_get_clientsession',return_value=types.SimpleNamespace(get=get)):
    self.assertIsNone(await camera.async_camera_image())
   self.assertEqual(get.call_count,1);self.assertIs(get.call_args.kwargs['allow_redirects'],False)
+
+ async def test131_camera_placeholder_migrates_to_native_camera_entity(self):
+  entry=await self.entry()
+  from homeassistant.helpers import entity_registry as er
+  from client81.camera import ADDERS
+  from client81.homolog_mirror.policy import DOMAIN
+  registry=er.async_get(self.hass)
+  registry.async_get_or_create('camera',DOMAIN,'camera.synthetic',config_entry=entry,suggested_object_id='synthetic')
+  self.hass.states.async_set('camera.synthetic','unavailable',{'restored':True})
+  added=[];self.hass.data.setdefault(ADDERS,{})[entry.entry_id]=lambda rows:added.extend(rows)
+  mirror=Mirror(self.hass,entry,'synthetic',SOURCE);mirror.apply({'entity_id':'camera.synthetic','state':'idle','attributes':{'friendly_name':'Synthetic camera'}})
+  self.assertEqual(len(added),1);self.assertIsInstance(added[0],ObservationCamera)
+  self.assertEqual(added[0].entity_id,'camera.synthetic');self.assertTrue(added[0].extra_state_attributes['cloudpelizzon_read_only'])
+  self.assertIsNone(registry.async_get('camera.synthetic'));self.assertIn('camera.synthetic',mirror.owned)

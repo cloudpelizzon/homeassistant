@@ -10,22 +10,23 @@ _LOGGER=logging.getLogger(__name__)
 
 async def stop(hass,entry,*,unload_platform=False):
  mirror=hass.data.get(DOMAIN,{}).pop(entry.entry_id,None)
+ if mirror is not None:
+  mirror.stopping=True
+  if mirror.task is not None:
+   mirror.task.cancel()
+   try:await mirror.task
+   except asyncio.CancelledError:pass
+  if not unload_platform:
+   for camera in mirror.cameras.values():
+    if camera.hass is not None:await camera.async_remove()
+  for eid in mirror.owned:
+   state=hass.states.get(eid)
+   if state and state.attributes.get('mirror_source')=='production_observer':hass.states.async_remove(eid)
+  hass.states.async_remove('sensor.cloudpelizzon_homolog_mirror')
  if unload_platform:
   from ..camera import ADDERS
   if entry.entry_id in hass.data.get(ADDERS,{}):
    await hass.config_entries.async_unload_platforms(entry,['camera']);hass.data[ADDERS].pop(entry.entry_id,None)
- if mirror is None:return
- mirror.stopping=True
- if mirror.task is not None:
-  mirror.task.cancel()
-  try:await mirror.task
-  except asyncio.CancelledError:pass
- for camera in mirror.cameras.values():
-  if camera.hass is not None and not unload_platform:await camera.async_remove()
- for eid in mirror.owned:
-  state=hass.states.get(eid)
-  if state and state.attributes.get('mirror_source')=='production_observer':hass.states.async_remove(eid)
- hass.states.async_remove('sensor.cloudpelizzon_homolog_mirror')
 
 async def start_saved(hass,entry):
  from homeassistant.helpers.storage import Store
