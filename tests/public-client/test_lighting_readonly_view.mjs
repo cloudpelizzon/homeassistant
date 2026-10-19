@@ -137,3 +137,6 @@ test('inventaria os arquivos revisados sem reabrir a publicação do módulo', (
     assert.equal(manifest.files[path], digest, path);
   }
 });
+
+// Run the read lifecycle suite in the existing CI entry point, without changing workflows.
+import './test_lighting_read_session.mjs';

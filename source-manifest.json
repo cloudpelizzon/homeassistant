@@ -177,11 +177,14 @@
     "tests/public-client/test_xlsx_compat.cjs": "f031dadea05f5d94ebef112e54eb1658a6a7c4e4fdfc555b0992e9b72cee7932",
     "tools/verify_public_tree.py": "f59655cdff6ba01c4ec5b5702257ad21bea3949ad13c7922bebd3312a56dec59",
     "tests/public-client/test_lighting_projection.mjs": "8b465117028beae9fdd77d6a15d918cbd712f91aed1f07e5e9c75ebf0bc767da",
-    "docs/lighting-public-contract.md": "b3fb83a6504403f1e9484c217f27e84a3eb1f9eb3522c71ea0dd355da4598a89",
+    "docs/lighting-public-contract.md": "db5ea075a1b82970e654de07c16e7543469a17ce36372ec1bad0bc733bbbae3c",
     "docs/lighting-ui-inventory-review.md": "3318dedf13698ac7637f627bb0431333398758b7cc298537aa66ad3b3ea3f8dd",
     "staging/lighting/projection.mjs": "c9159f5b4224cc3520e173fe33080089eeeb7a21392a5ab30ab5cca0ae3f1a66",
     "staging/lighting/readonly-view.mjs": "27b2f85b30bb011c911dca8babfe09270fe9e55fcd54b37e2b0cd60b4dd5cf74",
-    "tests/public-client/test_lighting_readonly_view.mjs": "c935b47757a1c94aa2865274490eff0d2470e3636cd60340b70eda70a092e08c"
+    "tests/public-client/test_lighting_readonly_view.mjs": "dd956544758d969721646ca0cc5fba4972a04c1fc7dc641afc135a58fab51f0d",
+    "staging/lighting/capabilities.mjs": "939e8bd26d89b76010cca3810808851485746213e79942e5490b2eebe2b61ae1",
+    "staging/lighting/read-session.mjs": "55ca0e70f86e590757a8506979754690a3fe4598143f316151a9ff1e2344fa9f",
+    "tests/public-client/test_lighting_read_session.mjs": "bb2bdec8f2d8c829b0e858449ca7778a7b5cba2e6434f9c0f2d5f461c8bdb640"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,
