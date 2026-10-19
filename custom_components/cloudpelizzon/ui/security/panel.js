@@ -6064,7 +6064,17 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 @keyframes cp61Scan{0%{transform:translateX(-125%)}100%{transform:translateX(125%)}}
 `;root.appendChild(st)}
 
-  function mount(host){ if(!host?.shadowRoot||!host?._hass)return; ensureStyle(host.shadowRoot); render(host); }
+  function ensureClock137(host){
+    if(host.__cp61Clock)return;
+    host.__cp137FullRefresh=Date.now();
+    host.__cp61Clock=setInterval(()=>{
+      if(!host.isConnected){clearInterval(host.__cp61Clock);host.__cp61Clock=null;return;}
+      tickAlarm137(host);
+      if(Date.now()-host.__cp137FullRefresh>=15000){host.__cp137FullRefresh=Date.now();schedule(host)}
+    },1000);
+  }
+  function mount(host){ if(!host?.isConnected||!host?.shadowRoot||!host?._hass)return; ensureClock137(host);ensureStyle(host.shadowRoot); render(host); }
+
   function schedule(host){cancelAnimationFrame(host.__cp60Frame);host.__cp60Frame=requestAnimationFrame(()=>mount(host));}
 
   function install(){
@@ -6077,8 +6087,8 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
         if(before?.states?.[id]!==value?.states?.[id]||before?.states?.['select.cloudpelizzon_security_mode']!==value?.states?.['select.cloudpelizzon_security_mode'])schedule(this);
       }});
       const r=K.prototype.render; if(typeof r==='function')K.prototype.render=function(...a){if(this.__cp60Overlay==='native134'&&this.shadowRoot?.querySelector('[data-native-save134]')){schedule(this);return;}const out=r.apply(this,a);schedule(this);return out};
-      const c=K.prototype.connectedCallback; K.prototype.connectedCallback=function(...a){const out=typeof c==='function'?c.apply(this,a):undefined;this.__cp60NativeMode=false;this.__cp60View=localStorage.getItem(VIEW_KEY)||'overview';window.__cp60Host=this;clearInterval(this.__cp61Clock);this.__cp137FullRefresh=Date.now();this.__cp61Clock=setInterval(()=>{tickAlarm137(this);if(Date.now()-this.__cp137FullRefresh>=15000){this.__cp137FullRefresh=Date.now();schedule(this)}},1000);schedule(this);return out};
-      const d=K.prototype.disconnectedCallback; K.prototype.disconnectedCallback=function(...a){cancelAnimationFrame(this.__cp60Frame);clearInterval(this.__cp61Clock);return typeof d==='function'?d.apply(this,a):undefined};
+      const c=K.prototype.connectedCallback; K.prototype.connectedCallback=function(...a){const out=typeof c==='function'?c.apply(this,a):undefined;this.__cp60NativeMode=false;this.__cp60View=localStorage.getItem(VIEW_KEY)||'overview';window.__cp60Host=this;clearInterval(this.__cp61Clock);this.__cp61Clock=null;ensureClock137(this);schedule(this);return out};
+      const d=K.prototype.disconnectedCallback; K.prototype.disconnectedCallback=function(...a){cancelAnimationFrame(this.__cp60Frame);clearInterval(this.__cp61Clock);this.__cp61Clock=null;return typeof d==='function'?d.apply(this,a):undefined};
       document.querySelectorAll(TAG).forEach(h=>{h.__cp60NativeMode=false;schedule(h)});
     });
     document.addEventListener('click',e=>{const p=e.composedPath?.()||[];const b=p.find(x=>x?.matches?.('button,a,[role="button"]')&&norm(x.textContent)==='seguranca');if(b){const h=window.__cp60Host; if(h){h.__cp60NativeMode=false;h.__cp60View=localStorage.getItem(VIEW_KEY)||'overview';[20,100,300,700].forEach(ms=>setTimeout(()=>schedule(h),ms));}}},true);
