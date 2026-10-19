@@ -5456,9 +5456,10 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 
   function configuredIds(host, domains=[]) {
     const ids = allEntityStrings(host?._config || {});
-    const filtered = ids.filter(id=>domains.some(d=>id.startsWith(d+'.'))).filter(id=>state(host,id));
+    const ignored=new Set(arr(host?._config?.descoberta?.ignorados?.cameras));
+    const filtered = ids.filter(id=>domains.some(d=>id.startsWith(d+'.'))).filter(id=>!ignored.has(id)&&state(host,id));
     if (filtered.length) return [...new Set(filtered)];
-    return Object.keys(host?._hass?.states || {}).filter(id=>domains.some(d=>id.startsWith(d+'.')));
+    return Object.keys(host?._hass?.states || {}).filter(id=>!ignored.has(id)&&domains.some(d=>id.startsWith(d+'.')));
   }
 
   function cameraIds(host) {
