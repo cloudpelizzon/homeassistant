@@ -42,3 +42,24 @@ class NativeSecurity134Tests(unittest.IsolatedAsyncioTestCase):
  async def test_partial_bypass_and_blockers_are_server_projections(self):
   edge=self.edge();edge.native.update(partial_open_bypass=True,bypassed_sensors=['binary_sensor.window'],arm_blockers={'partial_closed':['binary_sensor.door']});entity=PrivateAlarm(edge)
   attrs=entity.extra_state_attributes;self.assertEqual(attrs['bypassed_sensors'],['binary_sensor.window']);self.assertEqual(attrs['arm_blockers'],{'partial_closed':['binary_sensor.door']});self.assertTrue(attrs['partial_open_bypass'])
+
+ async def test_native_alarm_changes_are_written_into_the_actual_HA_state_machine(self):
+  import logging,shutil,uuid
+  from pathlib import Path
+  from homeassistant import loader
+  from homeassistant.core import HomeAssistant
+  from homeassistant.helpers.entity_component import EntityComponent
+  root=Path('/tmp')/('native-alarm137-'+uuid.uuid4().hex);root.mkdir()
+  hass=HomeAssistant(str(root));loader.async_setup(hass);await hass.async_start()
+  edge=object.__new__(Edge);edge.closed=False;edge.connected=True;edge.native=None;edge.native_at=None;edge.native_listeners=set();edge.clock=lambda:datetime.now(timezone.utc)
+  edge.native_update({'alarm':'disarmed','mode':'Casa','pending':None,'revision':1})
+  entity=PrivateAlarm(edge);component=EntityComponent(logging.getLogger(__name__),'alarm_control_panel',hass)
+  try:
+   await component.async_add_entities([entity]);self.assertEqual(hass.states.get(entity.entity_id).state,'disarmed')
+   edge.native_update({'alarm':'arming','mode':'Casa','pending':{'kind':'exit','target':'armed_home','due':edge.clock().timestamp()+60},'revision':2})
+   self.assertEqual(hass.states.get(entity.entity_id).state,'arming');self.assertEqual(hass.states.get(entity.entity_id).attributes['pending']['target'],'armed_home')
+   edge.native_update({'alarm':'armed_home','mode':'Casa','pending':None,'revision':3,'bypassed_sensors':['binary_sensor.synthetic_open']})
+   self.assertEqual(hass.states.get(entity.entity_id).state,'armed_home');self.assertEqual(hass.states.get(entity.entity_id).attributes['bypassed_sensors'],['binary_sensor.synthetic_open'])
+   await entity.async_remove();self.assertEqual(edge.native_listeners,set())
+  finally:
+   await hass.async_stop();shutil.rmtree(root)
