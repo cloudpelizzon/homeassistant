@@ -90,3 +90,18 @@ class MirrorTests(unittest.IsolatedAsyncioTestCase):
   row=policy.clean(state('camera.front','idle',{'access_token':'fake','entity_picture':'/secret'}));self.assertNotIn('access_token',row[2]);self.assertNotIn('entity_picture',row[2])
   self.assertIsNone(policy.clean(state('sensor.cloudpelizzon_trial','active')))
   self.assertIsNone(policy.clean(state('sensor.feedback','1',{'cloudpelizzon_read_only':True})))
+
+ async def test130_saved_mirror_lifecycle_and_identity_guard(self):
+  entry=await self.entry()
+  import client81.homolog_mirror as module
+  saved={'enabled':True,'source_base':BASE,'token':'synthetic-only','target_core':entry.data['fleet_installation_id']}
+  await Store(self.hass,1,policy.STORE,private=True).async_save(saved)
+  began=asyncio.Event()
+  async def wait_forever(_self):began.set();await asyncio.Event().wait()
+  with patch.object(Mirror,'run',wait_forever):
+   await start_saved(self.hass,entry);await asyncio.wait_for(began.wait(),1)
+   mirror=self.hass.data[policy.DOMAIN][entry.entry_id];self.assertFalse(mirror.task.done())
+   await module.stop(self.hass,entry);self.assertTrue(mirror.task.cancelled())
+  saved['target_core']='0'*32;await Store(self.hass,1,policy.STORE,private=True).async_save(saved)
+  with patch.object(module,'async_get_clientsession') as session:await start_saved(self.hass,entry)
+  session.assert_not_called();self.assertNotIn(entry.entry_id,self.hass.data[policy.DOMAIN])
