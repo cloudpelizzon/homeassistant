@@ -134,6 +134,21 @@ test('rejects missing container or missing trusted view provider',()=>{
   assert.throws(()=>mountLightingDashboard({addEventListener(){}},{}),TypeError);
 });
 
+test('render failure replaces formerly visible devices with a locked overview',()=>{
+  let malformed=false;
+  const root={innerHTML:'',addEventListener(){},removeEventListener(){}};
+  const dashboard=mountLightingDashboard(root,{getView(){
+    if(!malformed)return fixture();
+    return {...fixture(),lights:[{get entity_id(){throw new Error('private-details')}}]};
+  }});
+  assert.match(root.innerHTML,/data-entity="light.sala"/);
+  malformed=true;
+  assert.doesNotThrow(()=>dashboard.update());
+  assert.match(root.innerHTML,/Somente Visão Geral/);
+  assert.doesNotMatch(root.innerHTML,/data-entity=|Principal|private-details/);
+  dashboard.dispose();
+});
+
 test('provider exception erases previously rendered entities (fail-closed)',()=>{
   let fail=false; const v=fixture();
   const root={innerHTML:'',addEventListener(){},removeEventListener(){}};

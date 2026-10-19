@@ -161,7 +161,12 @@ export function mountLightingDashboard(root, {getView} = {}) {
     // A failed getter must erase any previously rendered entity data.
     let view = null;
     try { view = getView(); } catch { view = null; }
-    root.innerHTML = renderLightingDashboard(view,state);
+    try {
+      root.innerHTML = renderLightingDashboard(view,state);
+    } catch {
+      // Rendering errors must not leave stale authorized device cards visible.
+      root.innerHTML = renderLightingDashboard(null);
+    }
   }
   function input(event) {
     if (disposed || event?.target?.dataset?.cpLightingSearch === undefined) return;

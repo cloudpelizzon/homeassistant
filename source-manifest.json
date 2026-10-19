@@ -216,8 +216,8 @@
     "staging/lighting/native_scope.py": "acd1c9962dea999ce615660b7d7db19944c56718b03c135f1b3890f08e7e9718",
     "tests/public-client/test_lighting_native_scope.py": "818934f4c11faca6eed14a7f0af5abfeaf0a1f872a16785cd314016a06f65a99",
     "docs/lighting-native-scope.md": "1604b075f3db056bb7919e5d747402ecd0965d3dc47fb02b4789ac99e96cd3ce",
-    "staging/lighting/dashboard.mjs": "9ebafd3b622546789621f5b9624cef753ecc17983ae390dcf7b0b159af833022",
-    "tests/public-client/test_lighting_dashboard.mjs": "7c1616ed700590ac1279f17187380d947cd71b10f3886bef7330883e000526e8"
+    "staging/lighting/dashboard.mjs": "d790eb27d999daf193ac0c742f69262c5b5bb6873e56d9403d7cb8b14532554a",
+    "tests/public-client/test_lighting_dashboard.mjs": "1b3b41ff1682249b18544fdefa1e6ec8e4d7a7000fd9b7c1b51a44b44d83c6aa"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,
