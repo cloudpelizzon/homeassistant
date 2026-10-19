@@ -32,7 +32,9 @@ jobs:
       - name: Verify trial offers match available modules
         run: node tests/public-client/test_trial_availability.cjs custom_components/cloudpelizzon/ui/core/panel.js
       - name: Validate locked-by-default public lighting projection
-        run: node tests/public-client/test_lighting_projection.mjs custom_components/cloudpelizzon/ui/lighting/projection.mjs
+        run: node tests/public-client/test_lighting_projection.mjs staging/lighting/projection.mjs
+      - name: Validate read-only lighting view and staging boundary
+        run: node --test tests/public-client/test_lighting_readonly_view.mjs
       - name: Verify legacy tabs receive updated trial and portal actions
         run: node tests/public-client/test_legacy_compat.cjs custom_components/cloudpelizzon/ui/core/hacs-brand-compat.js
       - name: Verify maintenance savings, financial retry and XLSX export
