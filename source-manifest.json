@@ -2,7 +2,7 @@
   "schema": "cp.clean.source90.inventory.v1",
   "files": {
     ".github/workflows/hacs.yml": "6b737ea63358b22f7812bab3bfb323e3ca8b4cf143a41f9ead748adaab226150",
-    ".github/workflows/validate.yml": "044d90836a174a0a9bff94f55d4d1a184c660ebc18f797054ba48c6a9d6a7d02",
+    ".github/workflows/validate.yml": "d141c448126df7ca9902793992265c77ed7b232d92ad32fe4f2971b3a5bd731c",
     ".gitignore": "d4c6c5d0f925d1dee7cf69cb2672dbaf7d14bf236f37d64116336f9aa0d1702f",
     "LICENSE": "c1d1a38c99c48ccad170890ade6066e2e240bb6ce59861d4eb7f672eddd2a4c6",
     "README.md": "0ab2aeccb1c6ace05927f12454a2ee97fbc03e19f21a231fdbfd16f1e62663f7",
@@ -215,7 +215,9 @@
     "docs/lighting-configuration-read.md": "c56f66c454e806c407279d116f500ef1f859c7a3444ccdd548e8500f6f9d93c2",
     "staging/lighting/native_scope.py": "acd1c9962dea999ce615660b7d7db19944c56718b03c135f1b3890f08e7e9718",
     "tests/public-client/test_lighting_native_scope.py": "818934f4c11faca6eed14a7f0af5abfeaf0a1f872a16785cd314016a06f65a99",
-    "docs/lighting-native-scope.md": "1604b075f3db056bb7919e5d747402ecd0965d3dc47fb02b4789ac99e96cd3ce"
+    "docs/lighting-native-scope.md": "1604b075f3db056bb7919e5d747402ecd0965d3dc47fb02b4789ac99e96cd3ce",
+    "staging/lighting/dashboard.mjs": "9ebafd3b622546789621f5b9624cef753ecc17983ae390dcf7b0b159af833022",
+    "tests/public-client/test_lighting_dashboard.mjs": "7c1616ed700590ac1279f17187380d947cd71b10f3886bef7330883e000526e8"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,
