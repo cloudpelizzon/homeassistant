@@ -53,8 +53,7 @@ async def forward(hass,domain,service,data):
   mirror.last_command.update(outcome='source_unavailable',before=before['state'],after=before['state']);mirror.status('connected')
   raise PermissionError('production_entity_unavailable')
  mirror.last_command['before']=before['state']
- if expected and before['state'] in expected:
-  mirror.apply(before);mirror.last_command.update(outcome='already_in_state',after=before['state']);mirror.status('connected');return True
+ already=bool(expected and before['state'] in expected)
  mirror.last_command['transport']='ha_service_rest'
  await post_service(mirror,domain,service,data)
  mirror.commands_forwarded+=1;mirror.last_command['outcome']='accepted_not_verified';mirror.status('connected')
@@ -64,7 +63,7 @@ async def forward(hass,domain,service,data):
  while True:
   after=await source_state(mirror,target);mirror.apply(after);mirror.last_command['after']=after['state']
   if expected and after['state'] in expected:
-   mirror.last_command['outcome']='state_verified';mirror.status('connected');return True
+   mirror.last_command['outcome']='already_in_state' if already else 'state_verified';mirror.status('connected');return True
   if time.monotonic()>=until:break
   await asyncio.sleep(.5)
  mirror.last_command['outcome']='no_state_change';mirror.status('connected')

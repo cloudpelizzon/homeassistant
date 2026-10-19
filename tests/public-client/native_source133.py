@@ -25,10 +25,10 @@ class DeliveryTests(unittest.IsolatedAsyncioTestCase):
    with self.assertRaises(PermissionError):await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'})
    send.assert_not_called()
   self.assertEqual(m.last_command['outcome'],'source_unavailable')
- async def test133_already_on_refreshes_observation_without_actuation(self):
+ async def test133_already_on_still_delivers_request_without_claiming_a_transition(self):
   m=await self.mirror();m.forward_commands=True
   with patch.object(source,'post_service',AsyncMock()) as send,patch.object(source,'source_state',AsyncMock(return_value=state('switch.test_fence','on'))):
-   self.assertTrue(await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'}));send.assert_not_called()
+   self.assertTrue(await source.forward(self.hass,'switch','turn_on',{'entity_id':'switch.test_fence'}));self.assertEqual(send.await_count,1)
   self.assertEqual(m.last_command['outcome'],'already_in_state');self.assertEqual(self.hass.states.get('switch.test_fence').state,'on')
  async def test133_native_HA_targets_switch_gate_alarm_and_house_mode(self):
   m=await self.mirror();m.forward_commands=True;production=HomeAssistant(str(self.root/'source'))
