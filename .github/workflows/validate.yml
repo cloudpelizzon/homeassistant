@@ -43,6 +43,8 @@ jobs:
         run: python3 -B tests/public-client/test_lighting_native_scope.py
       - name: Validate GRAFITE FLUX and NEO SOFT read-only dashboards
         run: node --test tests/public-client/test_lighting_dashboard.mjs
+      - name: Validate individual CP-LIGHTING intents without device effects
+        run: node --test tests/public-client/test_lighting_control_intents.mjs
       - name: Verify legacy tabs receive updated trial and portal actions
         run: node tests/public-client/test_legacy_compat.cjs custom_components/cloudpelizzon/ui/core/hacs-brand-compat.js
       - name: Verify maintenance savings, financial retry and XLSX export

@@ -2,7 +2,7 @@
   "schema": "cp.clean.source90.inventory.v1",
   "files": {
     ".github/workflows/hacs.yml": "6b737ea63358b22f7812bab3bfb323e3ca8b4cf143a41f9ead748adaab226150",
-    ".github/workflows/validate.yml": "d141c448126df7ca9902793992265c77ed7b232d92ad32fe4f2971b3a5bd731c",
+    ".github/workflows/validate.yml": "5eac25b0a08a01b06dd8258a7de5fed75c074b5daa591675a9dd1935e1e09996",
     ".gitignore": "d4c6c5d0f925d1dee7cf69cb2672dbaf7d14bf236f37d64116336f9aa0d1702f",
     "LICENSE": "c1d1a38c99c48ccad170890ade6066e2e240bb6ce59861d4eb7f672eddd2a4c6",
     "README.md": "0ab2aeccb1c6ace05927f12454a2ee97fbc03e19f21a231fdbfd16f1e62663f7",
@@ -217,7 +217,9 @@
     "tests/public-client/test_lighting_native_scope.py": "818934f4c11faca6eed14a7f0af5abfeaf0a1f872a16785cd314016a06f65a99",
     "tests/public-client/test_lighting_projection.mjs": "8b465117028beae9fdd77d6a15d918cbd712f91aed1f07e5e9c75ebf0bc767da",
     "tests/public-client/test_lighting_read_session.mjs": "bb2bdec8f2d8c829b0e858449ca7778a7b5cba2e6434f9c0f2d5f461c8bdb640",
-    "tests/public-client/test_lighting_readonly_view.mjs": "20432f3bea33e820affa705db6a41c9db6ebce26532e265554653df94f3d4cb3"
+    "tests/public-client/test_lighting_readonly_view.mjs": "20432f3bea33e820affa705db6a41c9db6ebce26532e265554653df94f3d4cb3",
+    "staging/lighting/control-intents.mjs": "d08a621b890129138ad0f7af23b45aa88a589c710e808714d62e5e268aff9b78",
+    "tests/public-client/test_lighting_control_intents.mjs": "5c8eaf5594e97077d14689ea00c1b50bfeff7ca0e6fbc5f2bc84d45924896678"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,
