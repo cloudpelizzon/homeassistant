@@ -77,5 +77,7 @@ class DeliveryTests(unittest.IsolatedAsyncioTestCase):
   m=await self.mirror();m.apply(state('alarm_control_panel.cloudpelizzon_security','disarmed',{'code_arm_required':True}))
   self.assertEqual(self.hass.states.get('alarm_control_panel.cloudpelizzon_security').state,'disarmed')
   self.assertIn('alarm_control_panel.cloudpelizzon_security',m.owned)
+  self.assertTrue(policy.observable_energy(state('sensor.solar_energia_gerada_oficial','10',{'device_class':'energy','unit_of_measurement':'kWh'})))
+  self.assertFalse(policy.observable_energy(state('sensor.cloudpelizzon_license','active',{'device_class':'energy','unit_of_measurement':'kWh'})))
   for eid in ('sensor.cloudpelizzon_license','sensor.cp_trial_remaining','sensor.cp_core_status'):
    self.assertIsNone(policy.clean(state(eid,'active')))

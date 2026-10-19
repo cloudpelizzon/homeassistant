@@ -64,13 +64,13 @@
     "ui/security/cp-security-v037-extension.js": "91396ec238c8dafd5bb50eb5b1b822dd3644dfebbd21cbc1d84647ba8a431ca5",
     "ui/security/panel.js": "83fa96a6136cd46947a87c33af8021425bf3a448a9768c72e75073078ff70493",
     "ui/shell/date-format-r51.js": "86319cce81b733583b633114e5c1f0ed431caa591f3f29cc5dc3e72106586e47",
-    "ui/shell/optional-modules.js": "7f16c06bc5ce0673b514a58232a4b9434e408f65ddbcfe664e77179cd2dbb100",
-    "ui/shell/panel.js": "119549ae1467ba7d0274097e962cd7dbfb5a59f9e8aaeee36de036d856a422aa",
+    "ui/shell/optional-modules.js": "7d98330464eaa12c7bd2e89cc76dd489679f5d532cc597b389a796e5e550f8e0",
+    "ui/shell/panel.js": "d750f22381e87967680f935c646ec9d2935780588f58de3a84a63920648effb6",
     "ui/solar/assets/copel-tower-v17.png": "a35bc0e3aca232e67e40c13b108fc0ea8f4b04c688b58dfbbbd7dec4b2246413",
     "ui/solar/assets/house-v17.png": "13ef57073e71ae554b953916e1ff0a2c3e37738cf2fac0212291b4975041f2bd",
     "ui/solar/assets/solar-plant-v17.png": "3c019275f19451b78fdaa94af8383e236cbb0b979feae84663d69b7c27c75986",
     "ui/solar/energy-card.js": "974f2c679f2d0f37071d1e2d12b9fb827537a10392a1752d3ff9eaa2807b6c8a",
-    "ui/solar/panel.js": "db9210095f8778ba28858216aa6dba1bc095b1dcf369d5baa22960aa08f5cca3",
+    "ui/solar/panel.js": "5f06b471578f134346fec18383b3d70d6d207b51d685f2faf02c379764840cf6",
     "ui/updater/panel.js": "e1ec03718ec046c3146ec268e0b5955e00690d0ca9ef4f96d62c86e293c7c6cd"
   }
 }

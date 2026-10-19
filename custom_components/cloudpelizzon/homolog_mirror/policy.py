@@ -48,3 +48,10 @@ def deny_read_only_targets(hass,data):
  for eid in targets or []:
   state=hass.states.get(eid)
   if state is not None and state.attributes.get('cloudpelizzon_read_only') is True:raise PermissionError('production_mirror_read_only')
+
+def observable_energy(row):
+ """Numeric energy telemetry is data, not a commercial entitlement."""
+ value=clean(row)
+ if value is None:return False
+ attrs=value[2]
+ return attrs.get('device_class') in {'power','energy'} and attrs.get('unit_of_measurement') in {'W','kW','MW','Wh','kWh','MWh'}

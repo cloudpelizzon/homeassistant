@@ -381,6 +381,8 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     const houseScored=sortScored(power.map(row=>{
       const t=rowText(row);
       let score=0;
+      if(hasAny(t,['tomada','plug','socket']))return {row,score:-100,text:t};
+      if(/\bcasa\b.*\bpotencia\b.*\btotal\b/.test(t))score+=46;
       if(hasAny(t,["consumo total","consumption total","total consumption"]))score+=46;
       if(hasAny(t,["potencia da casa","potencia casa","house power","home power"]))score+=34;
       if(hasAny(t,["consumo casa","consumo residencia","residencia consumo"]))score+=30;
