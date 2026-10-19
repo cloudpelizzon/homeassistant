@@ -46,7 +46,7 @@ class Mirror:
   sanitized=clean(row)
   if sanitized is None:return
   eid,value,attrs=sanitized
-  if eid in self.blocked:return
+  if eid in self.blocked or (eid not in self.owned and len(self.owned)>=10000):return
   existing=self.hass.states.get(eid)
   registry=er.async_get(self.hass);reg=registry.async_get(eid)
   if (existing and eid not in self.owned and not (reg and reg.config_entry_id==self.entry.entry_id and existing.attributes.get('mirror_source')=='production_observer')) or (reg and reg.config_entry_id!=self.entry.entry_id):self.blocked.add(eid);return

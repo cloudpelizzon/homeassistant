@@ -90,6 +90,8 @@ class MirrorTests(unittest.IsolatedAsyncioTestCase):
   row=policy.clean(state('camera.front','idle',{'access_token':'fake','entity_picture':'/secret'}));self.assertNotIn('access_token',row[2]);self.assertNotIn('entity_picture',row[2])
   self.assertIsNone(policy.clean(state('sensor.cloudpelizzon_trial','active')))
   self.assertIsNone(policy.clean(state('sensor.feedback','1',{'cloudpelizzon_read_only':True})))
+  entry=await self.entry();mirror=Mirror(self.hass,entry,'synthetic-only',SOURCE);mirror.owned={f'sensor.limit_{i}' for i in range(10000)}
+  mirror.apply(state('sensor.over_limit','1'));self.assertIsNone(self.hass.states.get('sensor.over_limit'))
 
  async def test130_saved_mirror_lifecycle_and_identity_guard(self):
   entry=await self.entry()
