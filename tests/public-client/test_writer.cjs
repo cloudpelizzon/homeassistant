@@ -17,6 +17,10 @@ const extra={...model,kind:'Histórico financeiro detalhado',sections:[table('Hi
  assert.equal(again.getWorksheet('Resumo').getCell('K8').value,100);
  assert.equal(again.getWorksheet('Resumo').getCell('A1').value,model.title);
  assert(again.getWorksheet('Resumo').model.merges.includes('A1:BH1'));
+ const png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jz1sAAAAASUVORK5CYII=';
+ const withLogo=ctx.buildWorkbook(model,ExcelJS,png,[extra]);const logoBuffer=await withLogo.xlsx.writeBuffer();
+ const logoRead=new ExcelJS.Workbook();await logoRead.xlsx.load(logoBuffer);
+ assert.equal(logoRead.worksheets[0].getImages().length,1);assert.equal(logoRead.worksheets[0].getCell('F1').value,model.title);
  const only=ctx.buildWorkbook({...model,kind:'Lançamentos realizados',sections:[table('Lançamentos realizados')]},ExcelJS);
  assert.equal(only.worksheets.length,1);
  console.log(JSON.stringify({excel_tabs:8,shared_report_sections:6,round_trip:true,numeric_currency:true,individual_export:true}));

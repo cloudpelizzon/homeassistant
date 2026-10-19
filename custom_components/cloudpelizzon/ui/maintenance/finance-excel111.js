@@ -69,7 +69,7 @@ export function buildWorkbook(inputModel,ExcelJS,logoData=null,extraModels=[]){
   merged(4,first,60,model.kind,{fill:'FFEEF8F2',bold:true});
   if(logoData){
     const image=book.addImage({base64:logoData,extension:'png'});
-    sheet.addImage(image,{tl:{col:0,row:0},ext:{width:100,height:96},editAs:'oneCell'});
+    sheet.addImage(image,{tl:{col:0,row:0},br:{col:4,row:3},editAs:'oneCell'});
   }
   merged(5,1,60,'',{border:{bottom:{style:'medium',color:{argb:'FF149454'}}}});sheet.getRow(5).height=12;
   model.kpis.slice(0,6).forEach((k,i)=>{
@@ -115,8 +115,9 @@ async function logoPng(source){
     const image=new Image();image.crossOrigin='anonymous';
     await new Promise((resolve,reject)=>{image.onload=resolve;image.onerror=reject;image.src=source});
     const canvas=document.createElement('canvas');const ratio=Math.min(200/image.naturalWidth,200/image.naturalHeight,1);
-    canvas.width=Math.max(1,Math.round(image.naturalWidth*ratio));canvas.height=Math.max(1,Math.round(image.naturalHeight*ratio));
-    canvas.getContext('2d').drawImage(image,0,0,canvas.width,canvas.height);return canvas.toDataURL('image/png');
+    canvas.width=200;canvas.height=200;
+    const width=image.naturalWidth*ratio,height=image.naturalHeight*ratio;
+    canvas.getContext('2d').drawImage(image,(200-width)/2,(200-height)/2,width,height);return canvas.toDataURL('image/png');
   }catch{return null;}
 }
 export async function exportReport(html,filename,extraReports=[]){
