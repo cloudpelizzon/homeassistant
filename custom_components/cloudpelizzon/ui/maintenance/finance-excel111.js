@@ -36,7 +36,7 @@ export function buildWorkbook(inputModel,ExcelJS,logoData=null,extraModels=[]){
   const model=inputModel;
   if(!model?.title||!model.sections?.length)throw Error('O relatório não contém seções para exportar.');
   const book=new ExcelJS.Workbook();book.creator='CloudPelizzon';book.created=new Date();
-  const names={'Lançamentos realizados':'Lançamentos','Fechamento mensal':'Fechamento Mensal','Resumo por categoria':'Por Categoria','Comparativo das últimas manutenções':'Comparativo','Comparativo por empresa / profissional':'Empresas','Provisão no período':'Provisão','Histórico financeiro detalhado':'Histórico'};
+  const names={'Lançamentos realizados':'Lançamentos','Fechamento mensal':'Fechamento Mensal','Resumo financeiro por categoria':'Por Categoria','Comparativo das últimas manutenções':'Comparativo','Comparativo por empresa / profissional':'Empresas','Provisão no período selecionado':'Provisão','Histórico financeiro detalhado':'Histórico'};
   const layouts=[{name:model.kind==='Relatório completo'?'Resumo':names[model.kind]||'Relatório',model}];
   if(model.kind==='Relatório completo'){
     const order=['Lançamentos','Fechamento Mensal','Por Categoria','Comparativo','Empresas','Provisão','Histórico'];
@@ -46,11 +46,11 @@ export function buildWorkbook(inputModel,ExcelJS,logoData=null,extraModels=[]){
   }
   for(const layout of layouts){
   const model=layout.model;
-  const sheet=book.addWorksheet(layout.name,{properties:{defaultColWidth:3.2,defaultRowHeight:22},
+  const sheet=book.addWorksheet(layout.name,{properties:{defaultColWidth:18,defaultRowHeight:22},
     views:[{state:'normal',showGridLines:false,zoomScale:85}],
     pageSetup:{paperSize:9,orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,
       margins:{left:.25,right:.25,top:.35,bottom:.35,header:.1,footer:.15}}});
-  for(let c=1;c<=60;c++)sheet.getColumn(c).width=3.2;
+  for(let c=1;c<=12;c++)sheet.getColumn(c).width=18;
   const fill=color=>({type:'pattern',pattern:'solid',fgColor:{argb:color}});
   function merged(row,left,right,value,options={}){
     if(right>left)sheet.mergeCells(row,left,row,right);
@@ -62,30 +62,35 @@ export function buildWorkbook(inputModel,ExcelJS,logoData=null,extraModels=[]){
     if(options.border)cell.border=options.border;
     return cell;
   }
-  const first=logoData?6:1;
-  merged(1,first,60,model.title,{size:20,bold:true});sheet.getRow(1).height=36;
-  merged(2,first,60,model.identity,{size:10});
-  merged(3,first,60,model.meta,{size:10});
-  merged(4,first,60,model.kind,{fill:'FFEEF8F2',bold:true});
+  const first=logoData?2:1;
+  merged(1,first,12,model.title,{size:20,bold:true});sheet.getRow(1).height=36;
+  merged(2,first,12,model.identity,{size:10});
+  merged(3,first,12,model.meta,{size:10});
+  merged(4,first,12,model.kind,{fill:'FFEEF8F2',bold:true});
   if(logoData){
     const image=book.addImage({base64:logoData,extension:'png'});
-    sheet.addImage(image,{tl:{col:0,row:0},br:{col:4,row:3},editAs:'oneCell'});
+    sheet.addImage(image,{tl:{col:0,row:0},br:{col:1,row:3},editAs:'oneCell'});
   }
-  merged(5,1,60,'',{border:{bottom:{style:'medium',color:{argb:'FF149454'}}}});sheet.getRow(5).height=12;
+  merged(5,1,12,'',{border:{bottom:{style:'medium',color:{argb:'FF149454'}}}});sheet.getRow(5).height=12;
   model.kpis.slice(0,6).forEach((k,i)=>{
-    const left=i*10+1,right=left+9,border={left:{style:'thick',color:{argb:EDGES[i]}}};
+    const left=i*2+1,right=left+1,border={left:{style:'thick',color:{argb:EDGES[i]}}};
     merged(7,left,right,k.label,{size:10,fill:COLORS[i],border});
     merged(8,left,right,k.value,{size:14,bold:true,fill:COLORS[i],border});
   });sheet.getRow(7).height=22;sheet.getRow(8).height=30;
   let row=10;
   for(const section of model.sections){
-    merged(row,1,60,section.title,{size:16,bold:true,border:{bottom:{style:'medium',color:{argb:'FF149454'}}}});
+    merged(row,1,12,section.title,{size:16,bold:true,border:{bottom:{style:'medium',color:{argb:'FF149454'}}}});
     sheet.getRow(row).height=32;row+=2;
     const header=section.rows.find(r=>r.kind==='head');
     const columns=header?.cells||[];if(!columns.length)continue;
     const weights=columns.map(c=>Math.max(9,Math.min(28,c.text.length+3)));
-    const sum=weights.reduce((a,b)=>a+b,0),sizes=weights.map(w=>Math.max(1,Math.floor(w*60/sum)));
-    for(let left=60-sizes.reduce((a,b)=>a+b,0),i=0;left>0;left--,i++)sizes[i%sizes.length]++;
+    if(columns.length>12)throw Error('O relatório excede o limite de 12 colunas.');
+    // Keep every report field in a conventional Excel column; distribute spare
+    // columns by the largest fractional remainder so merged ranges never overlap.
+    const sum=weights.reduce((a,b)=>a+b,0),spare=12-columns.length;
+    const shares=weights.map(w=>w*spare/sum),sizes=shares.map(w=>1+Math.floor(w));
+    const ranked=shares.map((w,i)=>({i,fraction:w-Math.floor(w)})).sort((a,b)=>b.fraction-a.fraction||a.i-b.i);
+    for(let left=12-sizes.reduce((a,b)=>a+b,0),i=0;left>0;left--,i++)sizes[ranked[i].i]++;
     const boundaries=[1];for(const width of sizes)boundaries.push(boundaries.at(-1)+width);
     for(const data of section.rows){
       let logical=0,height=28;
@@ -96,15 +101,15 @@ export function buildWorkbook(inputModel,ExcelJS,logoData=null,extraModels=[]){
           String(value.signal||'').includes('signal-up')?'FFFFF4F1':String(value.signal||'').includes('signal-down')?'FFF1FAF5':String(value.signal||'').includes('signal-stable')?'FFFFFBEA':null;
         merged(row,left,right,value.text,{bold:data.kind!=='body',fill:background,
           border:data.kind==='total'?{top:{style:'thin',color:{argb:'FF79A98D'}}}:{bottom:{style:'hair',color:{argb:'FFDCE3E8'}}}});
-        height=Math.max(height,Math.ceil(value.text.length/Math.max(8,(right-left+1)*3.1))*15+8);
+        height=Math.max(height,Math.ceil(value.text.length/Math.max(8,(right-left+1)*17))*15+8);
         logical=next;
       }
       sheet.getRow(row).height=Math.min(120,height);row++;
     }
     row+=2;
   }
-  merged(row,1,60,model.footer,{size:10});sheet.getRow(row).height=30;
-  sheet.pageSetup.printArea=`A1:BH${row}`;
+  merged(row,1,12,model.footer,{size:10});sheet.getRow(row).height=30;
+  sheet.pageSetup.printArea=`A1:L${row}`;
   sheet.headerFooter.oddFooter='&CCloudPelizzon — Página &P de &N';
   }
   return book;

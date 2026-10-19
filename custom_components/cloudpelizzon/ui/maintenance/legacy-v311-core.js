@@ -3273,7 +3273,7 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
     const previous=button?.innerHTML;
     if(button){button.disabled=true;button.textContent='Gerando Excel...'}
     try{
-      const writer=await import('/cloudpelizzon-maintenance/frontend/finance-excel111.js?v=111');
+      const writer=await import('/cloudpelizzon-maintenance/frontend/finance-excel111.js?v=113');
       const html=this.exportFinanceReport(rows,reportType,true);
       const names={complete:'relatorio_completo',launches:'lancamentos_realizados',monthly:'fechamento_mensal',categories:'resumo_por_categoria',comparison:'comparativo_manutencoes',providers:'comparativo_empresas',provisions:'provisao_periodo',history:'historico_financeiro'};
       const extra=reportType==='complete'?[this.exportFinanceReport(rows,'history',true)]:[];
