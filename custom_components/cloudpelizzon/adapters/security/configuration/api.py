@@ -38,6 +38,23 @@ async def current_user(hass,user,*,admin=False):
         raise PermissionError('security_session_changed')
     return current
 
+async def prepare_siren_permissions(hass,value,*,authorized):
+    """Consent from the active admin's enabled physical actuator configuration."""
+    import re
+    from ....public_security.api126 import KEY as EDGE_KEY
+    selected=value.get('sirene')
+    if not isinstance(selected,dict) or selected.get('habilitada') is not True:return
+    target=selected.get('entidade')
+    if not isinstance(target,str) or not re.fullmatch(r'siren\.[a-z0-9_]+',target):raise ValueError('invalid_siren_target')
+    edge=hass.data.get(EDGE_KEY)
+    if edge is None or not authorized():raise PermissionError('active_security_connection_required')
+    previous=edge.check();updated={**previous,'reads':sorted(set(previous['reads'])|{target}),'effects':[list(x) for x in previous['effects']]}
+    for service in ('turn_on','turn_off'):
+        row=['siren',service,target]
+        if row not in updated['effects']:updated['effects'].append(row)
+    if updated!=previous:await edge.prepare(new_policy=updated,confirmed=True,authorized=authorized)
+    if not authorized() or hass.data.get(EDGE_KEY) is not edge:raise PermissionError('security_session_changed')
+
 class ConfigurationView(HomeAssistantView):
     url=URL;name='api:cloudpelizzon:seguranca:configuracao';requires_auth=True
     async def get(self,request):
@@ -61,6 +78,8 @@ class ConfigurationView(HomeAssistantView):
         try:
             await current_user(hass,user,admin=True)
             bridge=get_bridge(hass)
+            await prepare_siren_permissions(hass,value,authorized=lambda:active(user) and user.is_admin is True and get_bridge(hass) is bridge)
+            await current_user(hass,user,admin=True)
             result=await bridge.handle('configuration.set',value,authenticated=True,admin=True)
             await current_user(hass,user,admin=True)
             if get_bridge(hass) is not bridge:raise PermissionError('runtime_changed')

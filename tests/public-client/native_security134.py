@@ -70,3 +70,29 @@ class NativeSecurity134Tests(unittest.IsolatedAsyncioTestCase):
    await entity.async_remove();self.assertEqual(edge.native_listeners,set())
   finally:
    await hass.async_stop();shutil.rmtree(root)
+
+ async def test_standard_siren_save_prepares_exact_on_off_and_read_permissions(self):
+  from client81.adapters.security.configuration.api import prepare_siren_permissions
+  from client81.public_security.api126 import KEY
+  previous={'reads':['binary_sensor.synthetic_door'],'effects':[['cover','open_cover','cover.synthetic_gate']],'notification':None}
+  edge=types.SimpleNamespace(check=lambda:previous,prepare=AsyncMock());hass=types.SimpleNamespace(data={KEY:edge})
+  await prepare_siren_permissions(hass,{'sirene':{'habilitada':True,'entidade':'siren.synthetic'}},authorized=lambda:True)
+  kw=edge.prepare.await_args.kwargs;self.assertTrue(kw['confirmed']);self.assertEqual(set(kw['new_policy']['reads']),{'binary_sensor.synthetic_door','siren.synthetic'});self.assertEqual(kw['new_policy']['effects'],previous['effects']+[['siren','turn_on','siren.synthetic'],['siren','turn_off','siren.synthetic']])
+ async def test_disabled_siren_does_not_grant_an_actuator(self):
+  from client81.adapters.security.configuration.api import prepare_siren_permissions
+  from client81.public_security.api126 import KEY
+  edge=types.SimpleNamespace(prepare=AsyncMock());hass=types.SimpleNamespace(data={KEY:edge})
+  await prepare_siren_permissions(hass,{'sirene':{'habilitada':False,'entidade':'siren.synthetic'}},authorized=lambda:True);edge.prepare.assert_not_awaited()
+ async def test_standard_siren_save_rejects_non_siren_and_inactive_admin(self):
+  from client81.adapters.security.configuration.api import prepare_siren_permissions
+  from client81.public_security.api126 import KEY
+  edge=types.SimpleNamespace(prepare=AsyncMock());hass=types.SimpleNamespace(data={KEY:edge})
+  with self.assertRaises(ValueError):await prepare_siren_permissions(hass,{'sirene':{'habilitada':True,'entidade':'switch.unrelated'}},authorized=lambda:True)
+  with self.assertRaises(PermissionError):await prepare_siren_permissions(hass,{'sirene':{'habilitada':True,'entidade':'siren.synthetic'}},authorized=lambda:False)
+  edge.prepare.assert_not_awaited()
+ async def test_preexisting_actuator_permissions_are_not_replaced(self):
+  from client81.adapters.security.configuration.api import prepare_siren_permissions
+  from client81.public_security.api126 import KEY
+  p={'reads':['siren.synthetic'],'effects':[['siren','turn_on','siren.synthetic'],['siren','turn_off','siren.synthetic']],'notification':None}
+  edge=types.SimpleNamespace(check=lambda:p,prepare=AsyncMock());hass=types.SimpleNamespace(data={KEY:edge})
+  await prepare_siren_permissions(hass,{'sirene':{'habilitada':True,'entidade':'siren.synthetic'}},authorized=lambda:True);edge.prepare.assert_not_awaited()
