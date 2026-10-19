@@ -186,7 +186,7 @@
     "tests/public-client/native_enrollment106.py": "9afbc6ae93e51be0159c1a181a6f413efc4bf84ab232714ede4dd82d1c1407ed",
     "tests/public-client/native_mirror130.py": "2be9259f06f11c6327c367b6645279842ab724e0f994a2db478aa0ef33bfca28",
     "tests/public-client/native_security127.py": "f2eddb8d69f08b9bab7290ff9098905fe88bc5b7fecd80de4247dafc722877d5",
-    "tests/public-client/native_security134.py": "57db8ce70496203976fdb410d73ab7d2aa3e32cafde1df4e768cef4c964b26e4",
+    "tests/public-client/native_security134.py": "517a5dfaf8f29cd226cf4dd0a99877d629893b7aeeb5e80bd7a577914fa6215f",
     "tests/public-client/native_setup.py": "ac07fcc9052d1b2badcdd5ebe032692f32de912b7d79627578c36a8990328ccb",
     "tests/public-client/native_source132.py": "a6f9488748bbc42229ba18d53784edda5f2c7ab37d1d3f50b0f72fc42736326c",
     "tests/public-client/native_source133.py": "b08fc607b69cb212f73c12fcef9aabf109c1d12c009d133ee6681280af301ae1",

@@ -54,6 +54,7 @@ class NativeSecurity134Tests(unittest.IsolatedAsyncioTestCase):
   root=Path('/tmp')/('native-alarm137-'+uuid.uuid4().hex);root.mkdir()
   hass=HomeAssistant(str(root));loader.async_setup(hass)
   hass.config_entries=config_entries.ConfigEntries(hass,{})
+  device_registry.async_setup(hass)
   await issue_registry.async_load(hass);await device_registry.async_load(hass);await entity_registry.async_load(hass);await hass.config_entries.async_initialize()
   self.assertTrue(await async_setup_component(hass,'alarm_control_panel',{}));await hass.async_start()
   edge=object.__new__(Edge);edge.closed=False;edge.connected=True;edge.native=None;edge.native_at=None;edge.native_listeners=set();edge.clock=lambda:datetime.now(timezone.utc)
