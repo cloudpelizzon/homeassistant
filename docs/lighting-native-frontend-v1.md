@@ -14,6 +14,6 @@
 
 **Segurança:** quando o status comercial estiver ausente ou vencido, o módulo limpa dados e mostra somente Visão Geral e contratação. Ações de dispositivos físicos, cenas e dimmer ativo permanecem desabilitados: **não existe ainda contrato privado homologado para efeitos**. Não adicionar SKU à allowlist do SDK público sem atualização assinada da autoridade privada.
 
-**Validação:** 18 testes Node + renderização de quatro páginas em Chromium com fixture exclusivamente sintética. Esse teste NÃO valida HA real, gateway, assinaturas, Trial ou dispositivos. HACS/CI só validam código público.
+**Validação:** 19 testes Node + renderização de quatro páginas em Chromium com fixture exclusivamente sintética. Esse teste NÃO valida HA real, gateway, assinaturas, Trial ou dispositivos. HACS/CI só validam código público.
 
 **Pendências:** gateway e Trial reais, renderização final com imagens no Release Center, confirmação de integridade de quatro arquivos críticos do CT104, efeitos individuais e cenas aprovados, favoritos/ordem/paginação persistente e aceite funcional na VM105. 

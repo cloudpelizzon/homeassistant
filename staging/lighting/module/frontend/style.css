@@ -136,6 +136,11 @@
 .cp-review-entity{display:flex;flex-direction:column;gap:3px;min-width:0}.cp-review-entity b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px}.cp-review-entity small{color:#8eaec9;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cp-review-entity .pending{color:#ffc578}
 .cp-review-row label{display:flex;flex-direction:column;gap:5px;white-space:nowrap;color:#a8bdd1}.cp-review-row input:not([type=checkbox]),.cp-review-row select{width:100%;border:1px solid #31536c;border-radius:7px;color:#e9f2fa;background:#0e2538;padding:6px;min-width:0}
 .cp-review-row button{padding:8px 6px;font-size:11px;border-color:#8a6b3c;color:#ffd78e}.cp-review-row input[type=checkbox]{accent-color:#f0a646}
+/* Unimplemented commercial settings are informative, not fake toggles */
+.cp-disabled-tag{padding:7px 10px;border:1px solid #88643e;border-radius:9px;color:#f0c58b;font-size:10px;white-space:nowrap;background:#38291b50}
+.cp-options{display:flex;flex-direction:column;gap:10px}
+.cp-options span{display:flex;align-items:center;justify-content:space-between;gap:14px;border-bottom:1px solid #36506344;padding-bottom:9px;font-size:12px;color:#e5eef8}
+.cp-options b{font-size:11px;color:#afcadf;font-weight:500;text-align:right}
 /* ===== Licensing locked state (only overview and purchase) ===== */
 .cp-locked{min-height:570px;display:flex;flex-direction:column;gap:16px;justify-content:center;align-items:center;text-align:center;background:radial-gradient(circle at 50% 40%,#143047,#07131f 63%,#020912);border:1px solid #315476;border-radius:22px;color:#e8f5ff;padding:30px}
 .cp-locked-symbol{font-size:48px;color:#64b9eb}.cp-locked h1{font-size:18px;color:#8bc9eb;margin:0}.cp-locked h2{font-size:30px;margin:0}.cp-locked p{max-width:590px;color:#abc8db;line-height:1.65;margin:0}.cp-locked small{color:#7394b2}

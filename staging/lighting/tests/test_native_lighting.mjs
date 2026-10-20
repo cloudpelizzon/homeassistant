@@ -120,6 +120,15 @@ test('Shared configuration includes native discovery, rooms, review, theme selec
  assert(html.includes('cp-config-layout'));
 });
 
+test('Approved shared-settings map covers scenes, consumption, paging and alerts without fake saves',()=>{
+ const panel=makePanel();panel._allowed=true;panel._snapshot=projectLightingPortResult(snapshot());panel._view='config';panel.render();
+ const html=panel.shadowRoot.innerHTML;
+ for(const title of ['Cenas rápidas','Sensores e consumo (opcional)','Paginação, favoritos e ordem','Alertas, filtros e animações'])assert(html.includes(title));
+ assert(html.includes('Pendente do gateway'));
+ assert(html.includes('Persistência pendente'));
+ assert(!html.includes('data-action="toggle-scene"'));
+});
+
 test('No fake physical device commands: all effect controls are disabled',()=>{
  const p=makePanel();p._allowed=true;p._snapshot=projectLightingPortResult(snapshot());
  p._theme='neo-soft';p.render();assert.match(p.shadowRoot.innerHTML,/data-theme="neo-soft"/);assert.match(p.shadowRoot.innerHTML,/cp-orange-action" disabled/);
