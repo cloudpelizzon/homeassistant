@@ -10,6 +10,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 from homeassistant.loader import async_get_integration
 
+from .owner_profile155 import owner_display_name
 from .provision import provision
 from .public_onboarding.protocol import FLEET_URL, fleet_ack
 
@@ -22,6 +23,8 @@ async def enroll_free(hass, user_input):
         raise PermissionError('consent_required')
     lock = hass.data.setdefault(LOCK, asyncio.Lock())
     async with lock:
+        # Unified setup consent explicitly includes the required owner display name.
+        owner_name = await owner_display_name(hass)
         store = Store(hass, 1, 'cloudpelizzon_core.data', private=True, atomic_writes=True)
         loaded = await store.async_load()
         if loaded is not None and type(loaded) is not dict:
@@ -48,18 +51,7 @@ async def enroll_free(hass, user_input):
         payload = {'mode': 'free', 'installation_id': iid, 'registration_secret': secret,
                    'fleet_reporting_consent': True, 'cloudpelizzon_version': version,
                    'ha_version': HA_VERSION}
-        if user_input.get('share_owner_name') is True:
-            try:
-                users = await hass.auth.async_get_users()
-                owner = next((u for u in users if u.is_active and u.is_owner and not u.system_generated), None)
-            except asyncio.CancelledError:
-                raise
-            except Exception:
-                owner = None
-            if owner:
-                name = ''.join(c for c in str(owner.name or '').strip() if c.isprintable())[:80]
-                if name:
-                    payload['ha_admin_name'] = name
+        payload['ha_admin_name'] = owner_name
         session = async_get_clientsession(hass)
         async with asyncio.timeout(12):
             async with session.post(FLEET_URL, json=payload, allow_redirects=False) as response:
@@ -69,5 +61,5 @@ async def enroll_free(hass, user_input):
                 fleet_ack(response.status, response.headers.get('Content-Type', ''), raw, iid)
         return {'fleet_registered': True, 'fleet_installation_id': iid,
                 'fleet_reporting_consent': True, 'fleet_registration_mode': 'free',
-                'fleet_owner_name_consent': user_input.get('share_owner_name') is True,
-                'fleet_enrollment_schema': 3}
+                'fleet_owner_name_consent': True,
+                'fleet_enrollment_schema': 4}

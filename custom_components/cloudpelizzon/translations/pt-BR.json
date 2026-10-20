@@ -4,18 +4,18 @@
     "step": {
       "user": {
         "title": "Conectar a CloudPelizzon",
-        "description": "Cadastre gratuitamente esta instalação no Fleet. Isso não inicia testes de módulos nem concede licença comercial.",
+        "description": "Para usar a integração, cadastre esta instalação gratuitamente no Fleet. O cadastro inclui obrigatoriamente o nome de exibição do proprietário (administrador) do Home Assistant, para identificar o responsável pela instalação, além do identificador técnico e das versões do Home Assistant e CloudPelizzon. Não são enviados senha, e-mail ou token do administrador. Este cadastro não inicia testes de módulos nem emite licença comercial.",
         "data": {
-          "consent": "Autorizo o cadastro técnico desta instalação no Fleet",
-          "share_owner_name": "Compartilhar também o nome de exibição do proprietário do HA (opcional)"
+          "consent": "Li e aceito o cadastro técnico no Fleet, incluindo o envio obrigatório do nome do proprietário do HA"
         }
       }
     },
     "error": {
-      "consent_required": "É necessário autorizar o cadastro técnico.",
+      "consent_required": "É necessário aceitar o cadastro técnico e o envio do nome do proprietário do HA.",
       "registration_rejected": "O Fleet não confirmou o cadastro. Verifique o registro da instalação.",
       "identity_invalid": "A identidade local existente não pôde ser validada. Nenhuma chave foi substituída.",
-      "cannot_connect": "Não foi possível conectar ao Fleet. Tente novamente; a identidade será preservada."
+      "cannot_connect": "Não foi possível conectar ao Fleet. Tente novamente; a identidade será preservada.",
+      "owner_name_required": "Não foi possível obter o nome de exibição do proprietário do Home Assistant. Confira esse nome no perfil do proprietário e tente novamente."
     },
     "abort": {
       "already_configured": "A CloudPelizzon já está configurada."

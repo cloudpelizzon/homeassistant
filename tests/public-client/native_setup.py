@@ -52,8 +52,11 @@ class NativeSetupTests(unittest.IsolatedAsyncioTestCase):
                 outer.assertIs(kwargs['allow_redirects'],False)
                 outer.posts.append(dict(kwargs['json']))
                 return Response()
+        self.owner155=types.SimpleNamespace(is_active=True,is_owner=True,system_generated=False,name='Administrador sintético')
+        self.owner_lookup155=AsyncMock(return_value=[self.owner155])
         self.entry_setup=AsyncMock(return_value=True)
-        patches=[patch.object(config_entries,'_async_get_flow_handler',AsyncMock(return_value=CloudPelizzonConfigFlow)),
+        patches=[patch.object(self.hass.auth,'async_get_users',self.owner_lookup155),
+                 patch.object(config_entries,'_async_get_flow_handler',AsyncMock(return_value=CloudPelizzonConfigFlow)),
                  patch.object(config_entries,'_support_single_config_entry_only',AsyncMock(return_value=True)),
                  patch.object(self.hass.config_entries,'async_setup',self.entry_setup),
                  patch.object(setup81,'async_get_integration',AsyncMock(return_value=types.SimpleNamespace(version='7.0.0-alpha.3'))),
@@ -71,6 +74,7 @@ class NativeSetupTests(unittest.IsolatedAsyncioTestCase):
     async def test81_no_consent_no_keys_or_network(self):
         result=await self.start()
         self.assertEqual(result['type'],FlowResultType.FORM)
+        self.assertEqual({str(key) for key in result['data_schema'].schema},{'consent'})
         result=await self.finish(result,{'consent':False})
         self.assertEqual(result['errors'],{'base':'consent_required'})
         self.assertEqual(self.posts,[])
@@ -82,6 +86,9 @@ class NativeSetupTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(len(entries),1)
         self.assertIs(result['result'],entries[0])
         self.assertTrue(entries[0].data['fleet_registered'])
+        self.assertEqual(self.posts[-1]['ha_admin_name'],'Administrador sintético')
+        self.assertTrue(entries[0].data['fleet_owner_name_consent'])
+        self.assertEqual(entries[0].data['fleet_enrollment_schema'],4)
         self.assertNotIn('registration_secret',entries[0].data)
         self.assertEqual(self.entry_setup.await_count,1)
         data=await Store(self.hass,1,'cloudpelizzon_core.data').async_load()
@@ -128,3 +135,25 @@ class NativeSetupTests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(result['errors'],{'base':'identity_invalid'})
         self.assertEqual(self.posts,[])
         self.assertEqual(await store.async_load(),{'installation_id':'synthetic-invalid-id','preserve':42})
+
+    async def test155_missing_owner_stops_before_identity_and_network(self):
+        self.owner_lookup155.return_value=[]
+        result=await self.start({'consent':True})
+        self.assertEqual(result['errors'],{'base':'owner_name_required'})
+        self.assertEqual(self.posts,[])
+        self.assertFalse((self.root/'.storage/cloudpelizzon_core.data').exists())
+    async def test155_empty_owner_name_stops_before_registration(self):
+        self.owner155.name=' \n\t '
+        result=await self.start({'consent':True})
+        self.assertEqual(result['errors'],{'base':'owner_name_required'})
+        self.assertEqual(self.posts,[])
+    async def test155_lookup_failure_can_retry_with_same_form(self):
+        self.owner_lookup155.side_effect=RuntimeError('synthetic lookup unavailable')
+        result=await self.start({'consent':True})
+        self.assertEqual(result['errors'],{'base':'owner_name_required'})
+        self.assertEqual(self.posts,[])
+        self.owner_lookup155.side_effect=None
+        self.owner155.name='  Nome\n de teste  '
+        result=await self.finish(result,{'consent':True})
+        self.assertEqual(result['type'],FlowResultType.CREATE_ENTRY)
+        self.assertEqual(self.posts[-1]['ha_admin_name'],'Nome de teste')

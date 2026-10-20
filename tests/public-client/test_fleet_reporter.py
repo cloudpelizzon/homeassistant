@@ -32,6 +32,7 @@ def load(name, path):
     spec.loader.exec_module(module)
     return module
 load(PACKAGE+'.public_onboarding.protocol', ROOT/'public_onboarding/protocol.py')
+load(PACKAGE+'.owner_profile155', ROOT/'owner_profile155.py')
 reporter = load(PACKAGE+'.fleet_reporter', ROOT/'fleet_reporter.py')
 
 class Response:
@@ -74,6 +75,16 @@ class Tests(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(hass.saved, saved)
         self.assertNotIn('ha_admin_name', payload)
         self.assertFalse(hass.requests[0][1]['allow_redirects']); close()
+    async def test_name_checkin_requires_recorded_owner_name_consent(self):
+        hass=Hass()
+        owner=types.SimpleNamespace(is_active=True,is_owner=True,system_generated=False,name='Nome de teste')
+        async def users():return [owner]
+        hass.auth=types.SimpleNamespace(async_get_users=users)
+        close=reporter.start(hass,entry(fleet_owner_name_consent=True))
+        await hass.tasks[-1]
+        self.assertEqual(hass.requests[-1][1]['json']['ha_admin_name'],'Nome de teste')
+        owner.name='Nome atualizado';hass.tick();await hass.tasks[-1]
+        self.assertEqual(hass.requests[-1][1]['json']['ha_admin_name'],'Nome atualizado');close()
     async def test_no_consent_no_requests_or_timer(self):
         for value in (False, None, 'true'):
             hass = Hass(); reporter.start(hass, entry(fleet_reporting_consent=value))()

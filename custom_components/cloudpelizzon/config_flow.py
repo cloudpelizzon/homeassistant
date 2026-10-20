@@ -5,6 +5,7 @@ from homeassistant import config_entries
 from homeassistant.core import callback
 from .homolog_mirror.options import HomologOptionsFlow
 from .setup import enroll_free
+from .owner_profile155 import OwnerNameRequired
 
 DOMAIN = 'cloudpelizzon'
 
@@ -34,6 +35,8 @@ class CloudPelizzonConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     raise
                 except PermissionError:
                     errors['base'] = 'registration_rejected'
+                except OwnerNameRequired:
+                    errors['base'] = 'owner_name_required'
                 except ValueError:
                     errors['base'] = 'identity_invalid'
                 except Exception:
@@ -42,5 +45,4 @@ class CloudPelizzonConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                     self._abort_if_unique_id_configured()
                     return self.async_create_entry(title='CloudPelizzon', data=data)
         return self.async_show_form(step_id='user', data_schema=probatio.Schema({
-            probatio.Required('consent', default=False): bool,
-            probatio.Optional('share_owner_name', default=False): bool}), errors=errors)
+            probatio.Required('consent', default=False): bool}), errors=errors)

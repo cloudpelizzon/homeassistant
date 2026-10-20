@@ -11,6 +11,7 @@ from homeassistant.helpers.storage import Store
 from homeassistant.loader import async_get_integration
 
 from .public_onboarding.protocol import FLEET_URL, fleet_ack
+from .owner_profile155 import owner_display_name
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -41,6 +42,9 @@ def start(hass, entry):
                        'fleet_reporting_consent': True,
                        'cloudpelizzon_version': str(integration.version or ''),
                        'ha_version': HA_VERSION}
+            # Existing installations without name consent are never opted in by an update.
+            if data.get('fleet_owner_name_consent') is True:
+                payload['ha_admin_name'] = await owner_display_name(hass)
             session = async_get_clientsession(hass)
             async with asyncio.timeout(12):
                 async with session.post(FLEET_URL, json=payload, allow_redirects=False) as response:

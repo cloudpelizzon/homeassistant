@@ -4,18 +4,18 @@
     "step": {
       "user": {
         "title": "Connect CloudPelizzon",
-        "description": "Register this installation with Fleet for free. This does not start module trials or issue a commercial license.",
+        "description": "To use this integration, register this installation with Fleet for free. Registration requires the Home Assistant owner (administrator) display name to identify the person responsible for the installation, together with the installation identifier and Home Assistant and CloudPelizzon versions. The administrator password, email and token are not sent. Registration does not start module trials or issue a commercial license.",
         "data": {
-          "consent": "Allow technical registration of this installation with Fleet",
-          "share_owner_name": "Also share the HA owner display name (optional)"
+          "consent": "I accept Fleet technical registration, including the required sharing of the HA owner display name"
         }
       }
     },
     "error": {
-      "consent_required": "Technical registration consent is required.",
+      "consent_required": "Accept technical registration and sharing of the HA owner display name to continue.",
       "registration_rejected": "Fleet did not confirm registration. Check this installation registration.",
       "identity_invalid": "The existing local identity could not be validated. No key was replaced.",
-      "cannot_connect": "Unable to connect to Fleet. Retry with the same preserved identity."
+      "cannot_connect": "Unable to connect to Fleet. Retry with the same preserved identity.",
+      "owner_name_required": "Unable to read the Home Assistant owner display name. Check the owner profile name and try again."
     },
     "abort": {
       "already_configured": "CloudPelizzon is already configured."
