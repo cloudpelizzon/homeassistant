@@ -267,20 +267,24 @@ class CloudPelizzonMaintenancePanel extends HTMLElement {
   }
 
   async submitCommercialRequest(license = {}) {
+    if(this._commercialSending157)return;
     const q=id=>this.shadowRoot.querySelector(id);
     const payload={type:"cloudpelizzon/core/commercial/request",sku:CP_MODULE_SKU,name:q("#req-name")?.value?.trim()||"",phone:q("#req-phone")?.value?.trim()||"",email:q("#req-email")?.value?.trim()||"",subject:q("#req-subject")?.value?.trim()||"",message:q("#req-message")?.value?.trim()||""};
     if(!payload.name||!payload.phone||!payload.email||!payload.subject||!payload.message){this.showToast("Preencha todos os campos.","error");return}
     if(!/^\S+@\S+\.\S+$/.test(payload.email)){this.showToast("Informe um e-mail válido.","error");return}
     const btn=q("#send-request"); if(btn){btn.disabled=true;btn.textContent="Enviando..."}
+    this._commercialSending157=true;
     try{
-      const result=await this._hass.callWS(payload); this._requestResult=result;
+      const result=await this._hass.callWS(payload);
+      if(result?.ok!==true||result.status!=="registered"||result.sku!==CP_MODULE_SKU||!/^REQ-[A-F0-9]{12}$/.test(result.request_id||""))throw Error("O servidor não confirmou o protocolo da solicitação.");
+      this._requestResult=result;
       const body=q("#request-body"); if(!body)return;
       const emailOk=result.email_status==="sent";
       body.innerHTML=`<div class="success"><div class="success-orb">✓</div><span class="eyebrow">SOLICITAÇÃO REGISTRADA</span><h2>Recebemos seu interesse em Manutenção.</h2><p>Protocolo <b>${result.request_id||""}</b>. ${emailOk?"Uma notificação também foi encaminhada por e-mail.":"A solicitação ficou registrada no servidor; utilize o WhatsApp abaixo como canal complementar."}</p><div class="statuses"><span>✓ Registro comercial</span><span>${emailOk?"✓":"!"} E-mail: ${result.email_status||"pendente"}</span><span>CRM: ${result.dolibarr_status||"registrado"}</span></div><div class="actions"><button class="secondary" data-close-success>Fechar</button>${result.whatsapp_url?`<button class="whatsapp" id="open-whatsapp">WhatsApp</button>`:""}</div></div>`;
       body.querySelector("[data-close-success]")?.addEventListener("click",()=>q("#request-modal")?.classList.remove("show"));
       body.querySelector("#open-whatsapp")?.addEventListener("click",()=>window.open(result.whatsapp_url,"_blank","noopener,noreferrer"));
       this.showToast("Solicitação registrada com sucesso.");
-    }catch(error){this.showToast(error?.message||String(error),"error"); if(btn){btn.disabled=false;btn.textContent="Enviar solicitação"}}
+    }catch(error){this.showToast(error?.message||String(error),"error"); if(btn){btn.disabled=false;btn.textContent="Enviar solicitação"}}finally{this._commercialSending157=false}
   }
 
   async initialize() {

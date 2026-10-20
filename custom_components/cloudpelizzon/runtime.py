@@ -7,7 +7,7 @@ from .adapters.solar.identity import load_identity
 from .adapters.solar.sdk import Client
 from .public_core.bridge import CoreBridge
 from .public_core import api
-from . import frontend, public_trials, fleet_reporter
+from . import frontend, public_trials, fleet_reporter, commercial
 from .security import create as security_ui
 from .public_automation import create as automation_ui
 from .public_onboarding import api as handoff_api
@@ -80,6 +80,8 @@ class Runtime:
         try:
             self.stage = 'core_websocket'
             self.closers.append(api.register(self.hass, self.bridge))
+            self.stage = 'commercial_websocket'
+            self.closers.append(commercial.register(self.hass, context['core_id']))
             self.stage = 'trial_websocket'
             async def prepare_trial(sku):
                 if sku in ('CP-AUTOMATION','CP-SECURITY'):await context['automation_edge' if sku=='CP-AUTOMATION' else 'security_edge'].prepare()
