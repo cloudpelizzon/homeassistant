@@ -918,7 +918,7 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
 
   render() {
     this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="/cloudpelizzon-maintenance/frontend/maintenance-v311.css?v=f145e1c4af4d" data-maintenance-style="v285">
+      <link rel="stylesheet" href="/cloudpelizzon-maintenance/frontend/maintenance-v311.css?v=013352b2be6b" data-maintenance-style="v285">
       <ha-card>
         <div class="shell">
           <aside class="sidebar">
