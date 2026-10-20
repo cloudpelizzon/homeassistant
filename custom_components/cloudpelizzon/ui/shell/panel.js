@@ -1,5 +1,5 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
-import "/cloudpelizzon-core/frontend/panel.js?v=a594c3490ffa";
+import "/cloudpelizzon-core/frontend/panel.js?v=964c99729dd7";
 import "/cloudpelizzon/frontend/optional-modules.js?v=46d9115a9f66";
 import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
 
@@ -28,6 +28,7 @@ class CloudPelizzonPanel extends HTMLElement {
     this._licensingError = "";
 
     this._moduleRights = {};
+    this._paidModules162 = {};
     this._moduleRightsLoading = false;
     this._moduleRightsLoaded = false;
     this._lastCommercialRefresh = 0;
@@ -83,6 +84,7 @@ class CloudPelizzonPanel extends HTMLElement {
       "cloudpelizzon-module-rights-changed",
       event => {
 
+        this.updatePaidModules162(event?.detail?.modules || []);
         const rights = {};
 
         for (
@@ -277,6 +279,7 @@ class CloudPelizzonPanel extends HTMLElement {
     try{
       if(force) await this.ws("cloudpelizzon/core/access/refresh");
       const data=await this.ws("cloudpelizzon/core/status");
+      this.updatePaidModules162(data?.modules||[]);
       const rights={};
 
       for(const item of (data?.modules||[])){
@@ -1598,10 +1601,15 @@ class CloudPelizzonPanel extends HTMLElement {
 
   requestSku161(){return ({maintenance:"CP-MAINTENANCE",energy:"CP-SOLAR",security:"CP-SECURITY",automation:"CP-AUTOMATION"})[this._view]||null;}
 
-  updateRequestCTA161(){const button=this.shadowRoot.querySelector("[data-module-request161]");if(button){button.hidden=!this.requestSku161();button.dataset.sku=this.requestSku161()||"";}}
+  updatePaidModules162(modules){
+    this._paidModules162=Object.fromEntries(modules.map(m=>[m.sku,m?.license?.allowed===true]));
+    this.updateRequestCTA161();
+  }
+
+  updateRequestCTA161(){const button=this.shadowRoot?.querySelector("[data-module-request161]");if(button){button.hidden=!this.requestSku161()||this._paidModules162?.[this.requestSku161()]===true;button.dataset.sku=this.requestSku161()||"";}}
 
   openModuleRequest161(){
-    const sku=this.requestSku161();if(!sku||!this._hass)return;
+    const sku=this.requestSku161();if(!sku||!this._hass||this._paidModules162?.[sku]===true)return;
     this._requestHost161?.remove();
     const source=this.shadowRoot.querySelector("cloudpelizzon-core-panel");
     const names={"CP-MAINTENANCE":"Manutenção Residencial Preventiva","CP-SOLAR":"Inteligência Solar","CP-SECURITY":"Central de Segurança Pro","CP-AUTOMATION":"Central Inteligente de Automações"};

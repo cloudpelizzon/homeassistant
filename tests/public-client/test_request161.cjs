@@ -7,8 +7,8 @@ const core=Object.create(Core.prototype);core.esc=s=>String(s);core.renderHomeCa
 for(const sku of ['CP-MAINTENANCE','CP-SOLAR','CP-SECURITY','CP-AUTOMATION']){
  for(const phase of ['trial_active','trial_blocked','not_started','licensed']){
   const module={sku,name:sku,path:'/synthetic',installed:true,lifecycle:'developed',license:{allowed:phase==='licensed'},trial:{verified:true,phase,paid_confirmed:phase==='licensed',blocks_at:new Date(Date.now()+60000).toISOString()}};
-  assert(core.activeCard(module).includes(`data-request="${sku}"`));
-  assert(core.lockedCard(module).includes(`data-request="${sku}"`));
+  assert.equal(core.activeCard(module).includes(`data-request="${sku}"`),phase!=='licensed');
+  assert.equal(core.lockedCard(module).includes(`data-request="${sku}"`),phase!=='licensed');
  }
 }
 const shell=Object.create(Root.prototype),button={hidden:true,dataset:{}};

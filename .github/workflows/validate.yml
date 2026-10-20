@@ -47,6 +47,8 @@ jobs:
         run: node tests/public-client/test_navigation.cjs custom_components/cloudpelizzon/ui/shell/panel.js custom_components/cloudpelizzon/ui/core/panel.js
       - name: Verify purchase actions during all module trial states
         run: node tests/public-client/test_request161.cjs custom_components/cloudpelizzon
+      - name: Paid module purchase eligibility
+        run: node tests/public-client/test_request162.cjs custom_components/cloudpelizzon
       - name: Verify explicit commercial requests and receipt validation
         run: node tests/public-client/test_commercial157.cjs custom_components/cloudpelizzon
       - name: Verify consented Fleet metadata lifecycle
