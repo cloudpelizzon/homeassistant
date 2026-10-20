@@ -63,7 +63,7 @@
     "custom_components/cloudpelizzon/brand/icon.png": "01bec3858428b8fd2fbe4fc1593e715220e5d27e43b5396c532eaaf7f8cd5bc5",
     "custom_components/cloudpelizzon/brand/logo.png": "96904a535788f622b54efc4759f79ced44e79095769843cfd29ac1b2f0551749",
     "custom_components/cloudpelizzon/camera.py": "45345d2930b5287998d15d4a0a63f09a85be54639eec5c08420d5a7679646d03",
-    "custom_components/cloudpelizzon/commercial.py": "caa60e175b91d7df460f5f943cfe0c5a0dbc9edf3aa6767195405a863d1886de",
+    "custom_components/cloudpelizzon/commercial.py": "65b6e8d3c63ed99997e761d18aeece92ef56f43335e646d5cc0ab0baf5221210",
     "custom_components/cloudpelizzon/config_flow.py": "378fd54d8a6c1123dfba7cd12988f2c7a62b03d77af1be77886a97b9c4f10a24",
     "custom_components/cloudpelizzon/diagnostics.py": "e94bf10dccc4d9bc26323b532a6044807634c2d232d2e7beced87e7f2fb26d36",
     "custom_components/cloudpelizzon/enrollment106.py": "a50b2a64de4219dc24f109f02e797faca48901f23ec24ec94d6853dc298b2883",

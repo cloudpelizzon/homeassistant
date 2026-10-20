@@ -34,7 +34,7 @@ def fields(msg):
 
 
 def receipt(status, content_type, raw, sku):
-    if status not in (200, 201) or len(raw) > 8192 or content_type.split(';')[0].lower() != 'application/json':
+    if status not in (200, 201) or len(raw) > 65536 or content_type.split(';')[0].lower() != 'application/json':
         raise ValueError('unconfirmed_request')
     value = json.loads(raw)
     if (type(value) is not dict or value.get('ok') is not True or value.get('status') != 'registered'
@@ -91,7 +91,7 @@ async def dispatch(hass, connection, msg):
         # No automatic retry: a lost response may follow an already saved contact.
         async with asyncio.timeout(100):
             async with async_get_clientsession(hass).post(URL, json=payload, allow_redirects=False) as response:
-                raw = await response.content.read(8193)
+                raw = await response.content.read(65537)
                 result = receipt(response.status, response.headers.get('Content-Type', ''), raw, payload['sku'])
         if not await authorized():
             raise PermissionError('session_changed')
