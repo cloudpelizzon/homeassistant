@@ -25,5 +25,6 @@ async function check(Class,maintenance){
  assert.equal(obj.messages.at(-1)[1],'error');assert(!obj.requestResult&&!obj._requestResult);assert.equal(button.disabled,false);
  obj._hass.callWS=async()=>{throw Error('Serviço temporariamente indisponível')};await obj[method]();
  assert.equal(obj.messages.at(-1)[1],'error');assert.equal(inputs[prefix+'name'].value,'Synthetic');assert(!obj._commercialSending157);
+ if(!maintenance){Class.prototype.render.call(obj);assert.equal(inputs[prefix+'name'].value,'Synthetic');}
 }
 (async()=>{await check(Core,false);await check(Maintenance,true);console.log(JSON.stringify({commercial_UI:'passed',actual_methods:2,real_contact_submissions:0}));})().catch(e=>{console.error(e);process.exitCode=1});
