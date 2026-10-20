@@ -2,7 +2,7 @@
  * Every customer-facing editor control is visual: no JSON/YAML editing.
  * Selection is monitoring scope, NOT automatic engine activation.
  */
-import './legacy-v1044.js?v=f321dfa5c1af';
+import './legacy-v1044.js?v=f8ce6cf96a35';
 
 // CP_CLIENT_EXPERIENCE_V025 — default immersive panel; no misleading demo KPIs.
 // CP_AUTO_CLIENT_NATIVE_V026 — client reads automation.* from current Home Assistant only.
@@ -99,7 +99,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
   _fitCockpit147(){
     const app=this._cockpit?.shadowRoot?.querySelector('.app');if(!app||!app.getBoundingClientRect().width)return;
     const available=Math.max(360,window.innerHeight-app.getBoundingClientRect().top-4);
-    const height=Math.max(820,available/0.67)+'px';if(app.style.height!==height)app.style.height=height;app.style.minHeight='0';
+    const height=Math.max(1040,available/0.67)+'px';if(app.style.height!==height)app.style.height=height;app.style.minHeight='0';
   }
   _inCountScope(n){const technical=['NOC','DIA'].includes(n.category);return this._countScope==='home'?!technical:this._countScope==='technical'?technical:true;}
   _observedHass(){
@@ -386,4 +386,5 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     _change(e){const node=e.target;if(node.classList?.contains('kind')){this._readBlocks();const block=node.closest('[data-section]');const s=block.dataset.section;const i=Number(block.dataset.index);this._blocks[s][i]={kind:node.value};this._renderBlocks();return}if(node.matches('.catbox')){this._categoryDraft147=[...this.shadowRoot.querySelectorAll('.catbox:checked')].map(e=>e.dataset.category);this._updateCockpitSource(true);clearTimeout(this._categoryTimer147);this._categoryTimer147=setTimeout(()=>{this._categoryQueue147=(this._categoryQueue147||Promise.resolve()).catch(()=>{}).then(async()=>{const version147=JSON.stringify(this._categoryDraft147);await this._saveScope('categories');if(JSON.stringify(this._categoryDraft147)===version147)this._categoryDraft147=null;this._updateCockpitSource(true)}).catch(error=>this._toast('Não foi possível salvar as categorias: '+(error?.message||error),true));},350);}if(node.matches('.catbox,.rulebox,.nativebox')){this._scopeDraft='selected';this._toast(node.matches('.catbox')?'Categoria aplicada. Salvando preferência…':'Seleção alterada. Clique em Salvar preferências para aplicar ao dashboard.');}}
 }
 if(!customElements.get('cloudpelizzon-automation-panel'))customElements.define('cloudpelizzon-automation-panel',CloudPelizzonAutomationPanel);
+
 
