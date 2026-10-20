@@ -2,7 +2,7 @@
   "schema": "cp.clean.source90.inventory.v1",
   "files": {
     ".github/workflows/hacs.yml": "6b737ea63358b22f7812bab3bfb323e3ca8b4cf143a41f9ead748adaab226150",
-    ".github/workflows/validate.yml": "cafbb20c1b802acfa875ef93bbcb55aa0dd307a98ac11ee2f9f1605f94eadad9",
+    ".github/workflows/validate.yml": "d86c5d9c112604f32be96971b8141e6e90c8db1c816c913087aea3016ae06faf",
     ".gitignore": "d4c6c5d0f925d1dee7cf69cb2672dbaf7d14bf236f37d64116336f9aa0d1702f",
     "LICENSE": "c1d1a38c99c48ccad170890ade6066e2e240bb6ce59861d4eb7f672eddd2a4c6",
     "README.md": "0ab2aeccb1c6ace05927f12454a2ee97fbc03e19f21a231fdbfd16f1e62663f7",
@@ -224,7 +224,13 @@
     "tests/public-client/test_writer.cjs": "3852b3736a872dde3dafc88ae5ff4a561a1f2923252a568603df65844b67eab0",
     "tests/public-client/test_xlsx_compat.cjs": "f031dadea05f5d94ebef112e54eb1658a6a7c4e4fdfc555b0992e9b72cee7932",
     "tools/verify_public_tree.py": "f59655cdff6ba01c4ec5b5702257ad21bea3949ad13c7922bebd3312a56dec59",
-    "tests/public-client/test_lighting_native_shell.cjs": "e976c0962cffdd031426e27dd2abf8fb4c9a78af7c13b636b0b80d7b2aff162e"
+    "tests/public-client/test_lighting_native_shell.cjs": "e976c0962cffdd031426e27dd2abf8fb4c9a78af7c13b636b0b80d7b2aff162e",
+    "staging/lighting/native_scope.py": "acd1c9962dea999ce615660b7d7db19944c56718b03c135f1b3890f08e7e9718",
+    "tests/public-client/test_lighting_native_scope.py": "818934f4c11faca6eed14a7f0af5abfeaf0a1f872a16785cd314016a06f65a99",
+    "staging/lighting/projection.mjs": "c9159f5b4224cc3520e173fe33080089eeeb7a21392a5ab30ab5cca0ae3f1a66",
+    "staging/lighting/capabilities.mjs": "939e8bd26d89b76010cca3810808851485746213e79942e5490b2eebe2b61ae1",
+    "staging/lighting/configuration-view.mjs": "45d5ad094cbf71a8abfb62a5146d1f9d2405aa2dd0afd6d492650bc3f6c444bf",
+    "tests/public-client/test_lighting_projection.mjs": "8b465117028beae9fdd77d6a15d918cbd712f91aed1f07e5e9c75ebf0bc767da"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,

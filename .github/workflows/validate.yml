@@ -51,6 +51,11 @@ jobs:
         run: node tests/public-client/test_trial_availability.cjs custom_components/cloudpelizzon/ui/core/panel.js
       - name: CP-LIGHTING belongs to signed native shell; no unverified trial
         run: node tests/public-client/test_lighting_native_shell.cjs custom_components/cloudpelizzon/public_core/metadata.py custom_components/cloudpelizzon/ui/shell/optional-modules.js custom_components/cloudpelizzon/ui/shell/panel.js custom_components/cloudpelizzon/ui/core/panel.js custom_components/cloudpelizzon/public_trials.py custom_components/cloudpelizzon/adapters/automation/lib/cloudpelizzon_client/client.py custom_components/cloudpelizzon/public_core/projection.py
+      - name: Verify native CP-LIGHTING actor-bound read contract (inactive)
+        run: |
+          python3 -B tests/public-client/test_lighting_native_scope.py
+          node tests/public-client/test_lighting_projection.mjs staging/lighting/projection.mjs
+          node --check staging/lighting/configuration-view.mjs
       - name: Verify legacy tabs receive updated trial and portal actions
         run: node tests/public-client/test_legacy_compat.cjs custom_components/cloudpelizzon/ui/core/hacs-brand-compat.js
       - name: Verify maintenance savings, financial retry and XLSX export
