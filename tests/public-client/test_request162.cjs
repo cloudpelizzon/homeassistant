@@ -15,6 +15,9 @@ for(const [view,sku] of Object.entries(views)){
  for(const phase of ['trial_active','trial_blocked','trial_removal_due','not_started','licensed','expired','revoked','unverified']){
   const m=fixture(sku,phase);core.data={modules:[m],license:{online_status:'active'}};
   for(const html of [core.activeCard(m),core.lockedCard(m),core.renderDetail(sku)])assert.equal(html.includes(`data-request="${sku}"`),phase!=='licensed',view+' '+phase);
+  const expired=phase==='trial_blocked'||phase==='trial_removal_due';
+  assert.equal(core.lockedCard(m).includes('<div class="actions">'),expired);
+  if(expired){assert.equal((core.lockedCard(m).match(/<button /g)||[]).length,2);assert(!core.lockedCard(m).includes('data-open='));}
   shell._view=view;shell.updatePaidModules162([m]);assert.equal(button.hidden,phase==='licensed');states++;
  }
  // Trial -> paid keeps the same access rights, but must hide the CTA immediately.
