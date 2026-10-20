@@ -105,7 +105,7 @@ class NativeLightingTransport:
         )
         self.closed = False
 
-    async def _current(self, connection: Any, user: Any) -> None:
+    async def _current(self, connection: Any, user: Any) -> Any:
         if self.closed or not _authorized_user(connection, user):
             raise LightingNativeDenied()
         getter = getattr(getattr(self.hass, "auth", None), "async_get_user", None)
@@ -116,6 +116,7 @@ class NativeLightingTransport:
                 or current.id != user.id or current.is_active is not True
                 or getattr(current, "system_generated", False) is True):
             raise LightingNativeDenied()
+        return current
 
     async def run(self, connection: Any, msg: dict) -> dict:
         user = getattr(connection, "user", None)
@@ -130,8 +131,15 @@ class NativeLightingTransport:
                 if set(msg) != {"type", "id"}:
                     raise LightingNativeDenied()
                 result = await self.scope.snapshot(connection)
-                await self._current(connection, user)
+                current = await self._current(connection, user)
                 if self.port.installation_id() != iid:
+                    raise LightingNativeDenied()
+                # Permission changes in HA's user directory can occur while the
+                # private read is awaiting. Never return stale actor metadata.
+                if (not _record(result) or not _record(result.get("configuration"))
+                        or type(result["configuration"].get("items")) is not list
+                        or any(not _can_read(current, row.get("entity_id"))
+                               for row in result["configuration"]["items"])):
                     raise LightingNativeDenied()
                 return _detached(result, 524288)
             if msg["type"] != OPERATION or set(msg) != {
@@ -158,8 +166,11 @@ class NativeLightingTransport:
             if any(not _can_read(user, eid) for eid in targets):
                 raise LightingNativeDenied()
             result = await self.port.execute(iid, user.id, operation, parameters, rid)
-            await self._current(connection, user)
-            if self.port.installation_id() != iid:
+            current = await self._current(connection, user)
+            if self.port.installation_id() != iid or any(
+                    not _can_read(current, eid) for eid in targets):
+                # This withholds the result; the private gateway is also
+                # responsible for reauthorizing before committing any mutation.
                 raise LightingNativeDenied()
             value = _detached(result)
             if operation == "lighting.entities.discover":
@@ -175,6 +186,7 @@ class NativeLightingTransport:
                 for x in value["items"]:
                     if (not _record(x) or set(x) != {"entity_id", "name", "kind", "capabilities"}
                             or not _can_read(user, x.get("entity_id"))
+                            or not _can_read(current, x.get("entity_id"))
                             or type(x.get("name")) is not str
                             or not 0 < len(x["name"]) <= 80
                             or not x["name"].isprintable()

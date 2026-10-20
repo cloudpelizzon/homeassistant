@@ -235,8 +235,8 @@
     "staging/lighting/module/frontend/style.css": "0da030b04ef91d51354df8393855e7710eef6958cd44bb5d5b1fff2fa2335256",
     "staging/lighting/tests/test_native_lighting.mjs": "a7621f1614cfeb3e8918fff137587c2467d256661152b0a65a2848e9604d11f7",
     "docs/lighting-native-frontend-v1.md": "c12a8e14b8d3a13511e429969fd37093e2dc77088e36d24885f80acc83e52e14",
-    "staging/lighting/native_ws.py": "01bfc2399f13156d4d183f4d46f593a28010bce46bd1cb02c6fd75bafe863a7c",
-    "staging/lighting/tests/test_native_ws.py": "d9f10593070966afb4b3ee8bc3939cf0ba7f3f24773d3c171d61af608507af0c",
+    "staging/lighting/native_ws.py": "91bd991874cf59c6456013eb72aefd62b4817a8b3fb9c07e057fb767ded58667",
+    "staging/lighting/tests/test_native_ws.py": "104d286b2257a4e3e15c6e56c247e89dfbbfe8bfac0aa17a884a428fbadf3baa",
     "docs/lighting-native-ws-v1.md": "d7e646cc5582c0829cbce9897db635e036592209fe5f862c224804b7ad8b0c06"
   },
   "private_engine_files_included": false,

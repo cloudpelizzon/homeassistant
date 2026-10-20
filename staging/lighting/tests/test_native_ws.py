@@ -132,6 +132,74 @@ class NativeWsTests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(ws.LightingNativeDenied):
             await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,'operation':'lighting.room.create','parameters':{},'request_id':'r'})
 
+
+    async def test_permissions_revoked_in_auth_directory_during_snapshot_denies(self):
+        f=Fixtures()
+        revoked=types.SimpleNamespace(id='user_1',is_active=True,is_admin=False,
+            system_generated=False,permissions=Rights(allowed=set()))
+        # Rights(allowed=set()) intentionally defaults to one entity; override.
+        revoked.permissions.allowed.clear()
+        calls=0
+        async def current(_id):
+            nonlocal calls
+            calls+=1
+            return f.user if calls==1 else revoked
+        f.hass.auth.async_get_user=current
+        with self.assertRaises(ws.LightingNativeDenied):
+            await f.transport.run(f.connection,{'type':ws.SNAPSHOT,'id':2})
+        self.assertGreaterEqual(calls,2)
+
+    async def test_admin_demotion_during_snapshot_denies_old_admin_scope(self):
+        f=Fixtures()
+        f.user.is_admin=True
+        downgraded=types.SimpleNamespace(id='user_1',is_active=True,is_admin=False,
+            system_generated=False,permissions=Rights())
+        downgraded.permissions.allowed.clear()
+        calls=0
+        async def current(_id):
+            nonlocal calls
+            calls+=1
+            return f.user if calls==1 else downgraded
+        f.hass.auth.async_get_user=current
+        with self.assertRaises(ws.LightingNativeDenied):
+            await f.transport.run(f.connection,{'type':ws.SNAPSHOT,'id':2})
+
+    async def test_permission_loss_during_mutation_withholds_signed_reply(self):
+        f=Fixtures()
+        revoked=types.SimpleNamespace(id='user_1',is_active=True,is_admin=False,
+            system_generated=False,permissions=Rights())
+        revoked.permissions.allowed.clear()
+        calls=0
+        async def current(_id):
+            nonlocal calls
+            calls+=1
+            return f.user if calls==1 else revoked
+        f.hass.auth.async_get_user=current
+        with self.assertRaises(ws.LightingNativeDenied):
+            await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,
+                'operation':'lighting.entity.configure',
+                'parameters':{'entity_id':'light.sala','revision':1,'name':'Sala'},
+                'request_id':'request_123'})
+        self.assertEqual(len([x for x in f.port.calls if x[0]=='execute']),1)
+
+    async def test_directory_permission_loss_during_discovery_discards_results(self):
+        f=Fixtures()
+        f.port.reply={'items':[{'entity_id':'light.sala','name':'Sala',
+            'kind':'light','capabilities':['on_off']}],'total':1}
+        revoked=types.SimpleNamespace(id='user_1',is_active=True,is_admin=False,
+            system_generated=False,permissions=Rights())
+        revoked.permissions.allowed.clear()
+        calls=0
+        async def current(_id):
+            nonlocal calls
+            calls+=1
+            return f.user if calls==1 else revoked
+        f.hass.auth.async_get_user=current
+        with self.assertRaises(ws.LightingNativeDenied):
+            await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,
+                'operation':'lighting.entities.discover',
+                'parameters':{'offset':0,'limit':100},'request_id':'request_abc'})
+
     async def test_error_redaction_preserves_no_private_exception(self):
         f=Fixtures()
         async def fail(*a):raise RuntimeError('secret-credential-token-private')
