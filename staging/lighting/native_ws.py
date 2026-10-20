@@ -87,7 +87,7 @@ class NativeLightingTransport:
     those conditions itself and never creates a substitute signature.
     """
 
-    def __init__(self, hass: Any, signed_port: Any, read_scope_type: Any):
+    def __init__(self, hass: Any, signed_port: Any, read_scope_type: Any, *, inventory_uplink_type=None):
         if not all(callable(getattr(signed_port, name, None)) for name in (
             "registration_ready", "installation_id", "issue_grant", "read_page", "state_get", "execute"
         )):
@@ -103,6 +103,9 @@ class NativeLightingTransport:
             read_page=signed_port.read_page,
             state_get=signed_port.state_get,
         )
+        self.uplink = inventory_uplink_type(hass, signed_port) if inventory_uplink_type is not None else None
+        if self.uplink is not None and not callable(getattr(self.uplink, 'prepare', None)):
+            raise LightingNativeDenied()
         self.closed = False
 
     async def _current(self, connection: Any, user: Any) -> Any:
@@ -165,6 +168,13 @@ class NativeLightingTransport:
                     raise LightingNativeDenied()
             if any(not _can_read(user, eid) for eid in targets):
                 raise LightingNativeDenied()
+            if operation == 'lighting.entities.discover':
+                if self.uplink is None:
+                    raise LightingNativeDenied()  # Never use empty/default inventory.
+                await self.uplink.prepare(connection, iid, user.id, rid)
+                await self._current(connection, user)
+                if self.port.installation_id() != iid:
+                    raise LightingNativeDenied()
             result = await self.port.execute(iid, user.id, operation, parameters, rid)
             current = await self._current(connection, user)
             if self.port.installation_id() != iid or any(
@@ -227,7 +237,7 @@ async def dispatch(hass: Any, connection: Any, msg: dict):
         connection.send_error(msg.get("id"), "lighting_denied_or_unavailable", "Módulo indisponível.")
 
 
-def register(hass: Any, signed_port: Any, read_scope_type: Any, *, websocket_api: Any, schema: Any):
+def register(hass: Any, signed_port: Any, read_scope_type: Any, *, websocket_api: Any, schema: Any, inventory_uplink_type=None):
     """Explicit native registration only when private port already attests ready.
 
     Public runtime must NEVER call this with a default/dummy port. Close owns only
@@ -236,7 +246,8 @@ def register(hass: Any, signed_port: Any, read_scope_type: Any, *, websocket_api
     registry = hass.data.get(websocket_api.DOMAIN, {})
     if KEY in hass.data or SNAPSHOT in registry or OPERATION in registry:
         raise LightingNativeDenied()
-    transport = NativeLightingTransport(hass, signed_port, read_scope_type)
+    transport = NativeLightingTransport(hass, signed_port, read_scope_type,
+                                        inventory_uplink_type=inventory_uplink_type)
     registered: dict[str, Any] = {}
     hass.data[KEY] = transport
 

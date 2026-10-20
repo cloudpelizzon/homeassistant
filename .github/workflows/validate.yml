@@ -60,6 +60,8 @@ jobs:
         run: node --test staging/lighting/tests/test_native_lighting.mjs
       - name: CP-LIGHTING native HA entity inventory with actor permissions
         run: python3 -B tests/public-client/test_lighting_ha_inventory.py
+      - name: CP-LIGHTING actor-bound signed inventory uplink in 100-entity batches
+        run: python3 -B tests/public-client/test_lighting_inventory_uplink.py
       - name: Verify inactive CP-LIGHTING signed WebSocket boundary
         run: python3 -B staging/lighting/tests/test_native_ws.py
       - name: Verify legacy tabs receive updated trial and portal actions

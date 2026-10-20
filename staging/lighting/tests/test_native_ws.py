@@ -48,6 +48,13 @@ class Port:
         return self.reply
 
 
+class UplinkFixture:
+    """Synthetic port choreography; actual gateway signer is not present."""
+    def __init__(self,hass,port):self.port=port
+    async def prepare(self,connection,iid,actor,rid):
+        self.port.calls.append(('inventory_prepared',iid,actor,rid))
+        return 'synthetic_batch'
+
 class Fixtures:
     def __init__(self,port=None):
         self.port=port or Port()
@@ -55,7 +62,8 @@ class Fixtures:
         self.connection=types.SimpleNamespace(user=self.user,closed=False)
         self.hass=types.SimpleNamespace(data={},auth=types.SimpleNamespace(async_get_user=self.get_user))
         self.get_user_count=0
-        self.transport=ws.NativeLightingTransport(self.hass,self.port,scope.NativeLightingReadScope)
+        self.transport=ws.NativeLightingTransport(self.hass,self.port,scope.NativeLightingReadScope,
+                inventory_uplink_type=UplinkFixture)
     async def get_user(self,id):
         self.get_user_count+=1
         return self.user
@@ -199,6 +207,48 @@ class NativeWsTests(unittest.IsolatedAsyncioTestCase):
             await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,
                 'operation':'lighting.entities.discover',
                 'parameters':{'offset':0,'limit':100},'request_id':'request_abc'})
+
+
+    async def test_discovery_is_denied_without_explicit_inventory_uplink(self):
+        f=Fixtures()
+        f.transport=ws.NativeLightingTransport(f.hass,f.port,scope.NativeLightingReadScope)
+        f.port.reply={'items':[],'total':0}
+        with self.assertRaises(ws.LightingNativeDenied):
+            await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,
+                'operation':'lighting.entities.discover',
+                'parameters':{'offset':0,'limit':100},'request_id':'request_123'})
+        self.assertFalse(any(x[0]=='execute' for x in f.port.calls))
+
+    async def test_staging_precedes_signed_discovery_and_preserves_identity(self):
+        f=Fixtures();f.port.reply={'items':[],'total':0}
+        await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,
+            'operation':'lighting.entities.discover','parameters':{'offset':0,'limit':100},
+            'request_id':'request_123'})
+        calls=[x for x in f.port.calls if x[0] in ('inventory_prepared','execute')]
+        self.assertEqual([x[0] for x in calls],['inventory_prepared','execute'])
+        self.assertEqual(calls[0][1:4],('install_1','user_1','request_123'))
+        self.assertEqual(calls[1][1:4],('install_1','user_1','lighting.entities.discover'))
+
+    async def test_gateway_inventory_staging_failure_denies_execution(self):
+        f=Fixtures()
+        async def deny(*_):raise PermissionError('private-gateway-denied')
+        f.transport.uplink.prepare=deny
+        with self.assertRaisesRegex(ws.LightingNativeDenied,'lighting_denied_or_unavailable'):
+            await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,
+                'operation':'lighting.entities.discover',
+                'parameters':{'offset':0,'limit':100},'request_id':'request_123'})
+        self.assertFalse(any(x[0]=='execute' for x in f.port.calls))
+
+    async def test_user_swapped_during_inventory_uplink_denies_execution(self):
+        f=Fixtures()
+        async def swap(*_):
+            f.connection.user=types.SimpleNamespace(id='another',is_admin=True,is_active=True)
+        f.transport.uplink.prepare=swap
+        with self.assertRaises(ws.LightingNativeDenied):
+            await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,
+                'operation':'lighting.entities.discover',
+                'parameters':{'offset':0,'limit':100},'request_id':'request_123'})
+        self.assertFalse(any(x[0]=='execute' for x in f.port.calls))
 
     async def test_error_redaction_preserves_no_private_exception(self):
         f=Fixtures()
