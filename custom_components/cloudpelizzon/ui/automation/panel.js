@@ -2,7 +2,7 @@
  * Every customer-facing editor control is visual: no JSON/YAML editing.
  * Selection is monitoring scope, NOT automatic engine activation.
  */
-import './legacy-v1044.js?v=3450ac93a0dd';
+import './legacy-v1044.js?v=a236bb5a8b72';
 
 // CP_CLIENT_EXPERIENCE_V025 — default immersive panel; no misleading demo KPIs.
 // CP_AUTO_CLIENT_NATIVE_V026 — client reads automation.* from current Home Assistant only.
