@@ -71,7 +71,7 @@ jobs:
         run: node tests/public-client/test_automation148.cjs custom_components/cloudpelizzon
       - name: Verify category order and save button feedback
         run: node tests/public-client/test_automation149.cjs custom_components/cloudpelizzon
-      - name: Verify automation CSV and formatted Excel inventory
+      - name: Verify CSV is removed and Excel inventory stays formatted
         run: node tests/public-client/test_automation151.cjs custom_components/cloudpelizzon
       - name: Verify per-view reference density and touch scale
         run: node tests/public-client/test_display150.cjs custom_components/cloudpelizzon
