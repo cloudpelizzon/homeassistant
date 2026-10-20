@@ -188,3 +188,25 @@ export async function exportReport(html,filename,extraReports=[]){
   setTimeout(()=>URL.revokeObjectURL(url),30000);
 }
 
+
+// Automation inventory uses the same local Excel writer and compatibility normalization.
+export async function exportInventory151(rows,filename){
+  const ExcelJS=await excelLibrary(),book=new ExcelJS.Workbook();
+  book.creator='CloudPelizzon';const sheet=book.addWorksheet('Automações',{views:[{state:'frozen',ySplit:4}]});
+  sheet.columns=[18,64,26,22,18,28].map(width=>({width}));
+  sheet.mergeCells('A1:F1');sheet.getCell('A1').value='CloudPelizzon · Inventário de automações';
+  sheet.mergeCells('A2:F2');sheet.getCell('A2').value='Exportado em '+new Date().toLocaleString('pt-BR');
+  sheet.getRow(1).height=34;sheet.getRow(2).height=24;
+  rows.forEach((values,i)=>{const row=sheet.getRow(i+4);row.values=values.map(v=>String(v??''));row.height=i?42:30;
+    row.eachCell(cell=>{cell.font={name:'Arial',size:11,bold:!i,color:{argb:i?'FF183349':'FFFFFFFF'}};
+      cell.alignment={vertical:'middle',wrapText:true};cell.fill={type:'pattern',pattern:'solid',fgColor:{argb:i?(i%2?'FFF0F6F8':'FFFFFFFF'):'FF087B83'}};
+      cell.border={bottom:{style:'thin',color:{argb:'FFDCE3E8'}}};});
+  });
+  sheet.getCell('A1').font={name:'Arial',size:18,bold:true,color:{argb:'FF087B83'}};
+  sheet.getCell('A2').font={name:'Arial',size:11,color:{argb:'FF536474'}};
+  sheet.autoFilter={from:{row:4,column:1},to:{row:4,column:6}};
+  sheet.pageSetup={orientation:'landscape',fitToPage:true,fitToWidth:1,fitToHeight:0,printTitlesRow:'1:4'};
+  const buffer=normalizeXlsx(await book.xlsx.writeBuffer(),await zipLibrary());
+  const url=URL.createObjectURL(new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}));
+  const a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),30000);
+}

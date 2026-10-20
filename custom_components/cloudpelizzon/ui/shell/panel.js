@@ -1,6 +1,6 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 import "/cloudpelizzon-core/frontend/panel.js?v=ecc500f34550";
-import "/cloudpelizzon/frontend/optional-modules.js?v=4ce1fac5d1bb";
+import "/cloudpelizzon/frontend/optional-modules.js?v=c97ee1e21fe1";
 import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
 
 
