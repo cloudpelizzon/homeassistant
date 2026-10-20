@@ -2,7 +2,7 @@
   "schema": "cp.clean.source90.inventory.v1",
   "files": {
     ".github/workflows/hacs.yml": "6b737ea63358b22f7812bab3bfb323e3ca8b4cf143a41f9ead748adaab226150",
-    ".github/workflows/validate.yml": "6088ba1b17ce9911821b2499e9691a956b2326c66a735b2754c9406ac903cc9d",
+    ".github/workflows/validate.yml": "07c448c47dd74243de07d74b04a27d2744ed8385edcd09c8d0986e7d4e485c2b",
     ".gitignore": "d4c6c5d0f925d1dee7cf69cb2672dbaf7d14bf236f37d64116336f9aa0d1702f",
     "LICENSE": "c1d1a38c99c48ccad170890ade6066e2e240bb6ce59861d4eb7f672eddd2a4c6",
     "README.md": "0ab2aeccb1c6ace05927f12454a2ee97fbc03e19f21a231fdbfd16f1e62663f7",
@@ -234,7 +234,10 @@
     "staging/lighting/module/frontend/panel.js": "789fee0f1c5b2d73918c7af5e86b503f77551d264c6fbfba2f875a79d10a3603",
     "staging/lighting/module/frontend/style.css": "3fc2c7d20a78c59f59cab21eb35da929ee3ddc07498755fd1f2ee7432912d72e",
     "staging/lighting/tests/test_native_lighting.mjs": "d52a72ffd3d5adb64b0afa81cae39824668d2284b77eef703c393e2d1eb7d94c",
-    "docs/lighting-native-frontend-v1.md": "8ce540e03f9392343557a768766546d53228708b28b5b2b74f7f433f0b7d69d4"
+    "docs/lighting-native-frontend-v1.md": "8ce540e03f9392343557a768766546d53228708b28b5b2b74f7f433f0b7d69d4",
+    "staging/lighting/native_ws.py": "01bfc2399f13156d4d183f4d46f593a28010bce46bd1cb02c6fd75bafe863a7c",
+    "staging/lighting/tests/test_native_ws.py": "d9f10593070966afb4b3ee8bc3939cf0ba7f3f24773d3c171d61af608507af0c",
+    "docs/lighting-native-ws-v1.md": "d7e646cc5582c0829cbce9897db635e036592209fe5f862c224804b7ad8b0c06"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,
