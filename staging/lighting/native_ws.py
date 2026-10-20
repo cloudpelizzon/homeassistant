@@ -168,10 +168,11 @@ class NativeLightingTransport:
                     raise LightingNativeDenied()
             if any(not _can_read(user, eid) for eid in targets):
                 raise LightingNativeDenied()
-            if operation == 'lighting.entities.discover':
+            if operation in ('lighting.entities.discover', 'lighting.entity.bind'):
                 if self.uplink is None:
                     raise LightingNativeDenied()  # Never use empty/default inventory.
-                await self.uplink.prepare(connection, iid, user.id, rid)
+                await self.uplink.prepare(connection, iid, user.id, rid,
+                    target_entity_id=parameters.get('entity_id') if operation=='lighting.entity.bind' else None)
                 await self._current(connection, user)
                 if self.port.installation_id() != iid:
                     raise LightingNativeDenied()

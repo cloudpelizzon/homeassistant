@@ -51,8 +51,8 @@ class Port:
 class UplinkFixture:
     """Synthetic port choreography; actual gateway signer is not present."""
     def __init__(self,hass,port):self.port=port
-    async def prepare(self,connection,iid,actor,rid):
-        self.port.calls.append(('inventory_prepared',iid,actor,rid))
+    async def prepare(self,connection,iid,actor,rid,*,target_entity_id=None):
+        self.port.calls.append(('inventory_prepared',iid,actor,rid,target_entity_id))
         return 'synthetic_batch'
 
 class Fixtures:
@@ -248,6 +248,25 @@ class NativeWsTests(unittest.IsolatedAsyncioTestCase):
             await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,
                 'operation':'lighting.entities.discover',
                 'parameters':{'offset':0,'limit':100},'request_id':'request_123'})
+        self.assertFalse(any(x[0]=='execute' for x in f.port.calls))
+
+
+    async def test_bind_stages_only_target_entity_before_private_call(self):
+        f=Fixtures();f.port.reply={'saved':True,'revision':2}
+        await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,
+            'operation':'lighting.entity.bind',
+            'parameters':{'entity_id':'light.sala','confirm_light':True,'revision':1},
+            'request_id':'bind_request_123456'})
+        calls=[x for x in f.port.calls if x[0] in ('inventory_prepared','execute')]
+        self.assertEqual([x[0] for x in calls],['inventory_prepared','execute'])
+        self.assertEqual(calls[0][4],'light.sala')
+
+    async def test_bind_denied_when_inventory_uplink_absent(self):
+        f=Fixtures();f.transport=ws.NativeLightingTransport(f.hass,f.port,scope.NativeLightingReadScope)
+        with self.assertRaises(ws.LightingNativeDenied):
+            await f.transport.run(f.connection,{'type':ws.OPERATION,'id':2,
+                'operation':'lighting.entity.bind',
+                'parameters':{'entity_id':'light.sala'},'request_id':'bind_request_123456'})
         self.assertFalse(any(x[0]=='execute' for x in f.port.calls))
 
     async def test_error_redaction_preserves_no_private_exception(self):

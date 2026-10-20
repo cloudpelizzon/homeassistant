@@ -235,14 +235,14 @@
     "staging/lighting/module/frontend/style.css": "0da030b04ef91d51354df8393855e7710eef6958cd44bb5d5b1fff2fa2335256",
     "staging/lighting/tests/test_native_lighting.mjs": "a7621f1614cfeb3e8918fff137587c2467d256661152b0a65a2848e9604d11f7",
     "docs/lighting-native-frontend-v1.md": "c12a8e14b8d3a13511e429969fd37093e2dc77088e36d24885f80acc83e52e14",
-    "staging/lighting/native_ws.py": "f888a934019fb8656e5c0fe0c421f2eb4bf0b657ba808a4aebbad009a75f1ed3",
-    "staging/lighting/tests/test_native_ws.py": "fb89b5f9fc5ee971ef66bba9418bbc79d3b6229abb28cd1019d5ac275757a948",
+    "staging/lighting/native_ws.py": "2f94934b3f3b39e811f1b119d4e163423ee06920dc36e92180dea6694f047c3c",
+    "staging/lighting/tests/test_native_ws.py": "c477cdfbf94a6afe33c05e1ecd3eb40268371d393be5191ae35a78d1e55b11c8",
     "docs/lighting-native-ws-v1.md": "d7e646cc5582c0829cbce9897db635e036592209fe5f862c224804b7ad8b0c06",
     "staging/lighting/ha_inventory.py": "c7c4547d78b793e45065632b845d2d8a97f9ae22a5bed345dc18a0c24e47aeb5",
     "tests/public-client/test_lighting_ha_inventory.py": "6d16f7de3ffd817750db3e0dce26692c0f68842a5946f3f5e653fb82356cea3e",
     "docs/lighting-ha-inventory.md": "20b040203e6da4c24838e784db7812d5f517c29cd516ee95b297fa75d6947b46",
-    "staging/lighting/inventory_uplink.py": "b1255a5eef3af839e8a0139387d6105e4a2cd697e8cffd99a1bf2cfa867cd0c5",
-    "tests/public-client/test_lighting_inventory_uplink.py": "fe92be595e880ece6771ba8c779fffc49a1de02a146b9527ca8e084dca83b14e"
+    "staging/lighting/inventory_uplink.py": "11d4bb88dcd758e5cac41c0fb2e0cd311d459a749bfb3d8cf9326a66611956ec",
+    "tests/public-client/test_lighting_inventory_uplink.py": "e046f9cd0fd43818636eaa08be02e065647e920a943276ed8378b526b14b653a"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,

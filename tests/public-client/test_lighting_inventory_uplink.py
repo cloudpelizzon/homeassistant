@@ -109,6 +109,23 @@ class Tests(unittest.IsolatedAsyncioTestCase):
         with self.assertRaises(u.InventoryUplinkDenied):
             await h.uplink.prepare(h.connection,"install_1","user_1","request_id_123456789")
 
+
+    async def test_bind_stages_only_requested_approved_entity(self):
+        h=Harness()
+        await h.uplink.prepare(h.connection,'install_1','user_1','request_id_123456789',
+                               target_entity_id='switch.rele')
+        pages=[x for x in h.port.calls if x[0]=='page']
+        self.assertEqual(len(pages),1)
+        self.assertEqual(pages[0][6],1)
+        self.assertEqual(pages[0][8],[{'entity_id':'switch.rele','name':'Rele'}])
+
+    async def test_bind_unknown_target_refuses_transfer(self):
+        h=Harness()
+        with self.assertRaises(u.InventoryUplinkDenied):
+            await h.uplink.prepare(h.connection,'install_1','user_1','request_id_123456789',
+                                   target_entity_id='switch.unknown')
+        self.assertEqual(h.port.calls,[])
+
     async def test_missing_signed_port_refuses_to_link(self):
         h=Harness()
         with self.assertRaises(u.InventoryUplinkDenied):

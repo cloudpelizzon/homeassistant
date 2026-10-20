@@ -106,7 +106,7 @@ class NativeInventoryUplink:
                 if not callable(check) or check(eid, "read") is not True:
                     raise InventoryUplinkDenied()
 
-    async def prepare(self, connection: Any, iid: str, actor: str, operation_rid: str) -> str:
+    async def prepare(self, connection: Any, iid: str, actor: str, operation_rid: str, *, target_entity_id=None) -> str:
         if not all(type(x) is str and IDENTIFIER.fullmatch(x)
                    for x in (iid, actor, operation_rid)):
             raise InventoryUplinkDenied()
@@ -114,6 +114,13 @@ class NativeInventoryUplink:
             async with asyncio.timeout(TIMEOUT):
                 rows = await self.inventory.collect(connection)
                 _validate_items(rows)
+                if target_entity_id is not None:
+                    if (type(target_entity_id) is not str or ENTITY.fullmatch(target_entity_id) is None
+                            or target_entity_id.startswith("binary_sensor.")):
+                        raise InventoryUplinkDenied()
+                    rows = [row for row in rows if row["entity_id"] == target_entity_id]
+                    if len(rows) != 1:
+                        raise InventoryUplinkDenied()
                 frozen = json.loads(json.dumps(rows, ensure_ascii=False, allow_nan=False))
                 total = len(frozen)
                 hash_value = digest(frozen)
