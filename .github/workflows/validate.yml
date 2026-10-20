@@ -71,6 +71,8 @@ jobs:
         run: node tests/public-client/test_automation148.cjs custom_components/cloudpelizzon
       - name: Verify category order and save button feedback
         run: node tests/public-client/test_automation149.cjs custom_components/cloudpelizzon
+      - name: Verify per-view reference density and touch scale
+        run: node tests/public-client/test_display150.cjs custom_components/cloudpelizzon
       - name: Validate the candidate integration with official hassfest
         run: docker run --rm -v "$PWD/.:/github/workspace:ro" ghcr.io/home-assistant/hassfest
       - name: Pull pinned Home Assistant runtime
@@ -86,6 +88,7 @@ jobs:
             -v "$PWD/tests/public-client:/checks:ro" \
             ghcr.io/home-assistant/home-assistant@sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0 \
             -B /checks/run.py
+
 
 
 

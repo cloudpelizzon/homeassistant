@@ -6,7 +6,7 @@ const scene={getBoundingClientRect:()=>({x:10,y:20,width:1000*factor,height:500*
 card.shadowRoot={querySelector:()=>scene};card._live=()=>({sofar:100,deye:0,solar:100,imp:300,exp:0});card._syncFlow146();const first=svg.innerHTML;
 for(const [x,y] of Object.values(positions))assert(first.includes(x+' '+y),'missing actual card centre');assert.equal((first.match(/data-flow=/g)||[]).length,5);assert(first.includes('motion146 import active'));assert(first.includes('motion146 export idle'));assert(first.includes('motion146 solar idle'));
 factor=.67;card._syncFlow146();const normal=s=>s.replace(/-?\d+(?:\.\d+)?/g,n=>Number(Number(n).toFixed(6)));assert.equal(normal(svg.innerHTML),normal(first),'scale changes must preserve normalised anchors');
-const panel=fs.readFileSync(process.argv[3],'utf8');assert(panel.includes('zoom:0.67!important'));assert(panel.includes('window.innerHeight-top-3)/0.67'));assert(card._css().includes('flow146Move'));assert(card._css().includes('prefers-reduced-motion:reduce'));
+const panel=fs.readFileSync(process.argv[3],'utf8');assert(panel.includes('_displayScale150'));assert(panel.includes('window.innerHeight-top-3)/scale'));assert(card._css().includes('flow146Move'));assert(card._css().includes('prefers-reduced-motion:reduce'));
 console.log('SOLAR146=exact_67_percent_scale; five_card_anchors; resize_invariant_routes; active_flow_only');
 
 

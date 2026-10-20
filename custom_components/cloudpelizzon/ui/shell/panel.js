@@ -1,6 +1,6 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 import "/cloudpelizzon-core/frontend/panel.js?v=ecc500f34550";
-import "/cloudpelizzon/frontend/optional-modules.js?v=b0a7a50c3c58";
+import "/cloudpelizzon/frontend/optional-modules.js?v=18232a0af8ae";
 import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
 
 
@@ -896,7 +896,7 @@ class CloudPelizzonPanel extends HTMLElement {
       </style>
 
 
-      <div style="zoom:${this._view==='security'?0.75:['maintenance','automation'].includes(this._view)?0.67:1}" class="topbar ${this._view==='energy'?'solar-compact145':''}">
+      <div style="zoom:${window.innerWidth<=1100?1:0.67}" class="topbar ${this._view==='energy'?'solar-compact145':''}">
 
         <div class="brand">
 
@@ -1598,7 +1598,7 @@ class CloudPelizzonPanel extends HTMLElement {
     }
 
     this._view = view;
-    const bar147=this.shadowRoot.querySelector('.topbar');if(bar147)bar147.style.zoom=view==='security'?'0.75':['maintenance','automation'].includes(view)?'0.67':'';
+    const bar147=this.shadowRoot.querySelector('.topbar');if(bar147)bar147.style.zoom=window.innerWidth<=1100?'1':'0.67';
     this.shadowRoot.querySelector(".topbar")?.classList.toggle("solar-compact145",view==="energy");
 
 
@@ -1688,6 +1688,8 @@ class CloudPelizzonPanel extends HTMLElement {
       .topbar.solar-compact145 .brand{font-size:14px!important;gap:7px!important;margin-right:12px!important}
       .topbar.solar-compact145 button{font-size:14px!important;padding:7px 10px!important;line-height:20px!important}
       .topbar.solar-compact145 ha-icon{--mdc-icon-size:20px;width:20px;height:20px}
+      #view-core{zoom:0.75!important}
+      @media(max-width:1100px){#view-core{zoom:1!important}.topbar,.topbar.solar-compact145{zoom:1!important;position:static!important;gap:4px!important}.topbar button{min-height:44px!important;flex:0 0 auto!important}.brand{margin-right:4px!important}}
       .view{width:100%!important;max-width:none!important;min-width:0!important;box-sizing:border-box!important;overflow-x:hidden!important}
       cloudpelizzon-core-panel,cloudpelizzon-module-slot,cloudpelizzon-updater-panel{display:block!important;width:100%!important;max-width:none!important;min-width:0!important}
       @media(max-width:800px){.topbar{gap:4px!important}.topbar button{padding-left:8px!important;padding-right:8px!important}}

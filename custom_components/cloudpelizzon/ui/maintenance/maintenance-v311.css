@@ -4750,7 +4750,7 @@ header{
 .report-provider-table td:last-child{min-width:240px;white-space:normal}
 .finance-reports-v241 .expense-text{color:#ff6969;font-weight:800}
 .finance-reports-v241 .saving-text{color:#35df8d;font-weight:800}
-@media(max-width:900px){.report-comparison-table table,.report-provider-table table{min-width:980px}}
+@media(max-width:1100px){.report-comparison-table table,.report-provider-table table{min-width:980px}}
 
 /* V263 - relatórios: cards suaves e totalizadores */
 .report-header-numbers-v261{display:grid!important;grid-template-columns:repeat(6,minmax(130px,1fr));gap:8px!important;width:min(100%,980px)}
@@ -4906,7 +4906,7 @@ header{
 .history-table-v266 .history-notes-v266{min-width:220px!important;max-width:360px!important;white-space:normal!important;line-height:1.35!important}
 .history-table-v266 tfoot th{position:sticky!important;bottom:0!important;z-index:3!important;background:#0d2935!important;border-top:2px solid #2f7186!important}
 .history-head-actions{margin-left:auto!important}
-@media(max-width:900px){.professional-history-v266{height:calc(100vh - 410px)!important;min-height:480px!important}.history-table-v266{min-width:1450px!important}.history-head-actions{width:auto!important;flex-wrap:wrap!important;justify-content:flex-end!important}}
+@media(max-width:1100px){.professional-history-v266{height:calc(100vh - 410px)!important;min-height:480px!important}.history-table-v266{min-width:1450px!important}.history-head-actions{width:auto!important;flex-wrap:wrap!important;justify-content:flex-end!important}}
 
 
 /* V269 - exportações individuais XLSX */
@@ -4944,7 +4944,7 @@ header{
   opacity:.65;
   cursor:wait;
 }
-@media(max-width:900px){
+@media(max-width:1100px){
   .report-export-actions{width:100%;justify-content:flex-end;flex-wrap:wrap}
   .report-excel-button,.report-pdf-button{min-height:34px}
 }
@@ -5273,7 +5273,7 @@ header{
 @keyframes categoryOrbitReverse{to{transform:rotate(-325deg)}}
 @keyframes categoryPulse{50%{transform:scale(1.65);opacity:.45}}
 
-@media(max-width:900px){
+@media(max-width:1100px){
   .category-intelligence-card{
     height:auto!important;
     min-height:180px!important;
@@ -10731,7 +10731,7 @@ header{
 
 /* CloudPelizzon R5.5 Unified - Priority Notification Policy */
 .cp-notification-settings{max-width:1180px!important}.cp-policy-explainer,.cp-priority-policy-section,.cp-channel-section{margin:16px 0;padding:16px;border:1px solid rgba(57,177,232,.22);border-radius:16px;background:linear-gradient(145deg,rgba(5,25,38,.88),rgba(3,16,27,.82))}.cp-policy-explainer-head{display:flex;gap:12px;align-items:flex-start}.cp-policy-explainer-head ha-icon{color:#39c4ff;--mdc-icon-size:28px}.cp-policy-explainer-head b{display:block;font-size:15px;color:#eaf8ff}.cp-policy-explainer-head p,.cp-section-title p{margin:4px 0 0;color:#7fa2b3;font-size:11px;line-height:1.5}.cp-policy-flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr auto 1.2fr;align-items:center;gap:8px;margin:14px 0}.cp-policy-flow span{display:flex;align-items:center;gap:8px;min-height:48px;padding:10px 12px;border:1px solid rgba(55,176,230,.22);border-radius:11px;background:rgba(5,30,44,.72);font-size:10px;font-weight:800;color:#cceeff}.cp-policy-flow span b{display:grid;place-items:center;width:23px;height:23px;border-radius:50%;background:#073858;color:#64d7ff;font-size:10px}.cp-policy-flow i{font-style:normal;color:#2f9fd0}.cp-policy-note{margin:0;padding:10px 12px;border-left:3px solid #25b9ff;background:rgba(20,118,169,.08);color:#a6c9d9;font-size:10px;line-height:1.55}.cp-section-title{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:12px}.cp-section-title h3{margin:0;font-size:16px;color:#effaff}.cp-section-title button{display:flex;align-items:center;gap:7px;padding:8px 11px;border-radius:10px;border:1px solid rgba(76,187,237,.32);background:#08283a;color:#bfe9fb;font-size:10px;font-weight:900}.cp-priority-policy-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.cp-policy-card{padding:14px;border:1px solid rgba(255,255,255,.09);border-radius:14px;background:rgba(2,15,25,.7);box-shadow:inset 0 1px rgba(255,255,255,.02)}.cp-policy-card.critical{border-color:rgba(255,94,111,.34);background:linear-gradient(160deg,rgba(74,19,31,.28),rgba(2,15,25,.78))}.cp-policy-card.important{border-color:rgba(255,195,64,.28);background:linear-gradient(160deg,rgba(72,52,8,.22),rgba(2,15,25,.78))}.cp-policy-card.low{border-color:rgba(74,194,255,.25)}.cp-policy-card>header{display:flex;align-items:center;gap:10px;padding-bottom:11px;margin-bottom:12px;border-bottom:1px solid rgba(255,255,255,.07)}.cp-policy-card>header b{display:block;font-size:13px}.cp-policy-card>header small{display:block;margin-top:3px;color:#728f9d;font-size:9px;line-height:1.4}.cp-policy-icon{display:grid;place-items:center;width:37px;height:37px;border-radius:11px;background:rgba(13,56,79,.72);font-size:19px}.cp-policy-fields{display:grid;gap:10px}.cp-policy-fields label{display:block!important}.cp-policy-fields label>small{display:block;margin:4px 0 6px;color:#688797;font-size:8px;line-height:1.4}.cp-policy-fields input{width:100%;min-height:38px;padding:8px 10px;border:1px solid #23516a;border-radius:9px;background:#03121c;color:#e8f8ff}.cp-number-unit{display:grid;grid-template-columns:1fr auto;align-items:center}.cp-number-unit input{border-radius:9px 0 0 9px}.cp-number-unit span{height:38px;display:flex;align-items:center;padding:0 10px;border:1px solid #23516a;border-left:0;border-radius:0 9px 9px 0;background:#082536;color:#83b7cc;font-size:9px;font-weight:900}.cp-policy-summary{margin-top:12px;padding:10px;border-radius:10px;background:rgba(5,43,61,.65);border:1px solid rgba(43,154,204,.18);color:#91bfd2;font-size:9px;line-height:1.55}.cp-policy-summary b{color:#dff6ff}.cp-policy-summary strong{display:block;margin-top:4px;color:#55d0ff}.cp-policy-help{display:flex;gap:10px;align-items:flex-start;margin-top:12px;padding:11px 12px;border:1px solid rgba(49,174,223,.18);border-radius:11px;background:rgba(6,31,44,.58);color:#83aebe;font-size:9px;line-height:1.5}.cp-policy-help ha-icon{color:#50d7a3;--mdc-icon-size:21px}.cp-channel-section .registration-grid{margin-top:8px}
-@media(max-width:900px){.cp-priority-policy-grid{grid-template-columns:1fr}.cp-policy-flow{grid-template-columns:1fr}.cp-policy-flow i{display:none}.cp-section-title{align-items:flex-start;flex-direction:column}.cp-section-title button{width:100%;justify-content:center}}
+@media(max-width:1100px){.cp-priority-policy-grid{grid-template-columns:1fr}.cp-policy-flow{grid-template-columns:1fr}.cp-policy-flow i{display:none}.cp-section-title{align-items:flex-start;flex-direction:column}.cp-section-title button{width:100%;justify-content:center}}
 
 /* R5.7 - Cadastro de políticas por criticidade */
 .alert-policy-registration{display:grid;grid-template-columns:1fr;gap:14px}.alert-policy-main{width:100%}.cp-alert-engine-toggle{display:flex;align-items:flex-start;gap:12px;margin:14px 0;padding:14px 16px;border:1px solid rgba(255,190,55,.28);border-radius:13px;background:rgba(82,55,8,.18);color:#e8f7ff}.cp-alert-engine-toggle input{width:21px;height:21px;accent-color:#20c8ff;margin-top:2px}.cp-alert-engine-toggle span{display:flex;flex-direction:column;gap:4px}.cp-alert-engine-toggle b{font-size:13px}.cp-alert-engine-toggle small{font-size:10px;color:#9eb8c5;line-height:1.5}.cp-alert-actions{display:flex;flex-wrap:wrap;align-items:center;gap:9px;margin-top:16px}.cp-alert-actions select{height:40px;min-width:130px;border:1px solid #28516b;border-radius:9px;background:#071d2c;color:#eaf8ff;padding:0 10px}.registration-grid label small{font-weight:500;color:#7597a8;line-height:1.35}.registration-auto-notice{line-height:1.5}.cp-policy-fields .cp-check{display:flex!important;flex-direction:row!important;align-items:center!important;gap:9px!important}.cp-policy-fields .cp-check input{width:18px!important;height:18px!important;min-height:18px!important;flex:0 0 auto}.cp-alert-actions button{display:flex;align-items:center;justify-content:center;gap:7px}.cp-alert-actions ha-icon{--mdc-icon-size:18px}@media(max-width:800px){.cp-alert-actions{flex-direction:column;align-items:stretch}.cp-alert-actions select,.cp-alert-actions button{width:100%}}
@@ -10744,3 +10744,9 @@ header{
 .cp-alert-test-feedback.warn,.cp-test-feedback.warn{color:#ffd778;border-color:rgba(255,193,75,.45);background:rgba(84,58,7,.35)}
 .cp-alert-test-feedback.error,.cp-test-feedback.error{color:#ff9ba5;border-color:rgba(255,91,110,.48);background:rgba(82,18,28,.35)}
 button[data-alert-test]:disabled,button[data-test]:disabled{opacity:.58;cursor:not-allowed;filter:saturate(.55)}
+
+@media(max-width:1100px){:host{min-width:0!important;max-width:100%!important}.shell{min-width:0!important;grid-template-columns:76px minmax(0,1fr)!important}.sidebar{width:76px!important;min-width:0!important}.sidebar .nav{min-height:44px!important}.sidebar small{font-size:11px!important}.main,.content,#cards{min-width:0!important;max-width:100%!important}.main{padding:8px!important}input,select,button{min-height:44px!important}input,select,textarea{font-size:16px!important}.registration-grid,.finance-dashboard,.finance-grid,.cp-policy-fields{grid-template-columns:1fr!important}.finance-toolbar,.finance-tabs,.finance-actions{flex-wrap:wrap!important;white-space:normal!important}.finance-toolbar>*{min-width:0!important}.finance-kpis{grid-template-columns:repeat(2,minmax(0,1fr))!important}.table-wrap{max-width:100%;overflow:auto}}
+@media(max-width:540px){.shell{display:block!important}.sidebar{position:static!important;width:100%!important;height:auto!important;display:flex!important;flex-direction:row!important;flex-wrap:wrap!important;gap:4px!important}.sidebar .brand{display:none!important}.sidebar .nav{flex:1 1 70px!important;padding:5px!important}.sidebar .nav span{font-size:20px!important}.sidebar .nav small{font-size:11px!important}.main{width:100%!important}.topbar,.header{flex-wrap:wrap!important}.registration-grid,.finance-dashboard,.finance-grid,.summary-grid{grid-template-columns:minmax(0,1fr)!important}.finance-tabs{display:flex!important;flex-wrap:wrap!important}.finance-tabs button{flex:1 1 100px!important}}
+@media(max-width:1100px){.registration-toolbar{display:flex!important;flex-wrap:wrap!important;gap:8px!important;min-width:0!important}.registration-toolbar>small{flex:1 1 100%!important;width:100%!important;max-width:100%!important;min-width:0!important;white-space:normal!important;overflow-wrap:anywhere!important;font-size:12px!important;line-height:16px!important}}
+
+@media(max-width:1100px){.registration-toolbar>div{display:flex!important;flex-wrap:wrap!important;min-width:0!important;width:100%!important;gap:6px!important}.registration-toolbar button{flex:1 1 130px!important;min-width:0!important;white-space:normal!important}}

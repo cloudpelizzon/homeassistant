@@ -5,24 +5,24 @@ const OPTIONAL_MODULES = {
   "CP-MAINTENANCE": {
     tag: "cloudpelizzon-maintenance-panel",
     title: "Manutenção",
-    url: "/cloudpelizzon-maintenance/frontend/panel.js?v=59c5c82cb9f5",
+    url: "/cloudpelizzon-maintenance/frontend/panel.js?v=c406609b5152",
   },
   // CP-SOLAR reuses the private energy/ folder and registered panel tag.
   // The SKU must always be CP-SOLAR (never an implicit CP-ENERGY grant).
   "CP-SOLAR": {
     tag: "cloudpelizzon-energy-panel",
     title: "Inteligência Solar",
-    url: "/cloudpelizzon-solar/frontend/panel.js?v=e672b590bf98",
+    url: "/cloudpelizzon-solar/frontend/panel.js?v=548de4b35db5",
   },
   "CP-SECURITY": {
     tag: "cloudpelizzon-security-panel",
     title: "Segurança",
-    url: "/cloudpelizzon-security/frontend/panel.js?v=e76eca39d2a6",
+    url: "/cloudpelizzon-security/frontend/panel.js?v=3cb98235137b",
   },
   "CP-AUTOMATION": {
     tag: "cloudpelizzon-automation-panel",
     title: "Automações",
-    url: "/cloudpelizzon-automation/frontend/panel.js?v=c638c7a26dfc",
+    url: "/cloudpelizzon-automation/frontend/panel.js?v=9da35e458f53",
   },
 };
 

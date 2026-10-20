@@ -918,7 +918,7 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
 
   render() {
     this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="/cloudpelizzon-maintenance/frontend/maintenance-v311.css?v=311-criticality-policy-r57" data-maintenance-style="v285">
+      <link rel="stylesheet" href="/cloudpelizzon-maintenance/frontend/maintenance-v311.css?v=f145e1c4af4d" data-maintenance-style="v285">
       <ha-card>
         <div class="shell">
           <aside class="sidebar">
@@ -1118,6 +1118,7 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
   }
 
   update() {
+    this.style.zoom=(window.innerWidth<=1100?1:this.v==="financeiro"?0.536:0.603);this.style.width="100%";
     if (!this.h) return;
     this.shadowRoot.querySelector("#upd").textContent = new Date().toLocaleString("pt-BR");
     this.shadowRoot.querySelectorAll("[data-v]").forEach(b => b.classList.toggle("active", b.dataset.v === this.v));

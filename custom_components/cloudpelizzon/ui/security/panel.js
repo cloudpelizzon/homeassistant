@@ -5861,15 +5861,15 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
     const availableW=Math.max(320,window.innerWidth-left-4);
     const w=Math.max(320,Math.min(availableW,(r.width>320?r.width:availableW)));
     const h=Math.max(460,window.innerHeight-top-4);
-    mount.style.zoom='0.75';
-    mount.style.setProperty('--cp60-left',`${left/0.75}px`);
-    mount.style.setProperty('--cp60-top',`${top/0.75}px`);
-    mount.style.setProperty('--cp60-w',`${w/0.75}px`);
-    mount.style.setProperty('--cp60-h',`${h/0.75}px`);
-    mount.classList.toggle('compact',h/0.75<790);
-    mount.classList.toggle('micro',h/0.75<700);
-    mount.classList.toggle('narrow',w/0.75<1450);
-    mount.classList.toggle('wide',w/0.75>=1800);
+    const scale150=window.innerWidth<=1100?1:0.675;mount.style.zoom=String(scale150);
+    mount.style.setProperty('--cp60-left',`${left/scale150}px`);
+    mount.style.setProperty('--cp60-top',`${top/scale150}px`);
+    mount.style.setProperty('--cp60-w',`${w/scale150}px`);
+    mount.style.setProperty('--cp60-h',`${h/scale150}px`);
+    mount.classList.toggle('compact',h/scale150<790);
+    mount.classList.toggle('micro',h/scale150<700);
+    mount.classList.toggle('narrow',w/scale150<1450);
+    mount.classList.toggle('wide',w/scale150>=1800);
     mount.dataset.viewport=`${Math.round(w)}x${Math.round(h)}`;
     bindAlarmPicker(host);
   }
@@ -6063,7 +6063,9 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
 @keyframes cp60Ring{0%{transform:scale(.9);opacity:.6}100%{transform:scale(1.15);opacity:0}}
 @keyframes cp60Radar{0%{transform:scale(.45);opacity:.75}100%{transform:scale(1.45);opacity:0}}
 @keyframes cp61Scan{0%{transform:translateX(-125%)}100%{transform:translateX(125%)}}
-`;root.appendChild(st)}
+@media(max-width:1100px){#cp60-root button{min-height:44px!important}#cp60-root input,#cp60-root select{min-height:44px!important;font-size:16px!important}.cp60-top-status small,.cp60-map-chip small,.cp60-card small{font-size:11px!important}.cp60-nav button{font-size:13px!important}.cp60-main,.cp60-hero,.cp60-right{min-width:0!important}.cp60-bottom-card{min-height:200px!important}}
+@media(max-width:540px){.cp60-people{grid-template-columns:1fr!important}.cp60-cam-row{grid-template-columns:repeat(2,minmax(0,1fr))!important}.cp60-top-status b,.cp60-card header b{font-size:13px!important}.cp60-nav{grid-template-columns:repeat(2,minmax(0,1fr))!important}.cp60-map-chip{padding:5px!important;gap:4px!important}.cp60-map-chip b{font-size:11px!important}.cp60-alarm-actions{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+@media(max-width:1100px){#cp60-root.narrow .cp60-top,#cp60-root.compact .cp60-top,#cp60-root.micro .cp60-top{grid-template-columns:repeat(2,minmax(0,1fr))!important}#cp60-root .cp60-brand{grid-column:1/-1!important;min-width:0!important;width:auto!important;max-width:100%!important}#cp60-root.narrow .cp60-main,#cp60-root.compact .cp60-main,#cp60-root.micro .cp60-main{grid-template-columns:minmax(0,1fr)!important}}@media(max-width:540px){#cp60-root.narrow .cp60-top,#cp60-root.compact .cp60-top,#cp60-root.micro .cp60-top{grid-template-columns:minmax(0,1fr)!important}#cp60-root .cp60-brand b{font-size:19px!important;white-space:normal!important}#cp60-root .cp60-brand small{font-size:10px!important;white-space:normal!important}}`;root.appendChild(st)}
 
   function ensureClock137(host){
     if(host.__cp61Clock)return;
@@ -6099,3 +6101,4 @@ import("/cloudpelizzon-security/frontend/cp-security-v037-extension.js?v=2026092
   install();
 })();
 /* CP_SECURITY_V0610_RUNTIME_END */
+

@@ -1,5 +1,5 @@
 const CP_BASE = "/cloudpelizzon-maintenance/frontend";
-const CP_CORE_URL = `${CP_BASE}/legacy-v311-core.js?v=311-excel-r119`;
+const CP_CORE_URL = `${CP_BASE}/legacy-v311-core.js?v=75cccdb3a041`;
 const CP_CORE_TAG = "cloudpelizzon-maintenance-v311-core";
 const CP_API_SNAPSHOT = "cloudpelizzon/maintenance/compat/get_snapshot";
 const CP_API_SAVE = "cloudpelizzon/maintenance/compat/save_snapshot";
@@ -211,7 +211,9 @@ class CloudPelizzonMaintenancePanel extends HTMLElement {
     }
   }
 
+  disconnectedCallback(){window.removeEventListener("resize",this._resize150)}
   connectedCallback() {
+    this._resize150=()=>this._card?.update();window.addEventListener("resize",this._resize150);
     if (this._hass && !this._card && !this._initializing && !this._locked) this.initialize();
   }
 
@@ -314,7 +316,7 @@ class CloudPelizzonMaintenancePanel extends HTMLElement {
         items: [],
       });
       this.hydrateCard(card, snapshot);
-      card.style.zoom="0.67";card.style.width="100%";
+      card.style.zoom=(window.innerWidth<=1100?1:0.603);card.style.width="100%";
       this._card = card;
       this.shadowRoot.replaceChildren(card);
       card.hass = this.createHassProxy(this._hass, card);

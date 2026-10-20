@@ -1,4 +1,4 @@
-import "/cloudpelizzon-energy/frontend/energy-card.js?v=28554b394f0a";
+import "/cloudpelizzon-energy/frontend/energy-card.js?v=0f13e36ca0ee";
 
 class CloudPelizzonEnergyPanel extends HTMLElement {
   constructor() {
@@ -35,10 +35,12 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
   }
 
   disconnectedCallback(){window.removeEventListener('resize',this._resizeViewport);this._viewportObserver?.disconnect();}
+  _displayScale150(){return (Number(window.innerWidth)||1920)<=1100?1:(this.shadowRoot?.querySelector("#energy-card")?._tab||"overview")==="overview"?0.737:0.67}
   _fitViewport(){
     const shell=this.shadowRoot?.querySelector('.energy-shell');if(!shell)return;
-    const top=Math.max(0,this.getBoundingClientRect().top),height=Math.max(260,window.innerHeight-top-3)/0.67;
-    if(shell.style.height!==height+'px')shell.style.height=height+'px';
+    const scale=this._displayScale150();shell.style.setProperty('--cp-scale150',scale);
+    const top=Math.max(0,this.getBoundingClientRect().top),height=Math.max(260,window.innerHeight-top-3)/scale;
+    if(window.innerWidth<=1100)shell.style.height='auto';else if(shell.style.height!==height+'px')shell.style.height=height+'px';
     if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>this.shadowRoot?.querySelector('#energy-card')?._syncFlow146?.());
   }
 
@@ -974,6 +976,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
     `;
 
     this.shadowRoot.querySelector('#energy-card')?.setAttribute('viewport-fit','');
+    this.shadowRoot.querySelector('#energy-card')?.addEventListener('energy-view-changed150',()=>this._fitViewport());
     this._fitViewport();
     if(typeof ResizeObserver!=='undefined'){
       this._viewportObserver?.disconnect();this._viewportObserver=new ResizeObserver(()=>this._fitViewport());this._viewportObserver.observe(this);
@@ -1104,7 +1107,7 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
           border-radius:999px;color:var(--cyan);font-size:10px;letter-spacing:.7px
         }
         .savebar.easy-save{position:sticky;bottom:10px;z-index:5;box-shadow:0 12px 34px rgba(0,0,0,.45)}
-        @media(max-width:900px){
+        @media(max-width:1100px){
           .auto-setup-top{align-items:flex-start;flex-direction:column}
           .auto-setup .primary{width:100%}
           .detected-grid,.simple-grid,.simple-grid.two{grid-template-columns:1fr}
@@ -1877,7 +1880,8 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
           .wizard-actions,.savebar,.topo-title{align-items:flex-start;flex-direction:column}
           .module-actions{align-items:flex-start;flex-direction:column}
         }
-      .energy-shell,.config-shell{zoom:0.67!important;width:100%!important;max-width:none!important;box-sizing:border-box!important}
+      .energy-shell{zoom:var(--cp-scale150,0.737)!important;}.config-shell{zoom:0.67!important;}.energy-shell,.config-shell{width:100%!important;max-width:none!important;box-sizing:border-box!important}
+@media(max-width:1100px){.config-shell{zoom:1!important}.energy-shell{overflow:visible!important;display:block!important}.legacy-wrap,#energy-card{height:auto!important;overflow:visible!important}.modulebar{flex-wrap:wrap!important}.module-actions button{min-height:44px!important;font-size:14px!important}}
 </style>
     `;
   }
