@@ -209,3 +209,55 @@ test('Discovery loads exactly 101 authorized rows on two pages',async()=>{
  const n=parameters.offset+i;return {entity_id:`light.entity_${n}`,name:`Luz ${n}`,kind:'light',capabilities:['on_off']}})};
  await p.discover();assert.equal(p._discover.length,101);
 });
+
+test('Active signed Trial expiry hides module immediately and opens overview',async()=>{
+ const p=makePanel();const base=Date.now();
+ const statusTrial=status({license:{allowed:false},trial:{verified:true,phase:'trial_active',paid_confirmed:false,blocks_at:new Date(base+60000).toISOString()}});
+ p._hass.callWS=async({type})=>type==='cloudpelizzon/core/status'?statusTrial:snapshot();
+ const previousNow=Date.now,previousTimeout=global.setTimeout,previousClear=global.clearTimeout,previousEvent=global.CustomEvent;
+ const timers=[];let now=base, events=[];
+ Date.now=()=>now;global.setTimeout=(fn,ms)=>{timers.push({fn,ms});return 345;};
+ global.clearTimeout=()=>{};global.CustomEvent=class{constructor(name,info){this.type=name;this.detail=info?.detail;}};
+ p.dispatchEvent=e=>events.push(e);
+ try{
+   await p.refresh();assert.equal(p._allowed,true);assert.equal(timers.length,1);
+   assert(timers[0].ms>0&&timers[0].ms<=60000);
+   now=base+60000;timers[0].fn();
+   assert.equal(p._allowed,false);assert.equal(p._snapshot,null);
+   assert.match(p.shadowRoot.innerHTML,/Ir à Visão Geral/);
+   assert.equal(events[0]?.detail?.path,'core');
+ }finally{
+   p._reset();Date.now=previousNow;global.setTimeout=previousTimeout;
+   global.clearTimeout=previousClear;global.CustomEvent=previousEvent;
+ }
+});
+
+test('Disconnect cancels signed Trial deadline and drops configuration',async()=>{
+ const p=makePanel();const trial=status({license:{allowed:false},trial:{
+ verified:true,phase:'trial_active',paid_confirmed:false,blocks_at:new Date(Date.now()+300000).toISOString()}});
+ p._hass.callWS=async({type})=>type==='cloudpelizzon/core/status'?trial:snapshot();
+ const realTimeout=global.setTimeout,realClear=global.clearTimeout;
+ const hooks=[],cleared=[];global.setTimeout=(fn)=>{hooks.push(fn);return 17;};
+ global.clearTimeout=id=>cleared.push(id);
+ try{
+  await p.refresh();assert.equal(p._allowed,true);assert.equal(hooks.length,1);
+  p.disconnectedCallback();
+  assert.equal(p._allowed,false);assert.equal(p._snapshot,null);
+  assert.deepEqual(cleared,[17]);hooks[0]();
+  assert.equal(p._allowed,false);
+ }finally{global.setTimeout=realTimeout;global.clearTimeout=realClear;}
+});
+
+test('Paid license cancels any previous client Trial expiry timer',async()=>{
+ const p=makePanel();const realTimeout=global.setTimeout,realClear=global.clearTimeout;
+ const cleared=[];global.setTimeout=()=>29;global.clearTimeout=x=>cleared.push(x);
+ let claim=status({license:{allowed:false},trial:{
+  verified:true,phase:'trial_active',paid_confirmed:false,blocks_at:new Date(Date.now()+120000).toISOString()}});
+ p._hass.callWS=async()=>claim;
+ try{
+  assert.equal(await p._access(),true);assert(p._trialDeadline!==null);
+  claim=status();
+  assert.equal(await p._access(),true);assert.equal(p._trialDeadline,null);
+  assert.deepEqual(cleared,[29]);
+ }finally{p._reset();global.setTimeout=realTimeout;global.clearTimeout=realClear;}
+});

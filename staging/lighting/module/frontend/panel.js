@@ -146,16 +146,37 @@ function pagination(type,page,total,size){const pages=Math.max(1,Math.ceil(total
 
 /** Host-compatible element. The private Release Center serves this file as frontend/panel.js. */
 export class CloudPelizzonLightingPanel extends HTMLElement {
- constructor(){super();this.attachShadow({mode:'open'});this._hass=null;this._actor=null;this._active=false;this._loading=false;this._allowed=false;this._snapshot=null;this._discover=[];this._view='overview';this._theme='grafite';this._search='';this._reviewSearch='';this._room=null;this._roomPage=0;this._lightPage=0;this._reviewPage=0;this._filter='all';this._category='Todos';this._message='';this._req=0;this._pending=false;this._configRevision=null;this._handlers=false;this._lastRightCheck=0;this._timer=null;this._draft=null;}
+ constructor(){super();this.attachShadow({mode:'open'});this._hass=null;this._actor=null;this._active=false;this._loading=false;this._allowed=false;this._snapshot=null;this._discover=[];this._view='overview';this._theme='grafite';this._search='';this._reviewSearch='';this._room=null;this._roomPage=0;this._lightPage=0;this._reviewPage=0;this._filter='all';this._category='Todos';this._message='';this._req=0;this._pending=false;this._configRevision=null;this._handlers=false;this._lastRightCheck=0;this._timer=null;this._deadlineTimer=null;this._trialDeadline=null;this._draft=null;}
  set hass(hass){const next=hass?.user?.id||null;if(this._actor!==next){this._reset();this._actor=next;}this._hass=hass||null;if(this.isConnected&&!this._handlers)this._attach();if(this.isConnected&&this._hass&&!this._loading){if(Date.now()-this._lastRightCheck>30000)void this.refresh();else this.render();}}
  get hass(){return this._hass;}
  connectedCallback(){this._active=true;this._attach();this.render();if(this._hass)void this.refresh();}
  disconnectedCallback(){this._active=false;this._reset();this._detach();}
- _reset(){this._req++;this._allowed=false;this._snapshot=null;this._discover=[];this._room=null;this._roomPage=0;this._lightPage=0;this._reviewPage=0;this._pending=false;this._configRevision=null;this._draft=null;this._lastRightCheck=0;}
+ _reset(){this._clearDeadline();this._req++;this._allowed=false;this._snapshot=null;this._discover=[];this._room=null;this._roomPage=0;this._lightPage=0;this._reviewPage=0;this._pending=false;this._configRevision=null;this._draft=null;this._lastRightCheck=0;}
  _attach(){if(this._handlers)return;this._click=e=>this.onClick(e);this._change=e=>this.onChange(e);this._input=e=>this.onInput(e);this.shadowRoot.addEventListener('click',this._click);this.shadowRoot.addEventListener('change',this._change);this.shadowRoot.addEventListener('input',this._input);this._handlers=true;}
  _detach(){if(!this._handlers)return;this.shadowRoot.removeEventListener('click',this._click);this.shadowRoot.removeEventListener('change',this._change);this.shadowRoot.removeEventListener('input',this._input);this._handlers=false;}
  get ws(){return this._hass?.callWS?.bind(this._hass)}
- async _access(){const call=this.ws;assert(call,'lighting_session_missing');const status=await call({type:WS.status});const ok=hasVerifiedLightingAccess(status);this._lastRightCheck=Date.now();return ok;}
+
+ _clearDeadline(){if(this._deadlineTimer!==null)clearTimeout(this._deadlineTimer);this._deadlineTimer=null;this._trialDeadline=null;}
+ _expireAt(deadline){
+   if(!this._active || this._trialDeadline!==deadline)return;
+   const remaining=deadline-Date.now();
+   if(remaining>0){this._deadlineTimer=setTimeout(()=>this._expireAt(deadline),Math.min(2147483647,Math.max(1,remaining)));return;}
+   // UI-level cleanup only. Real server must deny after expiry regardless of browser clock.
+   this._reset();this._message='Prazo do Trial encerrado. Visão Geral e contratação disponíveis.';
+   this.render();this._openCore();
+ }
+ _trackDeadline(status){
+   this._clearDeadline();
+   const mod=status?.modules?.find(x=>x?.sku===SKU);
+   if(!mod || (mod.license?.allowed===true&&mod.license?.status==='licensed'))return;
+   if(mod.trial?.verified!==true || mod.trial?.phase!=='trial_active' || mod.trial?.paid_confirmed!==false)
+     throw new Error('lighting_access_denied');
+   const deadline=Date.parse(mod.trial.blocks_at||'');
+   if(!Number.isFinite(deadline)||deadline<=Date.now())throw new Error('lighting_access_denied');
+   this._trialDeadline=deadline;
+   this._deadlineTimer=setTimeout(()=>this._expireAt(deadline),Math.min(2147483647,Math.max(1,deadline-Date.now())));
+ }
+ async _access(){const call=this.ws;assert(call,'lighting_session_missing');const status=await call({type:WS.status});const ok=hasVerifiedLightingAccess(status);this._lastRightCheck=Date.now();if(ok)this._trackDeadline(status);return ok;}
  async refresh(){if(this._loading||!this._active||!this.ws)return;const req=++this._req;this._loading=true;this._message='';this.render();try{
    if(!await this._access())throw new Error('lighting_access_denied');
    const raw=await this.ws({type:WS.snapshot});
