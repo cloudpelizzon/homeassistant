@@ -174,15 +174,31 @@ export class CloudPelizzonLightingPanel extends HTMLElement {
    return ret;
  }catch(e){if(e.message==='lighting_access_denied'){this._reset();}throw e;}
  finally{this._pending=false;this.render();}}
- async discover(){if(!this._allowed)return;const found=[];const seen=new Set();try{for(let page=0;page<20;page++){
+ async discover(){if(!this._allowed)return;const found=[];const seen=new Set();const session=this._req;let expected=null;
+ try{for(let page=0;page<20;page++){
+   assert(this._active&&session===this._req&&this._allowed,'lighting_discovery_cancelled');
    const chunk=await this._execute('lighting.entities.discover',{offset:found.length,limit:100});
-   assert(isRecord(chunk)&&Array.isArray(chunk.items)&&Number.isSafeInteger(chunk.total)&&chunk.total>=0&&chunk.total<=2000,'lighting_discovery_invalid');
-   assert(chunk.items.length===Math.min(100,chunk.total-found.length),'lighting_discovery_partial');
-   for(const x of chunk.items){assert(isRecord(x)&&ENTITY_ID.test(x.entity_id)&&!seen.has(x.entity_id)&&saneText(x.name),'lighting_discovery_invalid');seen.add(x.entity_id);found.push({entity_id:x.entity_id,name:x.name,kind:x.kind,capabilities:x.capabilities});}
-   if(found.length===chunk.total)break;
+   assert(this._active&&session===this._req&&this._allowed,'lighting_discovery_cancelled');
+   assert(isRecord(chunk)&&Array.isArray(chunk.items)&&Number.isSafeInteger(chunk.total)
+     &&chunk.total>=0&&chunk.total<=2000,'lighting_discovery_invalid');
+   if(expected===null)expected=chunk.total;
+   assert(chunk.total===expected&&found.length<=expected,'lighting_discovery_revision_changed');
+   assert(chunk.items.length===Math.min(100,expected-found.length),'lighting_discovery_partial');
+   for(const x of chunk.items){
+     assert(isRecord(x)&&ENTITY_ID.test(x.entity_id)&&!seen.has(x.entity_id)
+       &&saneText(x.name)&&['light','review','sensor'].includes(x.kind)
+       &&Array.isArray(x.capabilities)&&x.capabilities.length<=12
+       &&x.capabilities.every(c=>typeof c==='string'&&c.length<=32),'lighting_discovery_invalid');
+     assert(x.entity_id.startsWith('light.')?x.kind==='light':
+       x.entity_id.startsWith('switch.')?x.kind==='review':x.kind==='sensor','lighting_discovery_kind_invalid');
+     seen.add(x.entity_id);found.push({entity_id:x.entity_id,name:x.name,kind:x.kind,capabilities:[...x.capabilities]});
+   }
+   if(found.length===expected)break;
  }
+ assert(expected!==null&&found.length===expected&&session===this._req&&this._active,'lighting_discovery_incomplete');
  this._discover=found;this._reviewPage=0;this._message=`${found.length} entidades encontradas para revisão.`;
- }catch(e){this._discover=[];this._message='Falha na descoberta autorizada. Nenhum resultado parcial foi importado.';}this.render();}
+ }catch(e){if(session===this._req){this._discover=[];this._message='Falha na descoberta autorizada. Nenhum resultado parcial foi importado.';}}
+ if(this._active)this.render();}
  async mutate(op,args,success='Configuração salva'){try{const result=await this._execute(op,{revision:this._configRevision,...args});this._message=success;await this.refresh();return result;}catch(e){this._message=e.message==='lighting_access_denied'?'Acesso encerrado.':'Alteração recusada. Dados atualizados antes de tentar novamente.';await this.refresh();return null;}}
  _rooms(){return this._snapshot?groupRooms(this._snapshot):[];}
  _selectedRoom(){const rooms=this._rooms();return rooms.find(r=>r.id===this._room)||rooms[0]||{id:null,name:'Sala',count:0,on:0,off:0,unavailable:0,lights:[]};}

@@ -180,3 +180,32 @@ test('Supports more than 100 lights and room pagination',()=>{
  assert.match(p.shadowRoot.innerHTML,/181/);
  assert.match(p.shadowRoot.innerHTML,/cp-pager/);
 });
+
+test('Discovery refuses changing total across pages',async()=>{
+ const p=makePanel();p._allowed=true;p._snapshot=projectLightingPortResult(snapshot());
+ p._hass.callWS=async ({type,parameters})=>type==='cloudpelizzon/core/status'?status():{
+ total:parameters.offset===0?101:100,items:parameters.offset===0?Array.from({length:100},(_,i)=>({entity_id:`light.t_${i}`,name:`Luz ${i}`,kind:'light',capabilities:['on_off']})):[]};
+ await p.discover();assert.equal(p._discover.length,0);
+});
+test('Discovery rejects switches presented as native lights',async()=>{
+ const p=makePanel();p._allowed=true;p._snapshot=projectLightingPortResult(snapshot());
+ p._hass.callWS=async ({type})=>type==='cloudpelizzon/core/status'?status():{
+ total:1,items:[{entity_id:'switch.bad',name:'Relé',kind:'light',capabilities:['on_off']}]};
+ await p.discover();assert.equal(p._discover.length,0);
+});
+test('Discovery ignores late result after logout',async()=>{
+ const p=makePanel();p._allowed=true;p._snapshot=projectLightingPortResult(snapshot());
+ let fulfill,start;const requested=new Promise(r=>start=r);
+ p._hass.callWS=async ({type})=>{if(type==='cloudpelizzon/core/status')return status();
+ start();return new Promise(r=>fulfill=r)};
+ const pending=p.discover();await requested;p._reset();
+ fulfill({total:1,items:[{entity_id:'light.old',name:'Antiga',kind:'light',capabilities:['on_off']}]});
+ await pending;assert.equal(p._discover.length,0);
+});
+test('Discovery loads exactly 101 authorized rows on two pages',async()=>{
+ const p=makePanel();p._allowed=true;p._snapshot=projectLightingPortResult(snapshot());
+ p._hass.callWS=async ({type,parameters})=>type==='cloudpelizzon/core/status'?status():{
+ total:101,items:Array.from({length:parameters.offset===0?100:1},(_,i)=>{
+ const n=parameters.offset+i;return {entity_id:`light.entity_${n}`,name:`Luz ${n}`,kind:'light',capabilities:['on_off']}})};
+ await p.discover();assert.equal(p._discover.length,101);
+});
