@@ -2,6 +2,19 @@ import "/cloudpelizzon-core/frontend/fleet-registration.js?v=20261011-rc10";
 const CP_BASE = "/cloudpelizzon-core/frontend";
 
 const CP_MODULES = {
+  "CP-LIGHTING": {
+    kicker: "ILUMINAÇÃO INTELIGENTE",
+    tagline: "Grafite, FLUX e NEO SOFT: três dashboards com um cadastro compartilhado.",
+    metrics: [["Luzes","—"],["Acesas","—"],["Ambientes","—"],["Disponibilidade","—"]],
+    features: [
+      ["mdi:lightbulb-multiple-outline","Controle individual","Entidades Home Assistant sem exibição em cascata."],
+      ["mdi:palette-outline","Três visões","Grafite, FLUX e NEO SOFT sem duplicar configuração."],
+      ["mdi:cog-outline","Cadastro compartilhado","Descoberta, revisão de relés, cômodos e preferências."],
+      ["mdi:shield-check","Trial assinado","7 dias por instalação e SKU; somente com autorização privada."],
+    ], boards: ["Visão Geral","Grafite","FLUX","NEO SOFT","Configurações"],
+    alerts: [], rows: [],
+  },
+
   "CP-MAINTENANCE": {
     kicker: "GESTÃO PREVENTIVA",
     tagline: "Antecipe falhas, organize custos e transforme manutenção em rotina inteligente.",

@@ -19,6 +19,12 @@ const OPTIONAL_MODULES = {
     title: "Segurança",
     url: "/cloudpelizzon-security/frontend/panel.js?v=4a0b86ac6e5e",
   },
+  // CP-LIGHTING exige UI distribuída pelo Release Center e status assinado do servidor.
+  "CP-LIGHTING": {
+    tag: "cloudpelizzon-lighting-panel",
+    title: "Iluminação",
+    url: "/cloudpelizzon-lighting/frontend/panel.js?v=native-private",
+  },
   "CP-AUTOMATION": {
     tag: "cloudpelizzon-automation-panel",
     title: "Automações",
