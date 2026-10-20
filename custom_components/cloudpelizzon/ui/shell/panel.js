@@ -1,5 +1,5 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
-import "/cloudpelizzon-core/frontend/panel.js?v=0e2d4e8fc5ba";
+import "/cloudpelizzon-core/frontend/panel.js?v=a594c3490ffa";
 import "/cloudpelizzon/frontend/optional-modules.js?v=46d9115a9f66";
 import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
 
@@ -37,6 +37,7 @@ class CloudPelizzonPanel extends HTMLElement {
   set hass(value) {
 
     this._hass = value;
+    if(this._requestHost161)this._requestHost161.hass=value;
 
     this.propagateHass();
 
@@ -604,6 +605,9 @@ class CloudPelizzonPanel extends HTMLElement {
         }
 
 
+        .topbar .module-request161{margin-left:auto;background:linear-gradient(120deg,#f6a700,#ffe191);color:#071622;border:1px solid #ffd874;box-shadow:0 0 12px #f6a70033;font-size:18px;font-weight:800;white-space:normal;min-width:0}
+        .topbar .module-request161[hidden]{display:none!important}
+        @media(max-width:600px){.topbar .module-request161{font-size:14px;margin-left:0}}
         .operator-button {
           border:
             1px solid
@@ -1005,6 +1009,7 @@ class CloudPelizzonPanel extends HTMLElement {
         </button>
 
 
+        <button class="module-request161" data-module-request161 hidden><ha-icon icon="mdi:cart-plus"></ha-icon>Solicitar este módulo</button>
         ${licensingButton}
 
       </div>
@@ -1086,6 +1091,7 @@ class CloudPelizzonPanel extends HTMLElement {
       });
 
 
+    this.shadowRoot.querySelector("[data-module-request161]")?.addEventListener("click",()=>this.openModuleRequest161());
     const licenseNav =
       this.shadowRoot.querySelector(
         "[data-license-nav]"
@@ -1588,6 +1594,26 @@ class CloudPelizzonPanel extends HTMLElement {
   }
 
 
+  disconnectedCallback(){this._requestHost161?.remove();this._requestHost161=null;}
+
+  requestSku161(){return ({maintenance:"CP-MAINTENANCE",energy:"CP-SOLAR",security:"CP-SECURITY",automation:"CP-AUTOMATION"})[this._view]||null;}
+
+  updateRequestCTA161(){const button=this.shadowRoot.querySelector("[data-module-request161]");if(button){button.hidden=!this.requestSku161();button.dataset.sku=this.requestSku161()||"";}}
+
+  openModuleRequest161(){
+    const sku=this.requestSku161();if(!sku||!this._hass)return;
+    this._requestHost161?.remove();
+    const source=this.shadowRoot.querySelector("cloudpelizzon-core-panel");
+    const names={"CP-MAINTENANCE":"Manutenção Residencial Preventiva","CP-SOLAR":"Inteligência Solar","CP-SECURITY":"Central de Segurança Pro","CP-AUTOMATION":"Central Inteligente de Automações"};
+    const dialog=document.createElement("cloudpelizzon-core-panel");
+    dialog.requestOnly161=true;
+    dialog.data=source?.data||{modules:[{sku,name:names[sku]}],license:{}};
+    dialog.hass=this._hass;
+    Object.assign(dialog.style,{position:"fixed",inset:"0",zIndex:"20000",display:"block"});
+    dialog.addEventListener("cloudpelizzon-request-close161",()=>{dialog.remove();if(this._requestHost161===dialog)this._requestHost161=null;},{once:true});
+    this._requestHost161=dialog;document.body.append(dialog);dialog.showRequest(sku);
+  }
+
   show(view) {
 
     if (
@@ -1598,6 +1624,7 @@ class CloudPelizzonPanel extends HTMLElement {
     }
 
     this._view = view;
+    this.updateRequestCTA161();
     const bar147=this.shadowRoot.querySelector('.topbar');if(bar147)bar147.style.zoom=window.innerWidth<=1100?'1':'0.67';
     this.shadowRoot.querySelector(".topbar")?.classList.toggle("solar-compact145",view==="energy");
 
