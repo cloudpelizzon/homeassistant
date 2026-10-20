@@ -2,7 +2,7 @@
   "schema": "cp.clean.source90.inventory.v1",
   "files": {
     ".github/workflows/hacs.yml": "6b737ea63358b22f7812bab3bfb323e3ca8b4cf143a41f9ead748adaab226150",
-    ".github/workflows/validate.yml": "07c448c47dd74243de07d74b04a27d2744ed8385edcd09c8d0986e7d4e485c2b",
+    ".github/workflows/validate.yml": "7217eda2270da418ef2cfdf88dec02699d0eef077b0ccc7875128690d3d789af",
     ".gitignore": "d4c6c5d0f925d1dee7cf69cb2672dbaf7d14bf236f37d64116336f9aa0d1702f",
     "LICENSE": "c1d1a38c99c48ccad170890ade6066e2e240bb6ce59861d4eb7f672eddd2a4c6",
     "README.md": "0ab2aeccb1c6ace05927f12454a2ee97fbc03e19f21a231fdbfd16f1e62663f7",
@@ -237,7 +237,10 @@
     "docs/lighting-native-frontend-v1.md": "c12a8e14b8d3a13511e429969fd37093e2dc77088e36d24885f80acc83e52e14",
     "staging/lighting/native_ws.py": "91bd991874cf59c6456013eb72aefd62b4817a8b3fb9c07e057fb767ded58667",
     "staging/lighting/tests/test_native_ws.py": "104d286b2257a4e3e15c6e56c247e89dfbbfe8bfac0aa17a884a428fbadf3baa",
-    "docs/lighting-native-ws-v1.md": "d7e646cc5582c0829cbce9897db635e036592209fe5f862c224804b7ad8b0c06"
+    "docs/lighting-native-ws-v1.md": "d7e646cc5582c0829cbce9897db635e036592209fe5f862c224804b7ad8b0c06",
+    "staging/lighting/ha_inventory.py": "c7c4547d78b793e45065632b845d2d8a97f9ae22a5bed345dc18a0c24e47aeb5",
+    "tests/public-client/test_lighting_ha_inventory.py": "6d16f7de3ffd817750db3e0dce26692c0f68842a5946f3f5e653fb82356cea3e",
+    "docs/lighting-ha-inventory.md": "20b040203e6da4c24838e784db7812d5f517c29cd516ee95b297fa75d6947b46"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,

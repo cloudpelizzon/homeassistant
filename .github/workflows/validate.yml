@@ -58,6 +58,8 @@ jobs:
           node --check staging/lighting/configuration-view.mjs
       - name: Validate native CP-LIGHTING frontend, layouts, ACL and configuration
         run: node --test staging/lighting/tests/test_native_lighting.mjs
+      - name: CP-LIGHTING native HA entity inventory with actor permissions
+        run: python3 -B tests/public-client/test_lighting_ha_inventory.py
       - name: Verify inactive CP-LIGHTING signed WebSocket boundary
         run: python3 -B staging/lighting/tests/test_native_ws.py
       - name: Verify legacy tabs receive updated trial and portal actions
