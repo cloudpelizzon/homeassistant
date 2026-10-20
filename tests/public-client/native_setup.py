@@ -55,7 +55,7 @@ class NativeSetupTests(unittest.IsolatedAsyncioTestCase):
         self.owner155=types.SimpleNamespace(is_active=True,is_owner=True,system_generated=False,name='Administrador sintético')
         self.owner_lookup155=AsyncMock(return_value=[self.owner155])
         self.entry_setup=AsyncMock(return_value=True)
-        patches=[patch.object(self.hass.auth,'async_get_users',self.owner_lookup155),
+        patches=[patch.object(self.hass,'auth',types.SimpleNamespace(async_get_users=self.owner_lookup155),create=True),
                  patch.object(config_entries,'_async_get_flow_handler',AsyncMock(return_value=CloudPelizzonConfigFlow)),
                  patch.object(config_entries,'_support_single_config_entry_only',AsyncMock(return_value=True)),
                  patch.object(self.hass.config_entries,'async_setup',self.entry_setup),
