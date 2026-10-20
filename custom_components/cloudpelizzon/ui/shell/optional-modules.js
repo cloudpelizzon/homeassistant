@@ -22,7 +22,7 @@ const OPTIONAL_MODULES = {
   "CP-AUTOMATION": {
     tag: "cloudpelizzon-automation-panel",
     title: "Automações",
-    url: "/cloudpelizzon-automation/frontend/panel.js?v=49fe458001c6",
+    url: "/cloudpelizzon-automation/frontend/panel.js?v=f9a812ecceab",
   },
 };
 

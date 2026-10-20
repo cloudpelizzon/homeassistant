@@ -2,7 +2,7 @@
  * Every customer-facing editor control is visual: no JSON/YAML editing.
  * Selection is monitoring scope, NOT automatic engine activation.
  */
-import './legacy-v1044.js?v=967b3151b3a6';
+import './legacy-v1044.js?v=3450ac93a0dd';
 
 // CP_CLIENT_EXPERIENCE_V025 — default immersive panel; no misleading demo KPIs.
 // CP_AUTO_CLIENT_NATIVE_V026 — client reads automation.* from current Home Assistant only.
@@ -46,12 +46,12 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
   constructor(){super();this.attachShadow({mode:'open'});this._hass=null;this._status=null;this._dataSource='ha';this._overviewExpanded=false;try{this._overviewExpanded=window.localStorage.getItem('cp_auto_overview_expanded')==='1'}catch(_e){};this._view='overview';this._loading=false;this._initialized=false;this._last=0;this._editor=null;this._editCode='';this._blocks={triggers:[],conditions:[],actions:[]};this._readOnlyComplex=false;this._filter='';}
   set hass(value){this._hass=value;if(this._initialized&&Date.now()-this._last>30000)this.refresh();else if(this._cockpit&&this._status)this._updateCockpitSource(false)}
   get hass(){return this._hass}
-  connectedCallback(){this._resize147=()=>this._fitCockpit147();window.addEventListener('resize',this._resize147);if(!this._initialized){this._initialized=true;this._build();this.refresh()}this._timer??=setInterval(()=>this.refresh(false),45000)}
-  disconnectedCallback(){window.removeEventListener('resize',this._resize147);if(this._timer)clearInterval(this._timer);this._timer=null;}
+  connectedCallback(){this._resize147=()=>this._fitCockpit147();window.addEventListener('resize',this._resize147);if(typeof ResizeObserver!=='undefined'){this._observer148?.disconnect();this._observer148=new ResizeObserver(()=>this._fitCockpit147());this._observer148.observe(this)}if(!this._initialized){this._initialized=true;this._build();this.refresh()}this._timer??=setInterval(()=>this.refresh(false),45000)}
+  disconnectedCallback(){window.removeEventListener('resize',this._resize147);this._observer148?.disconnect();if(this._timer)clearInterval(this._timer);this._timer=null;}
   async ws(type,data={}){if(!this._hass)throw Error('Home Assistant não conectado.');return this._hass.callWS({type,...data})}
   _build(){this.shadowRoot.innerHTML=`<style>${STYLES}
 :host{zoom:0.67!important;width:100%!important}</style><header class="top"><div><div class="brand">◉ CLOUDPELIZZON · AUTOMATION</div><div class="subbrand">CENTRAL INTELIGENTE · CLOUDPELIZZON</div></div><nav class="tabs">${[['overview','Visão geral'],['categories','Categorias'],['rules','Automações'],['builder','Criar e editar'],['settings','Preferências']].map(([v,t])=>`<button data-tab="${v}" class="${v==='overview'?'active':''}">${t}</button>`).join('')}</nav><span class="statusbar" id="online">Carregando...</span></header><main>
-<section class="view active" id="view-overview"><div class="cp-viewbar"><button type="button" data-action="toggleOverview" id="cp-toggle-overview" aria-controls="cp-overview-manager" aria-expanded="false">Mostrar configurações e categorias</button><label>Exibir <select id="cp-count-scope"><option value="all">Todas as automações</option><option value="home">Rotinas da casa</option><option value="technical">Diagnósticos NOC/DIA</option></select></label><span class="cp-ha-badge">● Leitura automática das automações deste Home Assistant</span></div><div id="cp-source-note" class="cp-datanote"></div><div id="cp-overview-manager" class="client-overview-managed" hidden><div class="explain"><b>Seu centro de automações, do seu jeito.</b> Escolha as categorias e regras que deseja acompanhar. <b>Selecionar não modifica suas automações:</b> nenhuma automação nativa será alterada.</div><div id="metrics" class="grid"></div><div class="toolrow"><button class="primary" data-tab="categories">Personalizar categorias</button><button data-tab="builder">Criar automação sem código</button><button data-action="refresh">Atualizar painel</button></div><div class="panel" id="visual-network"><h3>Mapa inteligente de categorias</h3><p class="small">Mapa dinâmico: selecione uma categoria para abrir as automações relacionadas.</p><div id="dynamic-map"></div></div></div><div id="cp-no-native" class="explain" hidden></div><div class="legacy" id="legacy"></div></section>
+<section class="view active" id="view-overview"><div class="cp-viewbar"><button type="button" data-action="toggleOverview" id="cp-toggle-overview" aria-controls="cp-overview-manager" aria-expanded="false">Mostrar configurações e categorias</button><label>Exibir <select id="cp-count-scope"><option value="all">Todas as automações</option><option value="home">Rotinas da casa</option><option value="technical">Diagnósticos NOC/DIA</option></select></label><span class="cp-ha-badge">● Leitura automática das automações deste Home Assistant</span></div><div id="cp-overview-manager" class="client-overview-managed" hidden><div class="explain"><b>Seu centro de automações, do seu jeito.</b> Escolha as categorias e regras que deseja acompanhar. <b>Selecionar não modifica suas automações:</b> nenhuma automação nativa será alterada.</div><div id="metrics" class="grid"></div><div class="toolrow"><button class="primary" data-tab="categories">Personalizar categorias</button><button data-tab="builder">Criar automação sem código</button><button data-action="refresh">Atualizar painel</button></div><div class="panel" id="visual-network"><h3>Mapa inteligente de categorias</h3><p class="small">Mapa dinâmico: selecione uma categoria para abrir as automações relacionadas.</p><div id="dynamic-map"></div></div></div><div id="cp-no-native" class="explain" hidden></div><div id="loading148" class="explain" role="status">Carregando as preferências de monitoramento…</div><div class="legacy" id="legacy" hidden></div></section>
 <section class="view" id="view-categories"><h2>Quais categorias quer gerenciar?</h2><p>Você escolhe. O botão <b>Todas</b> apresenta tudo que estiver disponível; <b>Personalizar</b> permite selecionar apenas o que deseja.</p><div class="toolrow"><button data-action="all" class="primary">✓ Todas</button><button data-action="selected">Personalizar</button><button data-action="clear">Nenhuma</button><button data-action="saveCategories">Salvar preferências</button></div><div class="catgrid" id="categories"></div></section>
 <section class="view" id="view-rules"><h2>Minhas automações</h2><p>Escolha quais automações desta instalação deseja acompanhar. A seleção não liga, desliga nem altera suas rotinas.</p><div class="toolrow"><input type="search" id="filter" placeholder="Buscar nome, código ou categoria"><select id="filter-cat" style="max-width:260px"><option value="">Todas as categorias</option></select><button data-action="ruleAll">Todas</button><button data-action="ruleNone">Nenhuma</button><button data-action="saveRules">Salvar seleção</button></div><div class="panel"><div id="rule-table" hidden></div></div><div class="panel"><h3>Automações do seu Home Assistant</h3><p class="small">Os dados são descobertos automaticamente nesta instalação. Use Todas, Nenhuma ou a seleção individual.</p><div id="native-table" class="tablewrap"></div></div></section>
 <section class="view" id="view-builder"><h2>Assistente de automações</h2><p>Descreva o que deve acontecer, em que situação e o que a casa deve fazer. Nenhum código é necessário.</p><div class="panel"><div class="toolrow"><button data-action="new" class="primary">+ Nova automação</button><select id="choose-rule" style="flex:1;min-width:220px"><option value="">Ou escolha uma automação para editar</option></select></div><div id="editor" class="empty">Selecione uma regra existente ou clique em Nova automação.</div><div id="feedback" class="feedback">Alterações só são aplicadas após salvar. Regras novas começam desativadas.</div></div></section>
@@ -74,6 +74,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
   }
   _updateCockpitSource(force=false){
     if(!this._cockpit||!this._hass)return;
+    const loading=this.shadowRoot.getElementById('loading148');if(loading)loading.hidden=true;
     const native=this._native();
     const selected=native.filter(n=>n.selected&&this._inCountScope(n));
     const message=this.shadowRoot.getElementById('cp-source-note');
@@ -96,9 +97,9 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     if(typeof requestAnimationFrame==='function')requestAnimationFrame(()=>this._fitCockpit147());
   }
   _fitCockpit147(){
-    const app=this._cockpit?.shadowRoot?.querySelector('.app');if(!app)return;
+    const app=this._cockpit?.shadowRoot?.querySelector('.app');if(!app||!app.getBoundingClientRect().width)return;
     const available=Math.max(360,window.innerHeight-app.getBoundingClientRect().top-4);
-    app.style.height=(available/0.67)+'px';app.style.minHeight='0';
+    const height=(available/0.67)+'px';if(app.style.height!==height)app.style.height=height;app.style.minHeight='0';
   }
   _inCountScope(n){const technical=['NOC','DIA'].includes(n.category);return this._countScope==='home'?!technical:this._countScope==='technical'?technical:true;}
   _observedHass(){
@@ -146,7 +147,7 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
     this._loading=true;
     try{
       this._status=await this.ws('cloudpelizzon/automation/status');
-      await this._loadDaily();
+
     }catch(error){
       // HA local inventory is still usable when the optional engine backend is unavailable.
       if(!this._status)this._status={rules:[],native_rules:[],settings:{scope:'all',category_selection:[],rule_selection:[],native_selection:[],category_names:{},native_visible:true},categories:[],total:0,active:0};
@@ -157,6 +158,11 @@ class CloudPelizzonAutomationPanel extends HTMLElement {
       const n=this._native();
       const badge=this.shadowRoot.getElementById('online');
       if(badge)badge.innerHTML=`<span class="ok">● Home Assistant conectado</span> · ${n.length} automações locais`;
+      // Daily history must never block the first inventory render or preference saves.
+      if(!this._dailyJob148){
+        this._dailyJob148=this._loadDaily().finally(()=>{this._dailyJob148=null;this._updateCockpitSource(true)});
+      }
+
     }
   }
 
