@@ -6,7 +6,9 @@ in this display projection authorizes execution, download, or local fallback.
 from datetime import datetime, timedelta, timezone
 from .metadata import MODULES
 
-SKUS = frozenset(('CP-MAINTENANCE', 'CP-SOLAR', 'CP-SECURITY', 'CP-AUTOMATION'))
+LEGACY_SKUS = frozenset(('CP-MAINTENANCE', 'CP-SOLAR', 'CP-SECURITY', 'CP-AUTOMATION'))
+SKUS = LEGACY_SKUS | frozenset(('CP-LIGHTING',))
+SIGNED_CLAIM_SKU_SETS = frozenset((LEGACY_SKUS, SKUS))
 PHASES = frozenset(('not_started', 'not_entitled', 'trial_active', 'trial_blocked', 'trial_removal_due', 'licensed'))
 
 
@@ -28,7 +30,7 @@ def validate_claim(claim, now):
             and timedelta(seconds=-2) <= now-issued <= timedelta(seconds=5) and now < expires):
         raise ValueError('expired_lifecycle')
     records = claim['modules']
-    if type(records) is not dict or set(records) != SKUS:
+    if type(records) is not dict or frozenset(records) not in SIGNED_CLAIM_SKU_SETS:
         raise ValueError('invalid_module_set')
     for row in records.values():
         if (type(row) is not dict or set(row) != {'phase', 'paid_confirmed', 'blocks_at', 'removal_due_at'}

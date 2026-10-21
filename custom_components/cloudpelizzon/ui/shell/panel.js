@@ -1,6 +1,6 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
-import "/cloudpelizzon-core/frontend/panel.js?v=05db026ba484";
-import "/cloudpelizzon/frontend/optional-modules.js?v=46d9115a9f66";
+import "/cloudpelizzon-core/frontend/panel.js?v=c736f9fb2334";
+import "/cloudpelizzon/frontend/optional-modules.js?v=3b722eeeb170";
 import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
 
 
@@ -62,7 +62,7 @@ class CloudPelizzonPanel extends HTMLElement {
       this.loadModuleRights();
     }
     // Revalidate the currently visible commercial panel (existing browser tab).
-    if (value && ["maintenance", "energy", "security", "automation"].includes(this._view)
+    if (value && ["maintenance", "energy", "security", "automation", "lighting"].includes(this._view)
         && !this._moduleRightsLoading
         && Date.now() - this._lastCommercialRefresh > 30000) {
       this._lastCommercialRefresh = Date.now();
@@ -151,6 +151,7 @@ class CloudPelizzonPanel extends HTMLElement {
         if (this._view === "automation" && !this.isModuleAllowed("CP-AUTOMATION")) {
           this._view = "core";
         }
+        if (this._view === "lighting" && !this.isModuleAllowed("CP-LIGHTING")) this._view = "core";
 
         this.render();
         this.propagateHass();
@@ -217,6 +218,10 @@ class CloudPelizzonPanel extends HTMLElement {
 
         }
 
+
+        else if (path.includes("lighting") || path.includes("iluminacao") || path.includes("iluminação")) {
+          this.showProtectedView("lighting");
+        }
 
         else if (path.includes("automation") || path.includes("automacoes")) {
           if (this.isModuleAllowed("CP-AUTOMATION")) {
@@ -311,6 +316,9 @@ class CloudPelizzonPanel extends HTMLElement {
       if(this._view==="automation"&&!this.isModuleAllowed("CP-AUTOMATION")){
         this._view="core";
       }
+      if(this._view==="lighting"&&!this.isModuleAllowed("CP-LIGHTING")){
+        this._view="core";
+      }
 
       // A license poll must not destroy and recreate a working commercial
       // panel every 30 seconds when nothing actually changed.
@@ -344,6 +352,7 @@ class CloudPelizzonPanel extends HTMLElement {
       energy:"CP-SOLAR",
       security:"CP-SECURITY",
       automation:"CP-AUTOMATION",
+      lighting:"CP-LIGHTING",
     };
     const sku=skus[view];
     if(!sku){this.show(view);return;}
@@ -988,6 +997,10 @@ class CloudPelizzonPanel extends HTMLElement {
           Automações
         </button>` : ""}
 
+        ${this.isModuleAllowed("CP-LIGHTING") ? `
+        <button data-view="lighting"><ha-icon icon="mdi:lightbulb-group-outline"></ha-icon>Iluminação</button>
+        ` : ""}
+
         <button
           data-license-nav>
 
@@ -1064,6 +1077,12 @@ class CloudPelizzonPanel extends HTMLElement {
       <section id="view-automation" class="view">
         <cloudpelizzon-module-slot sku="CP-AUTOMATION"></cloudpelizzon-module-slot>
       </section>` : ""}
+
+      ${this.isModuleAllowed("CP-LIGHTING") ? `
+      <section id="view-lighting" class="view">
+        <cloudpelizzon-module-slot sku="CP-LIGHTING"></cloudpelizzon-module-slot>
+      </section>
+      ` : ""}
 
       <section
         id="view-updates"
@@ -1599,7 +1618,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
   disconnectedCallback(){this._requestHost161?.remove();this._requestHost161=null;}
 
-  requestSku161(){return ({maintenance:"CP-MAINTENANCE",energy:"CP-SOLAR",security:"CP-SECURITY",automation:"CP-AUTOMATION"})[this._view]||null;}
+  requestSku161(){return ({maintenance:"CP-MAINTENANCE",energy:"CP-SOLAR",security:"CP-SECURITY",automation:"CP-AUTOMATION",lighting:"CP-LIGHTING"})[this._view]||null;}
 
   updatePaidModules162(modules){
     this._paidModules162=Object.fromEntries(modules.map(m=>[m.sku,m?.license?.allowed===true]));

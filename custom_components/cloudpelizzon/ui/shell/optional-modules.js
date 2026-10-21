@@ -19,6 +19,12 @@ const OPTIONAL_MODULES = {
     title: "Segurança",
     url: "/cloudpelizzon-security/frontend/panel.js?v=4a0b86ac6e5e",
   },
+  // Private Release Center provides this panel only after a signed CP-LIGHTING grant.
+  "CP-LIGHTING": {
+    tag: "cloudpelizzon-lighting-panel",
+    title: "Iluminação",
+    url: "/cloudpelizzon-lighting/frontend/panel.js?v=cp-lighting-private-rc",
+  },
   "CP-AUTOMATION": {
     tag: "cloudpelizzon-automation-panel",
     title: "Automações",

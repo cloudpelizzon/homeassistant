@@ -32,7 +32,9 @@ HOST = "api.cloudpelizzon.com.br"
 
 AUTHORITY = bytes.fromhex("3c6f1bfb75285e2077b95c421d18cf34c54d4714bce29e871f74e42b7d53e24b")
 
-SKUS = frozenset({"CP-MAINTENANCE", "CP-SOLAR", "CP-SECURITY", "CP-AUTOMATION"})
+LEGACY_SKUS = frozenset({"CP-MAINTENANCE", "CP-SOLAR", "CP-SECURITY", "CP-AUTOMATION"})
+SKUS = LEGACY_SKUS | frozenset({"CP-LIGHTING"})
+SIGNED_STATUS_SKU_SETS = frozenset((LEGACY_SKUS, SKUS))
 
 ROUTES = frozenset(['/v1/security/session','/v1/security/execute','/v1/automation/session', '/v1/automation/poll', '/v1/automation/authorize', '/v1/automation/effects', '/v1/automation/preview', '/v1/automation/run', '/v1/execute', '/v1/trial/activate', '/v1/trial/capability', '/v1/trial/status'])
 
@@ -270,7 +272,7 @@ class Client:
 
                 raise ValueError()
 
-            if not isinstance(claim["modules"], dict) or set(claim["modules"]) != SKUS:
+            if not isinstance(claim["modules"], dict) or frozenset(claim["modules"]) not in SIGNED_STATUS_SKU_SETS:
 
                 raise ValueError()
 
