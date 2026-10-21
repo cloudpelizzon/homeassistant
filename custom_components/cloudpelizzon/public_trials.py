@@ -6,7 +6,7 @@ from homeassistant.components import websocket_api
 
 COMMAND='cloudpelizzon/core/trial/v2/start'
 KEY='cloudpelizzon_public_trial83'
-SKUS=frozenset(('CP-MAINTENANCE','CP-SOLAR','CP-SECURITY','CP-AUTOMATION'))
+SKUS=frozenset(('CP-MAINTENANCE','CP-SOLAR','CP-SECURITY','CP-AUTOMATION','CP-LIGHTING'))
 # Match the deployed gateway's readiness gate; never consume time on partial modules.
 ACTIVATION_READY=frozenset(('CP-MAINTENANCE','CP-SOLAR','CP-AUTOMATION','CP-SECURITY'))
 

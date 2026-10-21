@@ -2,6 +2,20 @@ import "/cloudpelizzon-core/frontend/fleet-registration.js?v=20261011-rc10";
 const CP_BASE = "/cloudpelizzon-core/frontend";
 
 const CP_MODULES = {
+  "CP-LIGHTING": {
+    kicker: "ILUMINAÇÃO INTELIGENTE",
+    tagline: "GRAFITE, FLUX e NEO SOFT: três visões premium com um cadastro compartilhado.",
+    metrics: [["Ambientes","—"],["Luzes","—"],["Ligadas","—"],["Disponibilidade","—"]],
+    features: [
+      ["mdi:lightbulb-multiple-outline","Iluminação individual","Controles por entidade sem efeito cascata."],
+      ["mdi:view-dashboard-outline","Três dashboards","GRAFITE, FLUX e NEO SOFT no mesmo cadastro."],
+      ["mdi:cog-outline","Configuração compartilhada","Ambientes, relés aprovados, ordem e visibilidade."],
+      ["mdi:shield-lock-outline","Trial assinado","Sete dias exatos após confirmação privada de ativação."],
+    ],
+    boards: ["Visão Geral","GRAFITE","FLUX","NEO SOFT","Configurações"],
+    alerts: [], rows: [],
+  },
+
   "CP-MAINTENANCE": {
     kicker: "GESTÃO PREVENTIVA",
     tagline: "Antecipe falhas, organize custos e transforme manutenção em rotina inteligente.",
