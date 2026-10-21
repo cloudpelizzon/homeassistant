@@ -2,7 +2,7 @@
   "schema": "cp.clean.source90.inventory.v1",
   "files": {
     ".github/workflows/hacs.yml": "6b737ea63358b22f7812bab3bfb323e3ca8b4cf143a41f9ead748adaab226150",
-    ".github/workflows/validate.yml": "29db32ede19a74b5f848a396d632491204b58a409f19465df95c4c8f8464c70b",
+    ".github/workflows/validate.yml": "31e8e7080ea3108eb0a57a35d3d6c6aff577a90595438d1eda6e31357ef79788",
     ".gitignore": "d4c6c5d0f925d1dee7cf69cb2672dbaf7d14bf236f37d64116336f9aa0d1702f",
     "LICENSE": "c1d1a38c99c48ccad170890ade6066e2e240bb6ce59861d4eb7f672eddd2a4c6",
     "README.md": "0ab2aeccb1c6ace05927f12454a2ee97fbc03e19f21a231fdbfd16f1e62663f7",
@@ -230,7 +230,16 @@
     "tests/public-client/test_writer.cjs": "3852b3736a872dde3dafc88ae5ff4a561a1f2923252a568603df65844b67eab0",
     "tests/public-client/test_xlsx_compat.cjs": "f031dadea05f5d94ebef112e54eb1658a6a7c4e4fdfc555b0992e9b72cee7932",
     "tools/verify_public_tree.py": "f59655cdff6ba01c4ec5b5702257ad21bea3949ad13c7922bebd3312a56dec59",
-    "tests/public-client/test_lighting_hacs_alpha55.cjs": "4aa4e240361ae876c7c2eff428e45d9ae50438b49d77be3596ed2451368f1a9c"
+    "tests/public-client/test_lighting_hacs_alpha55.cjs": "4aa4e240361ae876c7c2eff428e45d9ae50438b49d77be3596ed2451368f1a9c",
+    "staging/lighting/README.md": "648b1613f89493f9f7d522b018557263684535d8a46025dba65da8886fb5384a",
+    "staging/lighting/ha_inventory.py": "c7c4547d78b793e45065632b845d2d8a97f9ae22a5bed345dc18a0c24e47aeb5",
+    "staging/lighting/inventory_uplink.py": "fc974cd729d305856e0ea67ee65a8cc401196b3f47dc3e78e9a189ac8e0cd9a5",
+    "staging/lighting/native_scope.py": "acd1c9962dea999ce615660b7d7db19944c56718b03c135f1b3890f08e7e9718",
+    "staging/lighting/native_ws.py": "2f94934b3f3b39e811f1b119d4e163423ee06920dc36e92180dea6694f047c3c",
+    "staging/lighting/tests/test_native_ws.py": "c477cdfbf94a6afe33c05e1ecd3eb40268371d393be5191ae35a78d1e55b11c8",
+    "tests/public-client/test_lighting_ha_inventory.py": "6d16f7de3ffd817750db3e0dce26692c0f68842a5946f3f5e653fb82356cea3e",
+    "tests/public-client/test_lighting_inventory_uplink.py": "80a471287af16ba5d57c012fd401162dc157ed6b01cddf69bdc44406cabfb370",
+    "tests/public-client/test_lighting_native_scope.py": "818934f4c11faca6eed14a7f0af5abfeaf0a1f872a16785cd314016a06f65a99"
   },
   "private_engine_files_included": false,
   "old_git_history_included": false,
