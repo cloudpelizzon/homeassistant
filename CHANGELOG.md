@@ -1,5 +1,11 @@
 # Notas de versão
 
+## 7.0.0-alpha.57 — atualização de instalações legadas
+
+- Mantém a entrada existente, opções e arquivos locais; não exige excluir a integração para atualizar o cadastro técnico.
+- Instalações antigas sem identidade SDK apresentam a confirmação nativa no Home Assistant. Sem consentimento não há provisionamento nem envio ao Fleet.
+- A atualização exige uma identidade Core existente válida e não inicia ou renova Trials. Cadastros legados ficam preservados; conversão de dados entre motores precisa de validação própria.
+
 ## 7.0.0-alpha.56 — TRIAL — 26/10/2026
 
 ### Cliente e navegação
