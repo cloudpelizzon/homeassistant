@@ -2,7 +2,7 @@
 import json,types,unittest,tempfile
 from pathlib import Path
 from datetime import datetime,timedelta,timezone
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock,patch
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from homeassistant.core import HomeAssistant
 from homeassistant.components import websocket_api
@@ -11,6 +11,60 @@ from client81.public_lighting import native_ws,wire
 from client81.lighting_controls240 import reviewed_current330
 
 class LightingTests(unittest.IsolatedAsyncioTestCase):
+ async def test499_attach_then_profile_has_one_owned_control_registration(self):
+  from client81 import profile_client229,lighting_controls240
+  with tempfile.TemporaryDirectory(dir='/tmp') as folder:
+   hass=HomeAssistant(folder);hass.data[websocket_api.DOMAIN]={}
+   client=types.SimpleNamespace(_iid='synthetic-lighting',activate=lambda *a:self.fail('no activation'))
+   context={'client':client,'core_id':'a'*32,'trial_id':'synthetic-lighting'}
+   bridge=types.SimpleNamespace(fetch_verified=AsyncMock(),installed={'CP-SOLAR'})
+   close_transport=await attach(hass,context,bridge)
+   self.assertNotIn(lighting_controls240.COMMAND,hass.data[websocket_api.DOMAIN])
+   close_profile=profile_client229.register(hass,context)
+   self.assertIn(lighting_controls240.COMMAND,hass.data[websocket_api.DOMAIN])
+   close_profile();self.assertNotIn(lighting_controls240.COMMAND,hass.data[websocket_api.DOMAIN])
+   self.assertIn(native_ws.SNAPSHOT,hass.data[websocket_api.DOMAIN])
+   close_transport();await hass.async_stop()
+
+ async def test499_foreign_control_conflict_leaves_no_profile_or_partial_handlers(self):
+  from client81 import profile_client229,lighting_controls240
+  with tempfile.TemporaryDirectory(dir='/tmp') as folder:
+   hass=HomeAssistant(folder);hass.data[websocket_api.DOMAIN]={}
+   client=types.SimpleNamespace(_iid='synthetic-lighting')
+   context={'client':client,'core_id':'a'*32,'trial_id':'synthetic-lighting'}
+   bridge=types.SimpleNamespace(fetch_verified=AsyncMock(),installed={'CP-SOLAR'})
+   close_transport=await attach(hass,context,bridge)
+   name=lighting_controls240.ROOMS333+'/images337';foreign=(object(),None)
+   hass.data[websocket_api.DOMAIN][name]=foreign;before=dict(hass.data[websocket_api.DOMAIN])
+   with self.assertRaises(ValueError):profile_client229.register(hass,context)
+   self.assertNotIn(profile_client229.KEY,hass.data)
+   self.assertEqual(hass.data[websocket_api.DOMAIN],before)
+   hass.data[websocket_api.DOMAIN].pop(name)
+   close_profile=profile_client229.register(hass,context);close_profile();close_transport()
+   await hass.async_stop()
+
+ async def test499_full_runtime_registration_chain_starts_and_unloads_without_activation(self):
+  from client81 import runtime,profile_client229,lighting_controls240,module_registration298
+  with tempfile.TemporaryDirectory(dir='/tmp') as folder:
+   hass=HomeAssistant(folder);hass.data[websocket_api.DOMAIN]={}
+   hass.config_entries=types.SimpleNamespace(async_forward_entry_setups=AsyncMock(),async_unload_platforms=AsyncMock(return_value=True))
+   callbacks=[];entry=types.SimpleNamespace(domain='cloudpelizzon',entry_id='synthetic-entry',options={},data={},async_on_unload=callbacks.append)
+   client=types.SimpleNamespace(_iid='synthetic-lighting',status=lambda:self.fail('no remote status'),activate=lambda *a:self.fail('no activation'))
+   context={'client':client,'core_id':'a'*32,'trial_id':'synthetic-lighting'}
+   handoff=types.SimpleNamespace(close=lambda:None)
+   patches=[patch.object(runtime,'load_context',AsyncMock(return_value=context)),patch.object(runtime,'onboarding',AsyncMock(return_value=handoff)),patch.object(runtime,'automation_ui',AsyncMock(return_value=lambda:None)),patch.object(runtime,'security_ui',AsyncMock(return_value=lambda:None)),patch.object(runtime.frontend,'register',AsyncMock(return_value=lambda:None)),patch.object(module_registration298,'register',AsyncMock(return_value=lambda:None)),patch.object(runtime.fleet_reporter,'start',return_value=lambda:None)]
+   for p in patches:p.start()
+   try:
+    manager=runtime.Runtime(hass,entry,factories={});await manager.start()
+    self.assertIn(profile_client229.KEY,hass.data)
+    self.assertIn(lighting_controls240.COMMAND,hass.data[websocket_api.DOMAIN])
+    await manager.unload()
+    self.assertNotIn(runtime.DOMAIN,hass.data);self.assertNotIn(profile_client229.KEY,hass.data)
+    self.assertNotIn(lighting_controls240.COMMAND,hass.data[websocket_api.DOMAIN])
+   finally:
+    for p in reversed(patches):p.stop()
+    await hass.async_stop()
+
  async def test_public_attach_and_owned_unload_without_activation(self):
   with tempfile.TemporaryDirectory(dir='/tmp') as folder:
    hass=HomeAssistant(folder);hass.data[websocket_api.DOMAIN]={}

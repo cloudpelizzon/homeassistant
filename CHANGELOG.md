@@ -1,5 +1,11 @@
 # Notas de versão
 
+## 7.0.0-alpha.58 — inicialização da Iluminação
+
+- Remove o registro duplicado dos controles de Iluminação durante a inicialização do cliente público.
+- Mantém um único responsável pelo registro e pela liberação dos comandos. Falhas de registro não deixam perfil ou comandos parciais pendurados.
+- Inclui testes de inicialização conjunta do transporte e perfil, conflito com comando preexistente e a cadeia de registro do Runtime. Nenhum Trial ou dispositivo é acionado nos testes.
+
 ## 7.0.0-alpha.57 — atualização de instalações legadas
 
 - Mantém a entrada existente, opções e arquivos locais; não exige excluir a integração para atualizar o cadastro técnico.

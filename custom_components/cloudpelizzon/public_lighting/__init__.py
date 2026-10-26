@@ -14,7 +14,6 @@ async def attach(hass,context,bridge):
  from homeassistant.components import websocket_api
  import probatio
  from ..ui_inventory import verify
- from ..lighting_controls240 import register as register_controls
  root=Path(__file__).resolve().parents[1]
  verified=await hass.async_add_executor_job(verify,root)
  if verified['files']<1:raise PermissionError('verified_public_UI_required')
@@ -28,7 +27,6 @@ async def attach(hass,context,bridge):
  closers=[close_ws]
  try:
   bridge.fetch_verified=fetch;bridge.installed=old_installed|{'CP-LIGHTING'}
-  closers.append(register_controls(hass))
  except BaseException:
   for close in reversed(closers):close()
   port.close();closed[0]=True;bridge.fetch_verified=old_fetch;bridge.installed=old_installed
