@@ -8,6 +8,13 @@
         "data": {
           "consent": "I accept Fleet technical registration, including the required sharing of the HA owner display name"
         }
+      },
+      "reauth_confirm": {
+        "title": "Update CloudPelizzon registration",
+        "description": "The existing entry and configuration files are preserved. Accept technical registration below to complete this update. This step does not start or renew any Trial.\n\nTo use this integration, register this installation with Fleet for free. Registration requires the Home Assistant owner (administrator) display name to identify the person responsible for the installation, together with the installation identifier and Home Assistant and CloudPelizzon versions. The administrator password, email and token are not sent. Registration does not start module trials or issue a commercial license.",
+        "data": {
+          "consent": "I accept Fleet technical registration, including the required sharing of the HA owner display name"
+        }
       }
     },
     "error": {
@@ -18,7 +25,8 @@
       "owner_name_required": "Unable to read the Home Assistant owner display name. Check the owner profile name and try again."
     },
     "abort": {
-      "already_configured": "CloudPelizzon is already configured."
+      "already_configured": "CloudPelizzon is already configured.",
+      "reauth_successful": "Registration updated; integration reloaded."
     }
   },
   "options": {

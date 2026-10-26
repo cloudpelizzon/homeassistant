@@ -1,7 +1,7 @@
 """Public CloudPelizzon client candidate for preprovisioned installations."""
 import logging
 from pathlib import Path
-from homeassistant.exceptions import ConfigEntryNotReady
+from homeassistant.exceptions import ConfigEntryNotReady, ConfigEntryAuthFailed
 from .runtime import DOMAIN, OWNER, Runtime
 from .ui_inventory import PublicInventoryMismatch
 from homeassistant.helpers import config_validation as cv
@@ -16,6 +16,11 @@ async def async_setup(hass, config):
 
 
 async def async_setup_entry(hass, entry):
+    # Legacy entries retain their entry_id, registries, options and Core store.
+    # Ask for the new enrollment consent instead of deleting/recreating them.
+    edge = Path(hass.config.path('.storage/cloudpelizzon_edge'))
+    if not entry.data and not await hass.async_add_executor_job(edge.exists):
+        raise ConfigEntryAuthFailed('legacy_enrollment_required')
     manager = Runtime(hass, entry)
     try:
         await manager.start()

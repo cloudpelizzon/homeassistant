@@ -17,7 +17,7 @@ from .public_onboarding.protocol import FLEET_URL, fleet_ack
 LOCK = 'cloudpelizzon_setup81_lock'
 
 
-async def enroll_free(hass, user_input):
+async def enroll_free(hass, user_input, *, require_existing=False):
     import asyncio
     if type(user_input) is not dict or user_input.get('consent') is not True:
         raise PermissionError('consent_required')
@@ -31,6 +31,8 @@ async def enroll_free(hass, user_input):
             raise ValueError('existing_core_store_invalid')
         data = dict(loaded or {})
         iid = data.get('installation_id')
+        if require_existing and iid is None:
+            raise ValueError('existing_core_identity_required')
         if iid is not None and (type(iid) is not str or not re.fullmatch('[0-9a-f]{32}', iid)):
             raise ValueError('existing_core_identity_invalid')
         if iid is None:

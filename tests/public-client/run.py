@@ -60,5 +60,5 @@ with tempfile.TemporaryDirectory(prefix='cp-public-native81-',dir='/tmp') as fol
         'Fleet_HTTP':'synthetic_boundary','activation_SDK':'synthetic_boundary','trial_WS_tests':14,'automation_transport_tests':12,'automation_HTTP_capability':'synthetic_boundary','private_engines_in_fixture':False,
         'customer_data_present':False,'network':'none','publication_allowed':False}
     print('CP_PUBLIC_NATIVE81='+json.dumps(report,separators=(',',':')),flush=True)
-    code=0 if result.wasSuccessful() and result.testsRun==136 and not result.skipped else 1
+    code=0 if result.wasSuccessful() and result.testsRun==141 and not result.skipped else 1
 raise SystemExit(code)

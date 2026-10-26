@@ -157,3 +157,77 @@ class NativeSetupTests(unittest.IsolatedAsyncioTestCase):
         result=await self.finish(result,{'consent':True})
         self.assertEqual(result['type'],FlowResultType.CREATE_ENTRY)
         self.assertEqual(self.posts[-1]['ha_admin_name'],'Nome de teste')
+
+    async def legacy_entry498(self):
+        created=await self.start({'consent':True})
+        entry=created['result']
+        self.hass.config_entries.async_update_entry(entry,data={},options={'preserve498':{'enabled':False}})
+        shutil.rmtree(self.root/'.storage/cloudpelizzon_edge')
+        store=Store(self.hass,1,'cloudpelizzon_core.data',private=True)
+        saved=await store.async_load()
+        saved.update(module_trials={'CP-SOLAR':{'started_at':123,'expires_at':456}},preserve498={'cadastro':'synthetic'})
+        await store.async_save(saved)
+        return entry,saved
+
+    async def reauth498(self,entry):
+        return await self.hass.config_entries.flow.async_init('cloudpelizzon',
+            context={'source':config_entries.SOURCE_REAUTH,'entry_id':entry.entry_id},data=dict(entry.data))
+
+    async def test498_legacy_reauth_requires_consent_without_identity_or_network(self):
+        entry,saved=await self.legacy_entry498();count=len(self.posts)
+        result=await self.reauth498(entry)
+        self.assertEqual(result['step_id'],'reauth_confirm')
+        result=await self.finish(result,{'consent':False})
+        self.assertEqual(result['errors'],{'base':'consent_required'})
+        self.assertEqual(len(self.posts),count)
+        self.assertFalse((self.root/'.storage/cloudpelizzon_edge').exists())
+        self.assertEqual(await Store(self.hass,1,'cloudpelizzon_core.data').async_load(),saved)
+        self.assertEqual(dict(entry.data),{})
+
+    async def test498_legacy_reauth_keeps_entry_options_core_trials_and_cadastros(self):
+        entry,saved=await self.legacy_entry498();eid=entry.entry_id
+        with patch.object(self.hass.config_entries,'async_reload',AsyncMock(return_value=True)) as reload:
+            result=await self.reauth498(entry)
+            result=await self.finish(result,{'consent':True})
+        self.assertEqual(result['type'],FlowResultType.ABORT)
+        self.assertEqual(result['reason'],'reauth_successful')
+        self.assertIs(self.hass.config_entries.async_get_entry(eid),entry)
+        self.assertEqual(len(self.hass.config_entries.async_entries('cloudpelizzon')),1)
+        self.assertEqual(entry.options['preserve498'],{'enabled':False})
+        self.assertEqual(entry.data['fleet_installation_id'],saved['installation_id'])
+        after=await Store(self.hass,1,'cloudpelizzon_core.data').async_load()
+        for key,value in saved.items():self.assertEqual(after[key],value)
+        reload.assert_awaited_once_with(eid)
+
+    async def test498_missing_legacy_core_cannot_generate_replacement(self):
+        entry,saved=await self.legacy_entry498();count=len(self.posts)
+        await Store(self.hass,1,'cloudpelizzon_core.data').async_save({})
+        result=await self.reauth498(entry)
+        result=await self.finish(result,{'consent':True})
+        self.assertEqual(result['errors'],{'base':'identity_invalid'})
+        self.assertEqual(len(self.posts),count)
+        self.assertFalse((self.root/'.storage/cloudpelizzon_edge').exists())
+        self.assertEqual(await Store(self.hass,1,'cloudpelizzon_core.data').async_load(),{})
+
+    async def test498_setup_requests_native_reauth_before_runtime_effects(self):
+        import client81
+        from homeassistant.exceptions import ConfigEntryAuthFailed
+        entry,saved=await self.legacy_entry498()
+        with patch.object(client81,'Runtime') as runtime:
+            with self.assertRaises(ConfigEntryAuthFailed):
+                await client81.async_setup_entry(self.hass,entry)
+        runtime.assert_not_called()
+
+    async def test498_registration_failure_preserves_legacy_entry_and_can_retry(self):
+        entry,saved=await self.legacy_entry498();self.fail=True
+        result=await self.reauth498(entry)
+        result=await self.finish(result,{'consent':True})
+        self.assertEqual(result['errors'],{'base':'cannot_connect'})
+        self.assertEqual(dict(entry.data),{})
+        before=(self.root/'.storage/cloudpelizzon_edge/installation.pem').read_bytes()
+        self.fail=False
+        with patch.object(self.hass.config_entries,'async_reload',AsyncMock(return_value=True)):
+            result=await self.finish(result,{'consent':True})
+        self.assertEqual(result['reason'],'reauth_successful')
+        self.assertEqual((self.root/'.storage/cloudpelizzon_edge/installation.pem').read_bytes(),before)
+        self.assertEqual(entry.data['fleet_installation_id'],saved['installation_id'])

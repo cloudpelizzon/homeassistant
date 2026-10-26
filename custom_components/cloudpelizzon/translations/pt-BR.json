@@ -8,6 +8,13 @@
         "data": {
           "consent": "Li e aceito o cadastro técnico no Fleet, incluindo o envio obrigatório do nome do proprietário do HA"
         }
+      },
+      "reauth_confirm": {
+        "title": "Atualizar cadastro CloudPelizzon",
+        "description": "A entrada existente e seus arquivos de configuração serão preservados. Para concluir a atualização, aceite o cadastro técnico abaixo. Nenhum Trial é iniciado ou renovado por esta etapa.\n\nPara usar a integração, cadastre esta instalação gratuitamente no Fleet. O cadastro inclui obrigatoriamente o nome de exibição do proprietário (administrador) do Home Assistant, para identificar o responsável pela instalação, além do identificador técnico e das versões do Home Assistant e CloudPelizzon. Não são enviados senha, e-mail ou token do administrador. Este cadastro não inicia testes de módulos nem emite licença comercial.",
+        "data": {
+          "consent": "Li e aceito o cadastro técnico no Fleet, incluindo o envio obrigatório do nome do proprietário do HA"
+        }
       }
     },
     "error": {
@@ -18,7 +25,8 @@
       "owner_name_required": "Não foi possível obter o nome de exibição do proprietário do Home Assistant. Confira esse nome no perfil do proprietário e tente novamente."
     },
     "abort": {
-      "already_configured": "A CloudPelizzon já está configurada."
+      "already_configured": "A CloudPelizzon já está configurada.",
+      "reauth_successful": "Cadastro atualizado; integração recarregada."
     }
   },
   "options": {
