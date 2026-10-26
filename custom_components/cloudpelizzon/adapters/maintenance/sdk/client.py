@@ -8,6 +8,9 @@ The caller owns the installation key; no credentials or capabilities are persist
 
 """
 
+# CP_COMMON_ACCESS207
+from .... import commercial_access207 as _cp_access207
+
 from datetime import datetime, timedelta, timezone
 
 import hashlib
@@ -218,80 +221,45 @@ class Client:
 
 
 
-    def activate(self,sku,*,confirmed=False):
-        if confirmed is not True or type(sku) is not str or sku not in SKUS:
+    def activate(self, sku, *, confirmed=False):
+        if confirmed is not True or type(sku) is not str or (not _cp_access207.valid_module_sku(sku)):
             raise ClientError('explicit_module_activation_required')
-        preflight_request=self._sign({'installation_id':self._iid,'nonce':secrets.token_hex(32),
-            'timestamp':int(self._clock().timestamp())},PURPOSE['status'])
-        preflight=self._sign({'v':1,'installation_id':self._iid,'action':'status',
-            'payload':preflight_request,'timestamp':int(self._clock().timestamp()),'nonce':secrets.token_hex(32)},
-            b'CP-GATEWAY-CONTROL-V1\n','signature')
-        request=self._sign({'installation_id':self._iid,'sku':sku,'nonce':secrets.token_hex(32),
-            'timestamp':int(self._clock().timestamp())},b'CP-TRIAL-V2-START\n')
-        envelope=self._sign({'v':1,'installation_id':self._iid,'action':'activate','payload':request,
-            'preflight':preflight,'timestamp':int(self._clock().timestamp()),'nonce':secrets.token_hex(32)},
-            b'CP-GATEWAY-CONTROL-V1\n','signature')
-        packet=self._send('/v1/trial/activate',envelope)
+        preflight_request = self._sign({'installation_id': self._iid, 'nonce': secrets.token_hex(32), 'timestamp': int(self._clock().timestamp())}, PURPOSE['status'])
+        preflight = self._sign({'v': 1, 'installation_id': self._iid, 'action': 'status', 'payload': preflight_request, 'timestamp': int(self._clock().timestamp()), 'nonce': secrets.token_hex(32)}, b'CP-GATEWAY-CONTROL-V1\n', 'signature')
+        request = self._sign({'installation_id': self._iid, 'sku': sku, 'nonce': secrets.token_hex(32), 'timestamp': int(self._clock().timestamp())}, b'CP-TRIAL-V2-START\n')
+        envelope = self._sign({'v': 1, 'installation_id': self._iid, 'action': 'activate', 'payload': request, 'preflight': preflight, 'timestamp': int(self._clock().timestamp()), 'nonce': secrets.token_hex(32)}, b'CP-GATEWAY-CONTROL-V1\n', 'signature')
+        packet = self._send('/v1/trial/activate', envelope)
         try:
             from .activation83 import verify_activation
-            claim=verify_activation(packet,request,self._clock(),self._authority)
-            return {'claims':claim,'first_activation':packet['first_activation']}
+            claim = verify_activation(packet, request, self._clock(), self._authority)
+            return {'claims': claim, 'first_activation': packet['first_activation']}
         except Exception:
             raise ClientError('activation_not_verified_refresh_status') from None
 
     def status(self):
-
         """Return verified display status; never use display state as an execution grant."""
-
-        packet, nonce = self._control("status")
-
+        packet, nonce = self._control('status')
         try:
-
-            if set(packet) != {"claims", "signature"}:
-
+            if set(packet) != {'claims', 'signature'}:
                 raise ValueError()
-
-            claim = packet["claims"]
-
-            if (not isinstance(claim, dict) or set(claim) != {"schema", "installation_id", "nonce", "issued_at", "expires_at", "modules"}
-
-                or claim["schema"] != "cp.r16.lifecycle.signed.v1" or claim["installation_id"] != self._iid or claim["nonce"] != nonce):
-
+            claim = packet['claims']
+            if not isinstance(claim, dict) or set(claim) != {'schema', 'installation_id', 'nonce', 'issued_at', 'expires_at', 'modules'} or claim['schema'] != 'cp.r16.lifecycle.signed.v1' or (claim['installation_id'] != self._iid) or (claim['nonce'] != nonce):
                 raise ValueError()
-
-            self._authority.verify(bytes.fromhex(packet["signature"]), canonical(claim))
-
-            issued, expires, now = timestamp(claim["issued_at"]), timestamp(claim["expires_at"]), self._clock()
-
-            if not (issued < expires <= issued + timedelta(seconds=5) and timedelta(seconds=-2) <= now - issued <= timedelta(seconds=5) and now < expires):
-
+            self._authority.verify(bytes.fromhex(packet['signature']), canonical(claim))
+            issued, expires, now = (timestamp(claim['issued_at']), timestamp(claim['expires_at']), self._clock())
+            if not (issued < expires <= issued + timedelta(seconds=5) and timedelta(seconds=-2) <= now - issued <= timedelta(seconds=5) and (now < expires)):
                 raise ValueError()
-
-            if not isinstance(claim["modules"], dict) or set(claim["modules"]) != SKUS:
-
+            if not isinstance(claim['modules'], dict) or not _cp_access207.valid_status_modules(claim['modules']):
                 raise ValueError()
-
-            for item in claim["modules"].values():
-
-                if (not isinstance(item, dict) or set(item) != {"phase", "paid_confirmed", "blocks_at", "removal_due_at"}
-
-                    or item["phase"] not in {"not_started", "not_entitled", "trial_active", "trial_blocked", "trial_removal_due", "licensed"}
-
-                    or type(item["paid_confirmed"]) is not bool):
-
+            for item in claim['modules'].values():
+                if not isinstance(item, dict) or set(item) != {'phase', 'paid_confirmed', 'blocks_at', 'removal_due_at'} or item['phase'] not in {'not_started', 'not_entitled', 'trial_active', 'trial_blocked', 'trial_removal_due', 'licensed'} or (type(item['paid_confirmed']) is not bool):
                     raise ValueError()
-
-                for name in ("blocks_at", "removal_due_at"):
-
+                for name in ('blocks_at', 'removal_due_at'):
                     if item[name] is not None:
-
                         timestamp(item[name])
-
             return claim
-
         except Exception:
-
-            raise ClientError("status_not_verified") from None
+            raise ClientError('status_not_verified') from None
 
 
 
@@ -323,78 +291,44 @@ class Client:
         return self._attempt('CP-AUTOMATION','automation.rules.execute',args,request_id=request_id,channel='effects')
 
     def _attempt(self, sku, operation, args, *, request_id, preview=False, channel=None):
-
         """One attempt, fresh online grant; callers retain request_id for deliberate retries.
-
-
-
-        A timeout is inconclusive: the operation may have committed. This client never
-
-        automatically retries a mutation. No server-provided code or device action runs here.
-
-        """
-
-        if (not isinstance(sku, str) or sku not in SKUS or not isinstance(operation, str) or not re.fullmatch(r"[a-z][a-z0-9_.]{1,127}", operation)
-
-            or not isinstance(args, dict) or not isinstance(request_id, str) or not re.fullmatch(r"[A-Za-z0-9_-]{16,128}", request_id)):
-
-            raise ClientError("arguments_invalid")
-
+    
+    
+    
+            A timeout is inconclusive: the operation may have committed. This client never
+    
+            automatically retries a mutation. No server-provided code or device action runs here.
+    
+            """
+        if not isinstance(sku, str) or not _cp_access207.valid_module_sku(sku) or (not isinstance(operation, str)) or (not re.fullmatch('[a-z][a-z0-9_.]{1,127}', operation)) or (not isinstance(args, dict)) or (not isinstance(request_id, str)) or (not re.fullmatch('[A-Za-z0-9_-]{16,128}', request_id)):
+            raise ClientError('arguments_invalid')
         try:
-
-            # Freeze nested mutable caller data before hashing/signing any request.
-
             frozen = json.loads(canonical(args), object_pairs_hook=unique)
-
             if len(canonical(frozen)) > 40000:
-
                 raise ValueError()
-
         except Exception:
+            raise ClientError('arguments_invalid') from None
+        if sku in getattr(self,'_local_required225',frozenset()):raise ClientError('licensed_module_requires_local_installation')
+        capability, _ = self._control('capability', {'sku': sku, 'operation': operation})
+        if set(capability) != {'ok', 'operation', 'token'} or capability['ok'] is not True or capability['operation'] != operation or (not isinstance(capability['token'], str)) or (not _cp_access207.valid_capability_token(capability['token'])) or (len(capability['token']) > 8192):
+            raise ClientError('capability_invalid')
+        if capability['token'].startswith('cpp1.'):
+            self._local_required225=getattr(self,'_local_required225',frozenset())|{sku}
+            raise ClientError('licensed_module_requires_local_installation')
+        binding = hashlib.sha256(canonical({'protocol': 'cp.cloud.online.v1', 'installation_id': self._iid, 'sku': sku, 'operation': operation, 'args': frozen, 'request_id': request_id})).hexdigest()
+        bundle = preview or channel == 'run' or operation in TWO_PROOFS
+        proofs = [self._sign({'installation_id': self._iid, 'sku': sku, 'operation': operation, 'challenge': secrets.token_hex(32), 'args_sha256': binding, 'token': capability['token'], 'nonce': secrets.token_hex(32), 'timestamp': int(self._clock().timestamp())}) for _ in range(2 if bundle else 1)]
+        if bundle and (proofs[0]['nonce'] == proofs[1]['nonce'] or proofs[0]['challenge'] == proofs[1]['challenge']):
+            raise ClientError('randomness_failure')
+        envelope = {'v': 1 if preview or channel else 3 if bundle else 2, 'installation_id': self._iid, 'operation': operation, 'args': frozen, 'request_id': request_id, 'timestamp': int(self._clock().timestamp()), 'nonce': secrets.token_hex(32)}
+        envelope['proofs' if bundle else 'proof'] = proofs if bundle else proofs[0]
+        envelope = self._sign(envelope, b'CP-GATEWAY-RUN-V1\n' if channel == 'run' else b'CP-GATEWAY-EFFECTS-V1\n' if channel == 'effects' else b'CP-GATEWAY-PREVIEW-V1\n' if preview else b'CP-GATEWAY-EXECUTE-V3\n' if bundle else b'CP-GATEWAY-EXECUTE-V2\n', 'signature')
+        response = self._send('/v1/automation/' + channel if channel else '/v1/automation/preview' if preview else '/v1/execute', envelope)
+        if response.get('ok') is not True or response.get('operation') != operation or response.get('request_id') != request_id or (not isinstance(response.get('result'), dict)):
+            raise ClientError('execution_response_invalid')
+        return response['result']
 
-            raise ClientError("arguments_invalid") from None
 
-        capability, _ = self._control("capability", {"sku": sku, "operation": operation})
-
-        if (set(capability) != {"ok", "operation", "token"} or capability["ok"] is not True or capability["operation"] != operation
-
-            or not isinstance(capability["token"], str) or not capability["token"].startswith("cpt1.") or len(capability["token"]) > 8192):
-
-            raise ClientError("capability_invalid")
-
-        binding = hashlib.sha256(canonical({"protocol": "cp.cloud.online.v1", "installation_id": self._iid,
-
-                                           "sku": sku, "operation": operation, "args": frozen, "request_id": request_id})).hexdigest()
-
-        bundle = preview or channel=='run' or operation in TWO_PROOFS
-
-        proofs = [self._sign({"installation_id": self._iid, "sku": sku, "operation": operation,
-
-                             "challenge": secrets.token_hex(32), "args_sha256": binding,
-
-                             "token": capability["token"], "nonce": secrets.token_hex(32),
-
-                             "timestamp": int(self._clock().timestamp())}) for _ in range(2 if bundle else 1)]
-
-        if bundle and (proofs[0]["nonce"] == proofs[1]["nonce"] or proofs[0]["challenge"] == proofs[1]["challenge"]):
-
-            raise ClientError("randomness_failure")
-
-        envelope = {"v": 1 if preview or channel else 3 if bundle else 2, "installation_id": self._iid, "operation": operation, "args": frozen,
-
-                    "request_id": request_id, "timestamp": int(self._clock().timestamp()), "nonce": secrets.token_hex(32)}
-
-        envelope["proofs" if bundle else "proof"] = proofs if bundle else proofs[0]
-
-        envelope = self._sign(envelope, b'CP-GATEWAY-RUN-V1\n' if channel=='run' else b'CP-GATEWAY-EFFECTS-V1\n' if channel=='effects' else b"CP-GATEWAY-PREVIEW-V1\n" if preview else b"CP-GATEWAY-EXECUTE-V3\n" if bundle else b"CP-GATEWAY-EXECUTE-V2\n", "signature")
-
-        response = self._send("/v1/automation/"+channel if channel else "/v1/automation/preview" if preview else "/v1/execute", envelope)
-
-        if (response.get("ok") is not True or response.get("operation") != operation or response.get("request_id") != request_id
-
-            or not isinstance(response.get("result"), dict)):
-
-            raise ClientError("execution_response_invalid")
-
-        return response["result"]
-
+# CP_SHARED_CONTROL229: memory-only signed control cache; effects stay fresh.
+from ....control_cache229 import wrap as _cp_wrap229
+Client._control=_cp_wrap229(Client._control,ClientError)

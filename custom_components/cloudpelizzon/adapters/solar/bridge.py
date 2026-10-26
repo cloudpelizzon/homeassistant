@@ -45,13 +45,20 @@ class SolarBridge:
                 if row is not None:
                     result[eid]={'state':row.state,'attributes':{k:v for k,v in row.attributes.items() if k in ATTRIBUTES}}
             return detached(result)
+        from ...ha_private212 import select_executor
+        paid_execute,local_close=select_executor(hass,client)
         async def execute(operation,args,request_id):
-            call=functools.partial(client.execute,'CP-SOLAR',operation,args,request_id=request_id)
+            call=functools.partial(paid_execute,'CP-SOLAR',operation,args,request_id=request_id)
             return await hass.async_add_executor_job(call)
         bridge=cls(execute,snapshot);bridge._approved_read_entities=approved
+        bridge._local_close216=local_close
+        bridge._local216=getattr(paid_execute,"__self__",None) is not client
         return bridge
 
-    def close(self):self.closed=True
+    def close(self):
+        self.closed=True
+        close=getattr(self,"_local_close216",None)
+        if close:close()
 
     async def _request(self,operation,extra=None):
         if self.closed:raise PermissionError('adapter_unloaded')

@@ -6,9 +6,9 @@ from homeassistant.components import websocket_api
 
 COMMAND='cloudpelizzon/core/trial/v2/start'
 KEY='cloudpelizzon_public_trial83'
-SKUS=frozenset(('CP-MAINTENANCE','CP-SOLAR','CP-SECURITY','CP-AUTOMATION'))
+SKUS=frozenset(('CP-MAINTENANCE','CP-SOLAR','CP-SECURITY','CP-AUTOMATION','CP-LIGHTING'))
 # Match the deployed gateway's readiness gate; never consume time on partial modules.
-ACTIVATION_READY=frozenset(('CP-MAINTENANCE','CP-SOLAR','CP-AUTOMATION','CP-SECURITY'))
+ACTIVATION_READY=frozenset(('CP-MAINTENANCE','CP-SOLAR','CP-AUTOMATION','CP-SECURITY','CP-LIGHTING'))
 
 
 async def dispatch(hass,connection,msg):
@@ -29,7 +29,7 @@ async def dispatch(hass,connection,msg):
             return
         # An RPC sent by the original UI's explicit confirmation is the only
         # entry point. Startup, status reads and pairing never call activate.
-        if msg['sku'] in ('CP-AUTOMATION','CP-SECURITY'):
+        if msg['sku'] in ('CP-AUTOMATION','CP-SECURITY','CP-LIGHTING'):
             if state['prepare'] is None:raise PermissionError('native_connection_required')
             await state['prepare'](msg['sku'])
             if not await authorized():raise PermissionError('session_or_runtime_changed')

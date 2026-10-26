@@ -9,6 +9,7 @@ import stat
 import re
 
 ROUTES = {
+    '/cloudpelizzon-lighting/frontend': 'ui/lighting',
     '/cloudpelizzon/frontend': 'ui/shell',
     '/cloudpelizzon-core/frontend': 'ui/core',
     '/cloudpelizzon-updater/frontend': 'ui/updater',

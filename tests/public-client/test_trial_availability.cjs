@@ -1,7 +1,7 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 const classes=new Map();let requests=0,confirmations=0,checks=0;
 const context={HTMLElement:class{},customElements:{get:n=>classes.get(n),define:(n,c)=>classes.set(n,c)},
- document:{},window:{},console,confirm:()=>{confirmations++;return true},setTimeout:()=>0};
+ document:{},window:{addEventListener(){},removeEventListener(){},},console,confirm:()=>{confirmations++;return true},setTimeout:()=>0};
 vm.runInNewContext(fs.readFileSync(process.argv[2],'utf8').replace(/^import .*;\r?$/gm,''),context);
 const Core=classes.get('cloudpelizzon-core-panel'),core=Object.create(Core.prototype);
 core.esc=x=>String(x);core.toast=()=>{};core.load=async()=>{};

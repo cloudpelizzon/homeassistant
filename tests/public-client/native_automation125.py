@@ -33,7 +33,7 @@ class NativeAutomationTests(unittest.IsolatedAsyncioTestCase):
         self.hass.config_entries=self.old_manager;await self.hass.async_stop()
         assert self.root.parent==Path('/tmp') and self.root.name.startswith('cp-automation125-');shutil.rmtree(self.root)
     async def invoke(self,command,args=None,admin=True):
-        connection=types.SimpleNamespace(user=types.SimpleNamespace(is_active=True,is_admin=admin),result=None,error=None)
+        connection=types.SimpleNamespace(user=types.SimpleNamespace(id="fixture-admin" if admin else "fixture-user",is_active=True,is_admin=admin),result=None,error=None)
         connection.send_result=lambda i,value:setattr(connection,'result',value)
         connection.send_error=lambda *value:setattr(connection,'error',value)
         message={'id':1,'type':command,**(args or {})}

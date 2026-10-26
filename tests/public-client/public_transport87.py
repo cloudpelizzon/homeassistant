@@ -6,14 +6,14 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
 from cryptography.hazmat.primitives import serialization
 
 def load_sdk(root):
-    package=types.ModuleType('transport87');package.__path__=[str(root)];sys.modules['transport87']=package
-    spec=importlib.util.spec_from_file_location('transport87.client',root/'client.py')
-    module=importlib.util.module_from_spec(spec);sys.modules[spec.name]=module;spec.loader.exec_module(module)
+    import importlib
+    module=importlib.import_module('client81.adapters.automation.lib.cloudpelizzon_client.client')
+    if Path(module.__file__).resolve()!=Path(root/'client.py').resolve():raise AssertionError('candidate_sdk_required')
     return module
 root=Path(__file__).resolve().parent/'client81/adapters/automation/lib/cloudpelizzon_client'
 if not root.is_dir():root=Path(sys.argv[1])
 sdk=load_sdk(root)
-from transport87.native_wire85 import binding,canonical
+from client81.adapters.automation.lib.cloudpelizzon_client.native_wire85 import binding,canonical
 
 class TransportTests(unittest.TestCase):
     def setUp(self):

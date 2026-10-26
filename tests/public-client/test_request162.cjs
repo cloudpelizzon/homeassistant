@@ -1,5 +1,5 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert'),root=process.argv[2];
-const classes=new Map(),ctx={HTMLElement:class{},console,document:{},window:{innerWidth:1920},customElements:{get:n=>classes.get(n),define:(n,c)=>classes.set(n,c)},setTimeout:()=>0,clearTimeout(){}};
+const classes=new Map(),ctx={HTMLElement:class{},console,document:{},window:{addEventListener(){},removeEventListener(){},innerWidth:1920},customElements:{get:n=>classes.get(n),define:(n,c)=>classes.set(n,c)},setTimeout:()=>0,clearTimeout(){}};
 vm.createContext(ctx);
 for(const file of ['ui/core/panel.js','ui/shell/panel.js'])vm.runInContext('(function(){'+fs.readFileSync(root+'/'+file,'utf8').replace(/^import .*;\r?$/gm,'')+'})();',ctx);
 const Core=classes.get('cloudpelizzon-core-panel'),Root=classes.get('cloudpelizzon-panel');
@@ -8,7 +8,7 @@ const core=Object.create(Core.prototype);core.esc=s=>String(s);core.renderHomeCa
 const shell=Object.create(Root.prototype),button={hidden:true,dataset:{}};
 shell.shadowRoot={querySelector:()=>button};shell._hass={};shell._moduleRights={};shell._moduleRightsLoaded=false;
 shell.render=()=>{throw Error('An unchanged access grant must not recreate the module')};shell.propagateHass=()=>{};
-const fixture=(sku,phase)=>({sku,name:sku,path:'/synthetic',installed:true,lifecycle:'developed',license:{allowed:phase==='licensed',status:phase==='licensed'?'licensed':phase},trial:{verified:true,phase,paid_confirmed:phase==='licensed',blocks_at:new Date(Date.now()+60000).toISOString()}});
+const fixture=(sku,phase)=>({sku,name:sku,path:'/synthetic',installed:true,local_installed:phase==='licensed',lifecycle:'developed',license:{allowed:phase==='licensed',status:phase==='licensed'?'licensed':phase},trial:{verified:true,phase,paid_confirmed:phase==='licensed',blocks_at:new Date(Date.now()+60000).toISOString()}});
 (async()=>{
 let states=0;
 for(const [view,sku] of Object.entries(views)){

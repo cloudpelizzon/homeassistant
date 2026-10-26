@@ -1,0 +1,2 @@
+# Inventories verify exact bytes; never normalize signed/reviewed assets on checkout.
+* -text

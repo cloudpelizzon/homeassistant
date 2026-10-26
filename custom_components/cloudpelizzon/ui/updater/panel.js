@@ -122,7 +122,7 @@ class CloudPelizzonUpdaterPanel extends HTMLElement{
         description:
           "Arquitetura, baseline e notas da versão do núcleo CloudPelizzon.",
         url:
-          `${DOC_BASE}/notas-de-versao/core/0.12.0`,
+          `${DOC_BASE}/cliente/sistemas/core/manual-operacao-20261026`,
       },
 
       "CP-MAINTENANCE": {
@@ -131,7 +131,7 @@ class CloudPelizzonUpdaterPanel extends HTMLElement{
         description:
           "Manual funcional completo do módulo Manutenção.",
         url:
-          `${DOC_BASE}/notas-de-versao/manutencao/1.6.0`,
+          `${DOC_BASE}/manutencao/manual-operacao-20261026`,
       },
 
       "CP-UPDATER": {
@@ -140,7 +140,7 @@ class CloudPelizzonUpdaterPanel extends HTMLElement{
         description:
           "Notas, versões e documentação do ecossistema CloudPelizzon.",
         url:
-          `${DOC_BASE}/notas-de-versao/central-documentacao/0.8.1`,
+          `${DOC_BASE}/cliente/sistemas/documentacao/manual-operacao-20261026`,
       },
 
     };
@@ -502,10 +502,10 @@ customElements.define('cloudpelizzon-updater-panel',CloudPelizzonUpdaterPanel);
 /* CLOUDPELIZZON_DOC_LINKS_R5_START */
 (() => {
   const MAP = {
-    core: "https://documentacao.cloudpelizzon.com.br/notas-de-versao/core/0.13.0",
-    energy: "https://documentacao.cloudpelizzon.com.br/notas-de-versao/energia/1.0.0",
-    maintenance: "https://documentacao.cloudpelizzon.com.br/notas-de-versao/manutencao/1.6.0-voice-refined",
-    updater: "https://documentacao.cloudpelizzon.com.br/notas-de-versao/central-de-documentacao/1.0.0-release-center"
+    core: "https://documentacao.cloudpelizzon.com.br/cliente/sistemas/core/manual-operacao-20261026",
+    energy: "https://documentacao.cloudpelizzon.com.br/modulos/solar/manual-operacao-20261026",
+    maintenance: "https://documentacao.cloudpelizzon.com.br/manutencao/manual-operacao-20261026",
+    updater: "https://documentacao.cloudpelizzon.com.br/cliente/sistemas/documentacao/manual-operacao-20261026"
   };
 
   function resolveUrl(contextText) {
@@ -806,3 +806,30 @@ customElements.define('cloudpelizzon-updater-panel',CloudPelizzonUpdaterPanel);
     };
 
 })();
+
+/* CP_UPDATER229 */
+/* Signed profile/Release Center reader for locally delivered modules. */
+(() => {
+ const C=customElements.get('cloudpelizzon-updater-panel');if(!C)return;const p=C.prototype;
+ const readable=v=>{let s=String(v??'');for(const [a,b] of [
+ ['Manuten??o','Manutenção'],['Manuten��o','Manutenção'],['ManutenÃ§Ã£o','Manutenção'],
+ ['Manutencao','Manutenção'],['manutencao','manutenção'],['Correcoes','Correções'],
+ ['correcoes','correções'],['reativacao','reativação'],['homologacao','homologação'],
+ ['Homologacao','Homologação']])s=s.split(a).join(b);return s;};
+ const publicationDate=v=>{if(!v)return '';const s=String(v);if(/^[0-9]{4}-[0-9]{2}-[0-9]{2}$/.test(s))return s.split('-').reverse().join('/');const d=new Date(s);return Number.isNaN(d.getTime())?'—':d.toLocaleDateString('pt-BR');};
+ const esc=v=>readable(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+ p.load=async function(check=true){
+  if(this._loading||!this._hass)return;this._loading=true;this.renderLoading();
+  try{this.data=await this.ws(check?'cloudpelizzon/private_updater/check':'cloudpelizzon/private_updater/status');this.render();}
+  catch(e){this.data=null;this.renderError(e.message||'Não foi possível consultar as atualizações agora.');}
+  finally{this._loading=false;}
+ };
+ p.render=function(){const d=this.data||{},components=d.components||[],releases=d.catalog_releases||[];
+  this.innerHTML=`<style>${this.css()} cloudpelizzon-updater-panel{display:block;min-width:0;width:100%;font:14px Inter,Segoe UI,Arial;color:#eefaff;background:#020913;overflow-x:clip}cloudpelizzon-updater-panel main{zoom:.67;width:100%;max-width:none;min-width:0;margin:0;padding:22px 24px 40px;box-sizing:border-box}cloudpelizzon-updater-panel .hero{min-width:0}cloudpelizzon-updater-panel .hero>div{min-width:0}cloudpelizzon-updater-panel .hero button{flex-shrink:0}cloudpelizzon-updater-panel .versions{grid-template-columns:repeat(2,minmax(0,1fr))}cloudpelizzon-updater-panel .card,cloudpelizzon-updater-panel .cp-published229{min-width:0;overflow-wrap:anywhere}cloudpelizzon-updater-panel .cp-up-components229{grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))}@media(max-width:760px){cloudpelizzon-updater-panel main{zoom:1;width:100%;padding:16px 12px 28px}cloudpelizzon-updater-panel .hero{padding:18px;align-items:flex-start;flex-direction:column}cloudpelizzon-updater-panel .hero h1{font-size:25px}cloudpelizzon-updater-panel button{min-height:44px}cloudpelizzon-updater-panel .versions{grid-template-columns:1fr}} .cp-update-info229{padding:20px;border:1px solid #1a526d;border-radius:14px;background:#082536;color:#a3c9dc;line-height:1.7;margin:20px 0}.cp-up-components229{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}.cp-published229{padding:18px;border-bottom:1px solid #173b50;color:#b4d2e4;line-height:1.7}</style><main><section class="hero"><div><span>RELEASE CENTER · CLOUDPELIZZON</span><h1>Atualizações dos seus módulos</h1><p>Pacotes instalados neste Home Assistant e publicações vinculadas às suas licenças.</p></div><button id="check229">Verificar novamente</button></section><div class="cp-update-info229">Consulta ao servidor concluída em ${esc(new Date(d.checked_at).toLocaleString('pt-BR'))}. As atualizações públicas da integração continuam disponíveis no HACS.</div><div class="cp-up-components229">${components.map(c=>`<article class="card"><div class="cardhead"><div><span>${esc(c.sku)}</span><h2>${esc(c.name)}</h2></div><span class="pill ok">${c.installed&&c.signature_verified?'Instalado localmente':'Licenciado'}</span></div><div class="versions"><div><small>Versão instalada</small><b>${esc(c.version||'Versão local não confirmada')}</b></div><div><small>Pacote</small><b>${c.installed&&c.signature_verified?'Assinatura verificada':'Instalação local não confirmada'}</b></div></div></article>`).join('')||'<div class="cp-update-info229">Nenhum pacote comercial local foi identificado nesta consulta. Instale os módulos contratados pela Visão Geral.</div>'}</div><section class="card" style="margin-top:22px"><h2>Publicações no Release Center</h2>${releases.map(r=>`<div class="cp-published229"><b>${esc(r.title||r.sku)} · ${esc(r.version)}</b><br>${esc(r.summary||'')}<br><small>Canal ${esc(r.channel)} · ${esc(publicationDate(r.published_at))}</small></div>`).join('')||'<p class="muted">Nenhuma publicação disponível para seus módulos nesta consulta.</p>'}<p class="muted">Uma publicação só será oferecida para instalação quando houver um pacote local compatível e autorizado. Nenhum pacote foi baixado ou aplicado por esta consulta.</p></section></main>`;
+  this.querySelector('#check229').onclick=()=>this.load(true);
+ };
+})();
+
+/* CP_DOCUMENTATION233: theme-specific manuals and independent release notes. */
+(()=>{const C=customElements.get('cloudpelizzon-updater-panel');if(!C)return;const p=C.prototype,render=p.render,base='https://documentacao.cloudpelizzon.com.br',docs=[["CloudPelizzon Core", "cliente/sistemas/core/manual-operacao-20261026", "notas-de-versao/core/2026-10-26"], ["Inteligência Solar", "modulos/solar/manual-operacao-20261026", "notas-de-versao/energia/2026-10-26"], ["Manutenção Residencial Preventiva", "manutencao/manual-operacao-20261026", "notas-de-versao/manutencao/2026-10-26"], ["Documentação e Atualizações", "cliente/sistemas/documentacao/manual-operacao-20261026", "notas-de-versao/central-de-atualizacoes/2026-10-26"], ["Central de Segurança Pro", "modulos/seguranca/manual-operacao-20261026", "notas-de-versao/seguranca/2026-10-26"], ["Central Inteligente de Automações", "modulos/automacoes/manual-operacao-20261026", "notas-de-versao/automacoes/2026-10-26"], ["Iluminação Inteligente", "modulos/iluminacao/manual-operacao-20261026", "notas-de-versao/iluminacao/2026-10-26"]];
+p.render=function(){render.call(this);const main=this.querySelector('main');if(!main)return;const section=document.createElement('section');section.className='card';section.style.marginTop='22px';section.innerHTML=`<h2>Documentação e notas de versão</h2><p class="muted">Manuais de processo e notas de alteração organizados por produto. Revisão documental de 26/10/2026.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">${docs.map(([name,manual,notes])=>`<article class="doc488" style="padding:20px;border:1px solid #236583;border-radius:14px;background:#092638"><strong>${name}</strong><p class="muted">Processo, diagnóstico e histórico de alterações.</p><p><a target="_blank" rel="noopener noreferrer" href="${base+'/'+manual}" style="color:#5be4ff">Consultar manual ↗</a></p><a target="_blank" rel="noopener noreferrer" href="${base+'/'+notes}" style="color:#c2eaff">Notas de versão ↗</a></article>`).join('')}</div><p><a href="${base}/modulos" target="_blank" rel="noopener noreferrer" style="color:#4fdaff">Abrir módulos na documentação ↗</a></p>`;main.append(section);};})();
