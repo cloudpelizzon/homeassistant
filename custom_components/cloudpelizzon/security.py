@@ -1,5 +1,6 @@
 """Owned Security management, signed state transport and physical relay."""
 from collections.abc import Mapping
+from .security_local300 import KEY as LOCAL_SECURITY
 from functools import partial
 from .adapters.security.configuration import api as configuration
 from .adapters.security.engines import api as engines
@@ -16,10 +17,14 @@ async def create(hass,entry,context):
   def execute(self,sku,operation,args,*,request_id):
    actions={'security.config.read':'config.read','security.config.write':'config.write'}
    if sku!='CP-SECURITY' or operation not in actions:raise PermissionError('security_action_unavailable')
+   local=hass.data.get(LOCAL_SECURITY)
+   if local is not None:return local.request_sync(actions[operation],args,request_id)
    return client.security(actions[operation],args,request_id=request_id)
  async def engine_request(operation,args,rid):
   actions={'security.engines.read':'engines.read','security.engines.update':'engines.update'}
   if operation not in actions:raise PermissionError('engine_action_unavailable')
+  local=hass.data.get(LOCAL_SECURITY)
+  if local is not None:return await local.request(actions[operation],args,rid)
   return await hass.async_add_executor_job(partial(client.security,actions[operation],args,request_id=rid))
  try:
   edge=create_edge(hass,entry,context);context['security_edge']=edge;closes.append(edge.close)

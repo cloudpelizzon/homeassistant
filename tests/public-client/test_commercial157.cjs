@@ -1,6 +1,6 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert');
 function load(file,tag){
- const classes=new Map(),ctx={HTMLElement:class{},console,window:{},document:{},
+ const classes=new Map(),ctx={HTMLElement:class{},console,window:{addEventListener(){},removeEventListener(){},},document:{},
   customElements:{get:n=>classes.get(n),define:(n,c)=>classes.set(n,c)},setTimeout:()=>0,clearTimeout(){}};
  vm.runInNewContext(fs.readFileSync(file,'utf8').replace(/^import .*;\r?$/gm,''),ctx);
  return classes.get(tag);

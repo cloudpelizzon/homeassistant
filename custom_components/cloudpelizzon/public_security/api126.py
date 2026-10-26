@@ -14,6 +14,7 @@ async def dispatch(hass,connection,msg):
  user=connection.user;edge=hass.data.get(KEY)
  def authorized():return (hass.data.get(KEY) is edge and connection.user is user and user is not None
   and getattr(user,'is_active',False) is True and getattr(user,'is_admin',False) is True and not edge.closed)
+ if user is not None:authorized.actor_id=user.id
  if edge is None or not authorized():
   connection.send_error(msg['id'],'unauthorized','Administrador necessário.');return
  try:

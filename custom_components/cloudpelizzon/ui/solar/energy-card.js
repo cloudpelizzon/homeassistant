@@ -11366,3 +11366,49 @@ if (!window.customCards.some(c=>c.type === "casa-pelizzon-energy-ops-card")) {
 console.info("%c MALHA ENERGÉTICA V54.0.0 ","background:#020914;color:#35c8ff;padding:5px 8px;border:1px solid #1d6aa5;border-radius:4px;font-weight:bold;");
 
 
+
+/* CP_MOTION474: browser-owned animations; no per-frame DOM queries or style writes. */
+(()=>{'use strict';
+ const proto=customElements.get('casa-pelizzon-energy-ops-card')?.prototype,kind='solar';if(!proto)return;
+ function start(host){
+  if(!host.isConnected||host._motion474)return;
+  const root=host.shadowRoot;if(!root)return;
+  const state=host._motion474={items:new Map(),frame:0,visible:true};
+  function refresh(){
+   state.frame=0;
+   if(!host.isConnected){cleanup();return;}
+   const paused=document.hidden||!state.visible||localStorage.getItem('cp_motion471')==='paused';
+   const paths=[...root.querySelectorAll(kind==='solar'?'.flow146 .motion146.active,.v29-net-line.flow-now145 i':'#cp60-root .cp132-light-routes .edge,#cp60-root .cp132-light-routes .route')];
+   for(const [node,animation] of state.items)if(!node.isConnected||!paths.includes(node)){animation.cancel();state.items.delete(node);}
+   for(const node of paths){
+    let animation=state.items.get(node);
+    if(!animation){
+     node.style.setProperty('animation','none','important');node.style.removeProperty('stroke-dashoffset');node.style.removeProperty('left');
+     const arrow=node.tagName.toLowerCase()==='i',edge=node.classList.contains('edge');
+     const travel=arrow?node.parentElement.clientWidth*.88:0;
+     if(arrow)node.style.setProperty('left','5%','important');
+     const frames=arrow?(node.closest('.import')?[{transform:`translateX(${travel}px)`},{transform:'translateX(0px)'}]:[{transform:'translateX(0px)'},{transform:`translateX(${travel}px)`}]):[{strokeDashoffset:'0'},{strokeDashoffset:String(-(kind==='solar'?18:edge?3184:294))}];
+     animation=node.animate(frames,{duration:arrow?2400:kind==='solar'?2800:edge?12000:7000,iterations:Infinity});
+     animation.currentTime=document.timeline.currentTime||0;state.items.set(node,animation);
+    }
+    if(paused&&animation.playState!=='paused')animation.pause();else if(!paused&&animation.playState!=='running')animation.play();
+   }
+   if(kind==='security'){
+    const bar=root.querySelector('.cp60-top .cp60-brand');if(bar&&!bar.querySelector('[data-motion474]')){const b=makeButton();bar.append(b);}
+   }
+   for(const button of root.querySelectorAll('[data-motion474]'))updateButton(button);
+  }
+  function queue(){if(!state.frame)state.frame=requestAnimationFrame(refresh);}
+  function makeButton(){const b=document.createElement('button');b.type='button';b.dataset.motion474='';b.style.cssText='border:1px solid #248fac;border-radius:8px;background:#082431;color:#a3ecff;font:11px system-ui;padding:6px 10px;white-space:nowrap;cursor:pointer';b.onclick=()=>{localStorage.setItem('cp_motion471',localStorage.getItem('cp_motion471')==='paused'?'on':'paused');window.dispatchEvent(new Event('cp-motion474'));};updateButton(b);return b;}
+  function updateButton(b){const on=localStorage.getItem('cp_motion471')!=='paused',text=on?'◉ Animações: ligadas':'◉ Animações: pausadas';if(b.textContent!==text){b.textContent=text;b.setAttribute('aria-pressed',String(on));}}
+  const mutation=new MutationObserver(queue);mutation.observe(root,{childList:true,subtree:true});
+  const intersection=new IntersectionObserver(entries=>{state.visible=entries.some(e=>e.isIntersecting);queue();});intersection.observe(host);
+  const resize=new ResizeObserver(()=>{for(const [node,a] of state.items)if(node.tagName.toLowerCase()==='i'){a.cancel();state.items.delete(node);}queue();});resize.observe(host);
+  document.addEventListener('visibilitychange',queue);window.addEventListener('cp-motion474',queue);
+  const interval=setInterval(()=>{if(!host.isConnected)cleanup();},1000);
+  function cleanup(){cancelAnimationFrame(state.frame);mutation.disconnect();intersection.disconnect();resize.disconnect();clearInterval(interval);document.removeEventListener('visibilitychange',queue);window.removeEventListener('cp-motion474',queue);for(const a of state.items.values())a.cancel();state.items.clear();host._motion474=null;}
+  state.refresh=queue;queue();
+ }
+ for(const name of ['_render','render','_syncFlow146']){const old=proto[name];if(typeof old==='function')proto[name]=function(...args){const result=old.apply(this,args);start(this);this._motion474?.refresh();return result;};}
+ const desc=Object.getOwnPropertyDescriptor(proto,'hass');if(desc?.set)Object.defineProperty(proto,'hass',{...desc,set(value){desc.set.call(this,value);start(this);}});
+})();

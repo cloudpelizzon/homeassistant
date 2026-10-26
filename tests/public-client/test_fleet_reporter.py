@@ -13,15 +13,21 @@ for name in ('homeassistant', 'homeassistant.helpers', PACKAGE, PACKAGE+'.public
     module = types.ModuleType(name)
     module.__path__ = []
     sys.modules[name] = module
-for name in ('homeassistant.const', 'homeassistant.helpers.aiohttp_client',
+for name in ('homeassistant.core', 'homeassistant.helpers.start', 'homeassistant.const', 'homeassistant.helpers.aiohttp_client',
              'homeassistant.helpers.event', 'homeassistant.helpers.storage', 'homeassistant.loader'):
     sys.modules[name] = types.ModuleType(name)
+sys.modules['homeassistant.core'].callback=lambda fn:fn
+def at_started(hass,fn):
+    fn(hass)
+    return lambda:None
+sys.modules['homeassistant.helpers.start'].async_at_started=at_started
 sys.modules['homeassistant.const'].__version__ = '2026.10.2'
 sys.modules['homeassistant.helpers.aiohttp_client'].async_get_clientsession = lambda hass: hass.session
 sys.modules['homeassistant.helpers.event'].async_track_time_interval = lambda hass, cb, interval: hass.track(cb, interval)
 class Store:
     def __init__(self, hass, *args, **kwargs): self.hass = hass
     async def async_load(self): return self.hass.saved
+    async def async_save(self,value): self.hass.delivery_status=value
 sys.modules['homeassistant.helpers.storage'].Store = Store
 async def integration(hass, domain): return types.SimpleNamespace(version='7.0.0-alpha.14')
 sys.modules['homeassistant.loader'].async_get_integration = integration
@@ -54,7 +60,7 @@ class Hass:
     def post(self, url, **kwargs): self.requests.append((url, kwargs)); return Response(self)
     def track(self, cb, interval):
         self.tick = cb
-        assert interval.total_seconds() == 21600
+        assert interval.total_seconds() == 60
         return lambda: setattr(self, 'unsubscribed', True)
     def async_create_task(self, coro, name):
         task = asyncio.create_task(coro); self.tasks.append(task); return task

@@ -3,7 +3,7 @@ function load(path,tag){
  const classes=new Map();
  const context={HTMLElement:class{addEventListener(name,fn){this.handlers[name]=fn}},
    CustomEvent:class{constructor(type,options){this.type=type;Object.assign(this,options)}},console,
-   document:{},window:{},customElements:{get:n=>classes.get(n),define:(n,c)=>classes.set(n,c)}};
+   document:{createElement:()=>({style:{},setAttribute(){}})},requestAnimationFrame:fn=>fn(),window:{addEventListener(){},removeEventListener(){},},customElements:{get:n=>classes.get(n),define:(n,c)=>classes.set(n,c)}};
  vm.runInNewContext(fs.readFileSync(path,'utf8').replace(/^import .*;\r?$/gm,''),context);
  return classes.get(tag);
 }
@@ -11,6 +11,7 @@ const Root=load(process.argv[2],'cloudpelizzon-panel');
 const Core=load(process.argv[3],'cloudpelizzon-core-panel');
 let checks=0;
 function shell(){const s=Object.create(Root.prototype);s.handlers={};s._view='core';s._moduleRights={};s._moduleRightsLoaded=true;
+ s.isConnected=true;s.shadowRoot={querySelector:()=>null,querySelectorAll:()=>[],append(){}};
  s.render=()=>{};s.propagateHass=()=>{};s.show=v=>{s._view=v};s.connectedCallback();return s;}
 (async()=>{
  const s=shell();let refreshes=0;

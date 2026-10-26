@@ -11,7 +11,7 @@ from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.storage import Store
 from homeassistant.loader import async_get_integration
 
-from .public_core.metadata import MODULES
+from .commercial_catalog310 import SKUS as MODULES
 
 COMMAND = 'cloudpelizzon/core/commercial/request'
 KEY = 'cloudpelizzon_commercial157'

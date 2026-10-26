@@ -1,5 +1,5 @@
 const fs=require('fs'),vm=require('vm'),assert=require('assert'),root=process.argv[2];
-const classes=new Map(),ctx={HTMLElement:class{},console,document:{},window:{innerWidth:1920},CustomEvent:class{constructor(type,options){this.type=type;Object.assign(this,options)}},customElements:{get:n=>classes.get(n),define:(n,c)=>classes.set(n,c)},setTimeout:()=>0,clearTimeout(){}};
+const classes=new Map(),ctx={HTMLElement:class{},console,document:{},window:{addEventListener(){},removeEventListener(){},innerWidth:1920},CustomEvent:class{constructor(type,options){this.type=type;Object.assign(this,options)}},customElements:{get:n=>classes.get(n),define:(n,c)=>classes.set(n,c)},setTimeout:()=>0,clearTimeout(){}};
 vm.createContext(ctx);
 for(const file of ['ui/core/panel.js','ui/shell/panel.js'])vm.runInContext('(function(){'+fs.readFileSync(root+'/'+file,'utf8').replace(/^import .*;\r?$/gm,'')+'})();',ctx);
 const Core=classes.get('cloudpelizzon-core-panel'),Root=classes.get('cloudpelizzon-panel');

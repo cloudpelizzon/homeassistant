@@ -8,3 +8,11 @@ __pycache__/
 *.db
 .storage/
 backups/
+
+_paid_modules/
+private_lighting/
+*.pfx
+*.p12
+*.sqlite3
+secrets.yaml
+credentials.json

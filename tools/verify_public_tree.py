@@ -1,9 +1,9 @@
 """Reject unreviewed files, changed hashes and sensitive server-side artifacts."""
 import hashlib,json,re,subprocess,sys
 from pathlib import Path,PurePosixPath
-BAD_PARTS={'.storage','__pycache__','server','private','backups','modules','node_modules','.git'}
+BAD_PARTS={'.storage','__pycache__','server','private','backups','modules','node_modules','.git','_paid_modules','private_lighting'}
 BAD_SUFFIXES={'.pem','.key','.p12','.pfx','.db','.sqlite','.sqlite3','.pyc','.pyo','.bak','.zip','.tar','.gz','.whl'}
-BAD_NAMES={'.env','secrets.yaml','credentials.json','id_rsa','id_ed25519','security_engine.py','server_r2.py','pilot_authority.py'}
+BAD_NAMES={'.env','secrets.yaml','credentials.json','id_rsa','id_ed25519','security_engine.py','server_r2.py','pilot_authority.py','trust.json','authority-public.json','release-signing-input.bin'}
 PATTERNS=(re.compile(rb'-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----'),
     re.compile(rb'(?:gh[pousr]_[A-Za-z0-9_]{30,}|github_pat_[A-Za-z0-9_]{20,})'),
     re.compile(rb'(?:AKIA[0-9A-Z]{16}|sk-(?:proj-)?[A-Za-z0-9_-]{30,})'))

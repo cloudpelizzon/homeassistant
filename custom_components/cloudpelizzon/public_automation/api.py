@@ -27,11 +27,13 @@ SCHEMAS = {
 
 async def dispatch(hass, connection, msg):
     bridge = hass.data.get(KEY)
+    actor = connection.user
     def authorized():
         user = connection.user
         return (bridge is not None and hass.data.get(KEY) is bridge
-                and user is not None and getattr(user, 'is_active', False) is True
+                and user is actor and user is not None and getattr(user, 'is_active', False) is True
                 and getattr(user, 'is_admin', False) is True)
+    if actor is not None:authorized.actor_id=actor.id
     try:
         if bridge is None:
             raise PermissionError('not_loaded')

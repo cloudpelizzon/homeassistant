@@ -1,4 +1,7 @@
 """Public Security effect validation; no engine, catalog, keys or device calls."""
+
+# CP_COMMON_ACCESS207
+from .. import commercial_access207 as _cp_access207
 import hashlib,json,re
 from datetime import datetime,timedelta,timezone
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
@@ -47,15 +50,17 @@ def command(value,iid,allowed):
  if set(data)&{'area_id','device_id','label_id','target','service'}:raise PermissionError('security_target_expansion_denied')
  return value
 def binding(iid,args,rid):return digest({'protocol':'cp.cloud.online.v1','installation_id':iid,'sku':SKU,'operation':OP,'args':args,'request_id':rid})
-def verify_receipt(packet,iid,args,rid,now,public=AUTHORITY):
- try:
-  if type(packet) is not dict or set(packet)!={'claims','signature'}:return False
-  c=packet['claims']
-  if type(c) is not dict or set(c)!={'schema','installation_id','sku','operation','challenge','args_sha256','decision','entitlement_type','issued_at','expires_at','blocks_at','trial_id'}:return False
-  Ed25519PublicKey.from_public_bytes(public).verify(bytes.fromhex(packet['signature']),encode(c))
-  if (c['schema']!='cp.trial.effect.v1' or c['installation_id']!=iid or c['sku']!=SKU or c['operation']!=OP
-   or c['args_sha256']!=binding(iid,args,rid) or c['decision']!='allow' or c['entitlement_type']!='trial'
-   or not ident(c['challenge'],'[a-f0-9]{64}') or type(c['trial_id']) is not str or not c['trial_id']):return False
-  issued,expires,blocks=(instant(c[k]) for k in ('issued_at','expires_at','blocks_at'))
-  return issued<=now<expires<=blocks and expires<=issued+timedelta(seconds=5)
- except Exception:return False
+def verify_receipt(packet, iid, args, rid, now, public=AUTHORITY):
+    try:
+        if type(packet) is not dict or set(packet) != {'claims', 'signature'}:
+            return False
+        c = packet['claims']
+        if type(c) is not dict or not _cp_access207.valid_receipt_fields(c):
+            return False
+        Ed25519PublicKey.from_public_bytes(public).verify(bytes.fromhex(packet['signature']), encode(c))
+        if not _cp_access207.valid_receipt_kind(c) or c['installation_id'] != iid or c['sku'] != SKU or (c['operation'] != OP) or (c['args_sha256'] != binding(iid, args, rid)) or (c['decision'] != 'allow') or (not _cp_access207.valid_receipt_kind(c)) or (not ident(c['challenge'], '[a-f0-9]{64}')) or (type(_cp_access207.entitlement_id(c)) is not str) or (not _cp_access207.entitlement_id(c)):
+            return False
+        issued, expires, blocks = (instant(_cp_access207.receipt_value(c, k)) for k in ('issued_at', 'expires_at', 'blocks_at'))
+        return issued <= now < expires <= blocks and expires <= issued + timedelta(seconds=5)
+    except Exception:
+        return False

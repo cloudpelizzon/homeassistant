@@ -2,17 +2,38 @@
 
 ![CloudPelizzon](custom_components/cloudpelizzon/ui/core/cloudpelizzon-logo.png)
 
-Cliente público da CloudPelizzon, com a interface e as imagens originais dos módulos.
+## TRIAL — 7.0.0-alpha.56
 
-O cliente conecta o Home Assistant aos serviços CloudPelizzon. Durante o trial, os motores comerciais executam nos servidores privados; este repositório contém a interface, os transportes e os adaptadores públicos. As chaves privadas da instalação permanecem no Home Assistant.
+Cliente público completo para os cinco módulos desenvolvidos: **Inteligência Solar, Manutenção Residencial Preventiva, Central de Segurança Pro, Central Inteligente de Automações e Iluminação Inteligente**. A Central de Segurança base e os demais módulos anunciados como em desenvolvimento continuam indisponíveis para instalação.
 
-O teste gratuito tem duração de sete dias por módulo, com confirmação explícita e identidade previamente aprovada. Consultar o status, reinstalar ou parear novamente não reinicia um teste existente. Trial e licença paga são autorizações distintas.
+O pacote reúne as interfaces, os recursos visuais e os adaptadores de comunicação. Os motores comerciais do teste executam nos servidores privados da CloudPelizzon e não fazem parte deste repositório. Os identificadores técnicos legados de Segurança são preservados para compatibilidade com as autorizações assinadas; a apresentação comercial distingue a versão Pro já desenvolvida da versão base em desenvolvimento.
 
-Esta árvore está em homologação. A execução persistente de Automações, a execução segura de Segurança e os fluxos de licença paga/atualização ainda exigem integração e aceite. Não há release estável ou recomendação de instalação em produção nesta etapa. A publicação do código não representa a conclusão dessas funções.
+### Instalação pelo HACS
 
-[Site CloudPelizzon](https://cloudpelizzon.com.br) · [Documentação](https://documentacao.cloudpelizzon.com.br) · [Portal do Cliente](https://cliente.cloudpelizzon.com.br)
+1. Adicione `https://github.com/cloudpelizzon/homeassistant` como repositório personalizado do tipo **Integração**.
+2. Habilite a exibição de versões de pré-lançamento e selecione **7.0.0-alpha.56**.
+3. Baixe a integração e reinicie o Home Assistant.
+4. Em **Configurações → Dispositivos e serviços → Adicionar integração**, procure **CloudPelizzon**.
+5. Leia os consentimentos, conclua o cadastro e a vinculação da instalação e abra o painel CloudPelizzon.
+6. Na Visão Geral, escolha um módulo disponível, confira os requisitos de conexão e confirme explicitamente o início do teste.
 
+O arquivo `cloudpelizzon.zip` contém somente os arquivos da integração, com `manifest.json` na raiz. Para instalação manual, extraia seu conteúdo em `custom_components/cloudpelizzon/` e reinicie o HA. Preserve os dados existentes em `.storage`; não copie configurações ou chaves de outra instalação.
 
-Automation connection: explicit state-read and device-command permissions are separate. Customer rules start disabled and require individual activation. The server checks connection readiness before starting a seven-day Automation trial. Security trial activation remains unavailable.
+### Como funciona o teste
 
-Security connection: explicit sensor reads, exact service/device permissions and notification destinations. Engines begin disabled; shadow mode remains enabled until changed by an administrator. A fresh signed connection is required before starting the Security trial.
+- Sete dias por módulo, segundo o prazo confirmado pelo serviço de autorização. Consultas de status, atualização, reinstalação e novo pareamento não reiniciam um teste.
+- Instalar ou atualizar não ativa um teste nem concede licença paga. O cadastro e a identidade precisam ser aceitos pelo serviço CloudPelizzon.
+- As operações exigem autorização assinada atual, vínculo da instalação e permissões do usuário no HA. Ler sensores e controlar dispositivos são permissões distintas.
+- Iluminação usa uma configuração compartilhada entre **GRAFITE, FLUX e NEO SOFT**, com cadastro de ambientes, cenas e acesso às automações nativas do HA.
+- Pedidos de módulos em desenvolvimento registram interesse; não representam compra nem instalação. A confirmação e o acompanhamento dependem dos serviços do Portal.
+- Os módulos licenciados que exigem execução local continuam dependendo de seu pacote privado assinado, obtido pelos canais autorizados. Nenhum motor pago vem dentro deste ZIP.
+
+### Segurança da distribuição
+
+O pacote público não inclui chaves privadas, tokens, bancos de dados, configurações de clientes, automações pessoais ou motores proprietários. As chaves de identidade são geradas e armazenadas privadamente no HA; os verificadores do cliente contêm somente material público de verificação.
+
+Cada versão inclui `SHA256SUMS` e um inventário fechado dos recursos da interface. Alterações de arquivos não correspondentes ao inventário são rejeitadas. A licença do repositório se aplica ao código público aqui distribuído; os componentes privados não integram esta distribuição.
+
+Esta é uma versão de pré-lançamento TRIAL, não uma versão estável. As notas de versão registram os testes realizados e suas limitações; validação automatizada não substitui o aceite da instalação, das integrações e dos dispositivos de cada residência.
+
+[Notas de versão](CHANGELOG.md) · [Segurança](SECURITY.md) · [Site](https://cloudpelizzon.com.br) · [Documentação](https://documentacao.cloudpelizzon.com.br) · [Portal do Cliente](https://cliente.cloudpelizzon.com.br)

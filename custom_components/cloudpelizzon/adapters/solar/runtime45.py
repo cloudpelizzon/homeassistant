@@ -9,6 +9,7 @@ from .sdk import Client
 from .bridge import SolarBridge
 from .mirror import SolarMirror
 from . import api
+from ...operation_gate216 import OperationGate
 
 LOGGER=logging.getLogger(__name__)
 READINESS='solar_runtime45.json'
@@ -54,6 +55,7 @@ def save_permissions(folder,selected):
 class Controller:
     def __init__(self,hass,entry,iid,client,folder,selected):
         self.hass=hass;self.entry=entry;self.iid=iid;self.folder=folder;self.client=client;self.selected=tuple(selected);self.closed=False
+        self.install_gate216=OperationGate()
         self.bridge=SolarBridge.from_client(hass,client,selected)
         async def status():return await hass.async_add_executor_job(client.status)
         self.mirror=SolarMirror(self.bridge,status,schedule=lambda delay,cb:async_call_later(hass,delay,lambda _:cb()))
@@ -70,9 +72,12 @@ class Controller:
         data={'schema':'cp.solar.runtime45.v1','boot_id':self.boot,'installation_id':self.iid,
               'closed':self.closed,'read_entity_count':len(self.selected),'sensor_platform_bound':self.add is not None,
               'last_remote_success':self.last_success,'last_error_type':self.last_error,'entity_count':len(self.entities),
-              'source':'private_cloud_gateway','device_commands':0}
+              'source':'private_local_HA' if getattr(self.bridge,'_local216',False) else 'private_cloud_gateway','device_commands':0}
         await self.hass.async_add_executor_job(receipt,self.folder,data)
     async def refresh(self):
+        async with self.install_gate216.operation():
+            return await self._refresh_before216()
+    async def _refresh_before216(self):
         async with self.sample_lock:
             if self.closed:raise PermissionError('runtime_closed')
             current=int(self.bridge._clock())
@@ -102,6 +107,9 @@ class Controller:
         if len(result)>1000:raise ValueError('select_measurements_limit')
         return result
     async def handle(self,command,payload=None,*,admin=False):
+        async with self.install_gate216.operation():
+            return await self._handle_before216(command,payload,admin=admin)
+    async def _handle_before216(self,command,payload=None,*,admin=False):
         if command.endswith('/discover'):
             if admin is not True:raise PermissionError('admin_required')
             candidates=self.candidates();merged={'power':[],'energy':[],'suggestions':{}}
@@ -141,8 +149,13 @@ class Controller:
             self.removers.append(async_track_time_interval(self.hass,self.schedule,timedelta(seconds=3)))
     @callback
     def schedule(self,*_):
-        if self.closed or self.task and not self.task.done():return
+        if self.closed or self.install_gate216.paused or self.task and not self.task.done():return
         async def run():
+            # Coalesce sensor bursts; only the latest snapshot is evaluated.
+            now=self.bridge._clock()
+            delay=max(0,3-(now-getattr(self,'_last_poll229',now-3)))
+            if delay:await asyncio.sleep(delay)
+            self._last_poll229=self.bridge._clock()
             try:await self.refresh()
             except asyncio.CancelledError:raise
             except Exception:LOGGER.warning('Solar remote measurements unavailable; local values invalidated')

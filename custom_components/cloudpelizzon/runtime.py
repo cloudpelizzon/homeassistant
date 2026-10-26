@@ -1,4 +1,4 @@
-"""Root client lifecycle. All business engines remain behind the gateway."""
+"""Root client lifecycle with signed local engines and native authority."""
 from collections.abc import Mapping
 from pathlib import Path
 import re
@@ -31,6 +31,8 @@ async def load_context(hass):
 
 async def solar(hass, entry):
     from .adapters.solar import async_setup_runtime
+    from .ha_private212 import async_prepare
+    await async_prepare(hass)
     return await async_setup_runtime(hass, entry)
 
 
@@ -78,15 +80,22 @@ class Runtime:
         self.state['core']['status_transport'] = self.bridge
         self.hass.data[DOMAIN] = self.state
         try:
+            self.stage = 'lighting_transport'
+            from .public_lighting import attach as attach_lighting
+            original_status_fetch229=self.bridge.fetch_verified
+            self.closers.append(await attach_lighting(self.hass, context, self.bridge))
+            self.bridge.fetch_verified=original_status_fetch229
+            self.bridge.local_ready=lambda: {'CP-SOLAR'} if self.hass.data.get('cloudpelizzon_private_local_ready216') else set()
             self.stage = 'core_websocket'
             self.closers.append(api.register(self.hass, self.bridge))
             self.stage = 'commercial_websocket'
             self.closers.append(commercial.register(self.hass, context['core_id']))
+            from .profile_client229 import register as register_profile229
+            self.closers.append(register_profile229(self.hass,context))
             self.stage = 'trial_websocket'
-            async def prepare_trial(sku):
-                if sku in ('CP-AUTOMATION','CP-SECURITY'):await context['automation_edge' if sku=='CP-AUTOMATION' else 'security_edge'].prepare()
-            def trial_activated(sku):
-                if sku in ('CP-AUTOMATION','CP-SECURITY'):context['automation_edge' if sku=='CP-AUTOMATION' else 'security_edge'].refresh_status=True
+            from .engine_hooks298 import prepare_trial as prepare_registered_trial, trial_activated as registered_trial_activated
+            async def prepare_trial(sku):await prepare_registered_trial(self.hass,context,sku)
+            def trial_activated(sku):registered_trial_activated(self.hass,context,sku)
             self.closers.append(public_trials.register(self.hass, context['client'],prepare=prepare_trial,activated=trial_activated))
             self.stage = 'portal_fleet'
             handoff = await onboarding(self.hass, self.entry, context)
@@ -117,6 +126,8 @@ class Runtime:
                 self.sensor_forwarded = True
                 self.stage = 'sensor_platform'
                 await self.hass.config_entries.async_forward_entry_setups(self.entry, ['sensor'])
+            from .module_registration298 import register as register_private_installer
+            self.closers.append(await register_private_installer(self.hass, self.entry, context))
             self.closers.append(fleet_reporter.start(self.hass, self.entry))
             self.entry.async_on_unload(self.close)
             return self

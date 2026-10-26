@@ -28,6 +28,7 @@ class CoreBridge:
         self.closed = False
         self.last_wall = None
         self.last_mono = None
+        self.local_ready=lambda:set()
 
     @classmethod
     def from_client(cls, hass, client, **kwargs):
@@ -75,6 +76,9 @@ class CoreBridge:
             raise PermissionError('status_no_longer_fresh')
         validate_claim(claim, now)
         view = project(claim, core_id=self.core_id, installed=self.installed, now=now, version=self.version)
+        view['status_verified']=True
+        local=self.local_ready()
+        for module in view['modules']:module['local_installed']=module['sku'] in local
         if command == STATUS:
             return view
         if command == LICENSE:

@@ -1,4 +1,7 @@
 """Public command validation and receipt verification; no module engine."""
+
+# CP_COMMON_ACCESS207
+from ..... import commercial_access207 as _cp_access207
 import hashlib,json,os,re,stat
 from datetime import datetime,timedelta,timezone
 from pathlib import Path
@@ -42,15 +45,17 @@ def secure_db(path):
     if not stat.S_ISREG(info.st_mode) or info.st_nlink!=1:raise ValueError('database_type')
     if os.name=='posix' and (info.st_uid!=os.geteuid() or info.st_mode&0o077):raise ValueError('database_permissions')
     return str(path)
-def verify_receipt(packet,iid,args,rid,now,public=AUTHORITY):
+def verify_receipt(packet, iid, args, rid, now, public=AUTHORITY):
     try:
-        if not isinstance(packet,dict) or set(packet)!={'claims','signature'}:return False
-        c=packet['claims']
-        if not isinstance(c,dict) or set(c)!=CLAIMS:return False
-        Ed25519PublicKey.from_public_bytes(public).verify(bytes.fromhex(packet['signature']),encode(c))
-        if (c['schema']!='cp.trial.effect.v1' or c['decision']!='allow' or c['entitlement_type']!='trial'
-            or c['installation_id']!=iid or c['sku']!=SKU or c['operation']!=OP or c['args_sha256']!=binding(iid,args,rid)
-            or not ident(c['challenge'],'[a-f0-9]{64}') or not isinstance(c['trial_id'],str) or not c['trial_id']):return False
-        issued,expires,blocks=(instant(c[k]) for k in ('issued_at','expires_at','blocks_at'))
-        return issued<=now<expires<=blocks and expires<=issued+timedelta(seconds=5)
-    except Exception:return False
+        if not isinstance(packet, dict) or set(packet) != {'claims', 'signature'}:
+            return False
+        c = packet['claims']
+        if not isinstance(c, dict) or not _cp_access207.valid_receipt_fields(c):
+            return False
+        Ed25519PublicKey.from_public_bytes(public).verify(bytes.fromhex(packet['signature']), encode(c))
+        if not _cp_access207.valid_receipt_kind(c) or c['decision'] != 'allow' or (not _cp_access207.valid_receipt_kind(c)) or (c['installation_id'] != iid) or (c['sku'] != SKU) or (c['operation'] != OP) or (c['args_sha256'] != binding(iid, args, rid)) or (not ident(c['challenge'], '[a-f0-9]{64}')) or (not isinstance(_cp_access207.entitlement_id(c), str)) or (not _cp_access207.entitlement_id(c)):
+            return False
+        issued, expires, blocks = (instant(_cp_access207.receipt_value(c, k)) for k in ('issued_at', 'expires_at', 'blocks_at'))
+        return issued <= now < expires <= blocks and expires <= issued + timedelta(seconds=5)
+    except Exception:
+        return False

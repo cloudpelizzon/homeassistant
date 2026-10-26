@@ -1,7 +1,7 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
-import "/cloudpelizzon-core/frontend/panel.js?v=05db026ba484";
-import "/cloudpelizzon/frontend/optional-modules.js?v=46d9115a9f66";
-import "/cloudpelizzon-updater/frontend/panel.js?v=20261010-license-filter-r2";
+import "/cloudpelizzon-core/frontend/panel.js?v=7f1492e1498474d1d37dc0a8ffc7b0411d79c37ec71e64ecbe9369f8cd901b2a";
+import "/cloudpelizzon/frontend/optional-modules.js?v=ffd124945e1e1cd235919a8a8f23b0fc647269b7ee8e92a98609ccd1bc2c70b8";
+import "/cloudpelizzon-updater/frontend/panel.js?v=fe05dc5a139a541060f383d7462c57c443f4786285cc0417345a910300259bd4";
 
 
 class CloudPelizzonPanel extends HTMLElement {
@@ -42,14 +42,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
     this.propagateHass();
 
-    const securityPanel =
-      this.shadowRoot?.querySelector(
-        "cloudpelizzon-module-slot[sku=\"CP-SECURITY\"]"
-      );
-
-    if (securityPanel) {
-      securityPanel.hass = value;
-    }
+    // Hidden security updates are handled by the actor-aware propagation path.
 
     if (
       value
@@ -62,7 +55,7 @@ class CloudPelizzonPanel extends HTMLElement {
       this.loadModuleRights();
     }
     // Revalidate the currently visible commercial panel (existing browser tab).
-    if (value && ["maintenance", "energy", "security", "automation"].includes(this._view)
+    if (value && ["maintenance", "energy", "security", "automation", "lighting"].includes(this._view)
         && !this._moduleRightsLoading
         && Date.now() - this._lastCommercialRefresh > 30000) {
       this._lastCommercialRefresh = Date.now();
@@ -93,7 +86,7 @@ class CloudPelizzonPanel extends HTMLElement {
         ) {
           // CP-TRIAL-ROOT-NAV-BRIDGE-V2: no cached or unsigned trial grant.
           rights[item.sku] = Boolean(
-            item?.license?.allowed || (
+            (item?.license?.allowed===true ? item?.local_installed===true : false) || (
               item?.trial?.verified === true &&
               item?.trial?.phase === "trial_active" &&
               item?.trial?.paid_confirmed === false
@@ -151,6 +144,7 @@ class CloudPelizzonPanel extends HTMLElement {
         if (this._view === "automation" && !this.isModuleAllowed("CP-AUTOMATION")) {
           this._view = "core";
         }
+        if (this._view === "lighting" && !this.isModuleAllowed("CP-LIGHTING")) this._view = "core";
 
         this.render();
         this.propagateHass();
@@ -218,6 +212,10 @@ class CloudPelizzonPanel extends HTMLElement {
         }
 
 
+        else if (path.includes("lighting") || path.includes("iluminacao") || path.includes("iluminação")) {
+          this.showProtectedView("lighting");
+        }
+
         else if (path.includes("automation") || path.includes("automacoes")) {
           if (this.isModuleAllowed("CP-AUTOMATION")) {
             this.show("automation");
@@ -277,14 +275,14 @@ class CloudPelizzonPanel extends HTMLElement {
     this._moduleRightsLoading=true;
 
     try{
-      if(force) await this.ws("cloudpelizzon/core/access/refresh");
+      /* core/status verifies access; no duplicate refresh. */
       const data=await this.ws("cloudpelizzon/core/status");
       this.updatePaidModules162(data?.modules||[]);
       const rights={};
 
       for(const item of (data?.modules||[])){
         // CP-TRIAL-ROOT-NAV-BRIDGE-V2: signed Trial state from core/status.
-        rights[item.sku]=Boolean(item?.license?.allowed || (
+        rights[item.sku]=Boolean((item?.license?.allowed===true ? item?.local_installed===true : false) || (
           item?.trial?.verified===true &&
           item?.trial?.phase==="trial_active" &&
           item?.trial?.paid_confirmed===false
@@ -309,6 +307,9 @@ class CloudPelizzonPanel extends HTMLElement {
       }
 
       if(this._view==="automation"&&!this.isModuleAllowed("CP-AUTOMATION")){
+        this._view="core";
+      }
+      if(this._view==="lighting"&&!this.isModuleAllowed("CP-LIGHTING")){
         this._view="core";
       }
 
@@ -344,11 +345,18 @@ class CloudPelizzonPanel extends HTMLElement {
       energy:"CP-SOLAR",
       security:"CP-SECURITY",
       automation:"CP-AUTOMATION",
+      lighting:"CP-LIGHTING",
     };
     const sku=skus[view];
-    if(!sku){this.show(view);return;}
-    const refreshed=await this.loadModuleRights(true);
-    this.show(refreshed && this.isModuleAllowed(sku) ? view : "core");
+    if(!sku){this._nav471=(this._nav471||0)+1;this.show(view);return;}
+    const seq=this._nav471=(this._nav471||0)+1;
+    const nav=this.shadowRoot.querySelector(`[data-view="${view}"]`);
+    nav?.setAttribute('aria-busy','true');
+    try{
+      const refreshed=await this.loadModuleRights(true);
+      if(seq!==this._nav471)return;
+      this.show(refreshed && this.isModuleAllowed(sku) ? view : "core");
+    }finally{nav?.removeAttribute('aria-busy');}
   }
 
   isModuleAllowed(sku) {
@@ -988,6 +996,10 @@ class CloudPelizzonPanel extends HTMLElement {
           Automações
         </button>` : ""}
 
+        ${this.isModuleAllowed("CP-LIGHTING") ? `
+        <button data-view="lighting"><ha-icon icon="mdi:lightbulb-group-outline"></ha-icon>Iluminação</button>
+        ` : ""}
+
         <button
           data-license-nav>
 
@@ -1064,6 +1076,12 @@ class CloudPelizzonPanel extends HTMLElement {
       <section id="view-automation" class="view">
         <cloudpelizzon-module-slot sku="CP-AUTOMATION"></cloudpelizzon-module-slot>
       </section>` : ""}
+
+      ${this.isModuleAllowed("CP-LIGHTING") ? `
+      <section id="view-lighting" class="view">
+        <cloudpelizzon-module-slot sku="CP-LIGHTING"></cloudpelizzon-module-slot>
+      </section>
+      ` : ""}
 
       <section
         id="view-updates"
@@ -1599,7 +1617,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
   disconnectedCallback(){this._requestHost161?.remove();this._requestHost161=null;}
 
-  requestSku161(){return ({maintenance:"CP-MAINTENANCE",energy:"CP-SOLAR",security:"CP-SECURITY",automation:"CP-AUTOMATION"})[this._view]||null;}
+  requestSku161(){return ({maintenance:"CP-MAINTENANCE",energy:"CP-SOLAR",security:"CP-SECURITY",automation:"CP-AUTOMATION",lighting:"CP-LIGHTING"})[this._view]||null;}
 
   updatePaidModules162(modules){
     this._paidModules162=Object.fromEntries(modules.map(m=>[m.sku,m?.license?.allowed===true]));
@@ -1754,7 +1772,10 @@ class CloudPelizzonPanel extends HTMLElement {
       // Maintenance before Energy, Energy never receives Home Assistant
       // and remains stuck on "Inicializando módulo...".
       this.shadowRoot.querySelectorAll(selector).forEach(element => {
-        element.hass = this._hass;
+        const actor=this._hass?.user?.id;
+        const active=element.closest('.view')?.classList.contains('active');
+        if(active||element.__actor471!==actor){element.hass=this._hass;element.__actor471=actor;}
+        else if(element.localName==='cloudpelizzon-module-slot')element._hass=this._hass;
       });
     });
   }
@@ -1773,3 +1794,41 @@ if (
   );
 }
 
+/* CP_ROOT_SINGLE_FLIGHT229 */
+(()=>{const C=customElements.get('cloudpelizzon-panel');if(!C)return;const p=C.prototype,original=p.loadModuleRights;p.loadModuleRights=function(...args){if(this._rightsFlight229)return this._rightsFlight229;const task=Promise.resolve(original.apply(this,args));this._rightsFlight229=task;return task.finally(()=>{if(this._rightsFlight229===task)this._rightsFlight229=null;});};})();
+
+/* CP_SHELL474: bounded state propagation and immediate navigation feedback. */
+(()=>{'use strict';const p=customElements.get('cloudpelizzon-panel').prototype;
+ const desc=Object.getOwnPropertyDescriptor(p,'hass');
+ Object.defineProperty(p,'hass',{...desc,set(value){
+  if(!this._hass||this._hass.user?.id!==value?.user?.id){clearTimeout(this._hassTimer474);this._hassTimer474=0;this._nextHass474=null;desc.set.call(this,value);return;}
+  this._hass=value;this._nextHass474=value;
+  if(!this._hassTimer474)this._hassTimer474=setTimeout(()=>{this._hassTimer474=0;const latest=this._nextHass474;this._nextHass474=null;if(this.isConnected&&latest)desc.set.call(this,latest);},180);
+ }});
+ const render=p.render;p.render=function(...args){this._rendering474=true;try{return render.apply(this,args);}finally{this._rendering474=false;}};
+ const show=p.show;p.show=function(...args){if(!this._rendering474)this._nav471=(this._nav471||0)+1;this.shadowRoot?.querySelector('#cp-nav474')?.remove();return show.apply(this,args);};
+ p.showProtectedView=async function(view){
+  const skus={maintenance:'CP-MAINTENANCE',energy:'CP-SOLAR',security:'CP-SECURITY',automation:'CP-AUTOMATION',lighting:'CP-LIGHTING'},sku=skus[view];
+  if(!sku){this.show(view);return;}
+  const seq=this._nav471=(this._nav471||0)+1,actor=this._hass?.user?.id;
+  const title={maintenance:'Manutenção',energy:'Solar',security:'Segurança',automation:'Automações',lighting:'Iluminação'}[view];
+  this.shadowRoot.querySelector('#cp-nav474')?.remove();
+  this.shadowRoot.querySelectorAll('.view.active').forEach(node=>node.classList.remove('active'));
+  const pending=document.createElement('section');pending.id='cp-nav474';pending.setAttribute('role','status');pending.style.cssText='margin:14px;padding:24px;border:1px solid #296582;border-radius:14px;background:linear-gradient(120deg,#0e3042,#061b28);color:#e5f8ff;font:14px system-ui';
+  pending.textContent=`Abrindo ${title}… Verificando acesso à instalação.`;this.shadowRoot.append(pending);
+  // Yield for the browser to paint navigation feedback before any expensive panel work.
+  await new Promise(resolve=>requestAnimationFrame(resolve));
+  try{
+   const refreshed=await this.loadModuleRights(true);
+   if(seq!==this._nav471||actor!==this._hass?.user?.id||!this.isConnected)return;
+   this.show(refreshed&&this.isModuleAllowed(sku)?view:'core');
+  }catch(_){if(seq===this._nav471&&actor===this._hass?.user?.id)this.show('core');}
+ };
+})();
+
+/* CP_LICENSE_NAV475: expose the real shell menu; keep its native authorization path. */
+(()=>{const p=customElements.get('cloudpelizzon-panel').prototype;
+function close(host){host.shadowRoot?.querySelector('cloudpelizzon-core-panel')?.hideLicense?.();}
+const show=p.show;p.show=function(...args){if(!this._rendering474)close(this);return show.apply(this,args);};
+const protectedView=p.showProtectedView;p.showProtectedView=function(...args){close(this);return protectedView.apply(this,args);};
+})();

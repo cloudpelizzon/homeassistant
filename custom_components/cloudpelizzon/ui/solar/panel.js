@@ -1,4 +1,4 @@
-import "/cloudpelizzon-energy/frontend/energy-card.js?v=9eaafb21b0e8";
+import "/cloudpelizzon-energy/frontend/energy-card.js?v=3c6e54d9a066cfcedf65df07d3f8dd50ff7187774264332f71be2fbf76a9687b";
 
 class CloudPelizzonEnergyPanel extends HTMLElement {
   constructor() {
@@ -72,10 +72,17 @@ class CloudPelizzonEnergyPanel extends HTMLElement {
       this._normalized=cfg.normalized_entities||{};
       this._status=status||{};
 
-      try{
-        this._discovery=await this._ws("cloudpelizzon/energy/discover");
-      }catch(_error){
-        this._discovery={power:[],energy:[],suggestions:{}};
+      if(!this._cfg?.configured){
+        try{this._discovery=await this._ws("cloudpelizzon/energy/discover");}
+        catch(_error){this._discovery={power:[],energy:[],suggestions:{}};}
+      }else{
+        // CP_SOLAR470: optional discovery cannot hold the dashboard spinner.
+        const actor=this._hass?.user?.id;
+        this._discoveryPromise470=this._ws("cloudpelizzon/energy/discover").then(result=>{
+          if(this._hass?.user?.id!==actor||!this.isConnected)return;
+          this._discovery=result;
+          if(this._mode==="config"){this._render();this._propagate();}
+        }).catch(()=>{});
       }
 
       if(
@@ -1891,3 +1898,11 @@ if(!customElements.get("cloudpelizzon-energy-panel")){
   customElements.define("cloudpelizzon-energy-panel",CloudPelizzonEnergyPanel);
 }
 
+
+/* CP_SOLAR_HEADER474 */
+(()=>{const p=customElements.get('cloudpelizzon-energy-panel').prototype,render=p._render;
+p._render=function(...args){const result=render.apply(this,args),bar=this.shadowRoot?.querySelector('.module-actions');if(bar&&!bar.querySelector('[data-motion474]')){
+ const b=document.createElement('button');b.type='button';b.dataset.motion474='';
+ const update=()=>{const on=localStorage.getItem('cp_motion471')!=='paused';b.textContent=on?'◉ Animações: ligadas':'◉ Animações: pausadas';b.setAttribute('aria-pressed',String(on));};
+ b.onclick=()=>{localStorage.setItem('cp_motion471',localStorage.getItem('cp_motion471')==='paused'?'on':'paused');update();window.dispatchEvent(new Event('cp-motion474'));};update();bar.prepend(b);
+}return result;};})();

@@ -3,6 +3,7 @@ import asyncio,json
 from homeassistant.components.http import HomeAssistantView,KEY_HASS
 from homeassistant.exceptions import HomeAssistantError
 from .bridge import SecurityBridge,ALIASES
+from ....local_ownership300 import actor_guard
 URL='/api/cloudpelizzon/seguranca/configuracao'
 DOMAIN='cloudpelizzon'
 KEY='cloudpelizzon_security_transport63'
@@ -78,7 +79,7 @@ class ConfigurationView(HomeAssistantView):
         try:
             await current_user(hass,user,admin=True)
             bridge=get_bridge(hass)
-            await prepare_siren_permissions(hass,value,authorized=lambda:active(user) and user.is_admin is True and get_bridge(hass) is bridge)
+            await prepare_siren_permissions(hass,value,authorized=actor_guard(user,lambda:active(user) and user.is_admin is True and get_bridge(hass) is bridge))
             await current_user(hass,user,admin=True)
             result=await bridge.handle('configuration.set',value,authenticated=True,admin=True)
             await current_user(hass,user,admin=True)
