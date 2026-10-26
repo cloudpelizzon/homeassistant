@@ -598,6 +598,9 @@ class Rooms333:
 def register(hass):
  import voluptuous as vol
  from homeassistant.components import websocket_api
+ names=(COMMAND,*ROOMS,PROFILE,DETAIL330,ROOMS333+'/get',ROOMS333+'/image',ROOMS333+'/save',ROOMS333+'/fixture_image',ROOMS333+'/images337')
+ registry=hass.data.get(websocket_api.DOMAIN,{})
+ if any(name in registry for name in names):raise ValueError('control240_handler_conflict')
  catalog=Rooms333(hass);control=Controls(hass);rooms=RoomSuggestions(hass);handlers={}
  async def handle(hass,connection,msg):
   try:
@@ -620,8 +623,7 @@ def register(hass):
    messages={'read_only_observation':'Esta entidade é um espelho de somente leitura. Nenhum comando foi executado.','entity_unavailable':'Esta entidade está indisponível no HA.','control_permission_required':'Seu usuário não tem permissão para controlar esta luz.',
     'licensed_module_requires_local_installation':'Baixe e instale o motor local licenciado antes de controlar o módulo.'}
    connection.send_error(msg['id'],'lighting_command_unavailable',messages.get(code,'Não foi possível autorizar a operação. Atualize a leitura e verifique o acesso.'))
- for name in (COMMAND,*ROOMS,PROFILE,DETAIL330,ROOMS333+'/get',ROOMS333+'/image',ROOMS333+'/save',ROOMS333+'/fixture_image',ROOMS333+'/images337'):
-  if name in hass.data.get(websocket_api.DOMAIN,{}):raise ValueError('control240_handler_conflict')
+ for name in names:
   schema={vol.Required('type'):name}
   if name==ROOMS333+'/get':schema[vol.Optional('refresh',default=False)]=bool
   if name==ROOMS333+'/fixture_image':schema.update({vol.Required('entity_id'):str,vol.Required('image_ref'):str})

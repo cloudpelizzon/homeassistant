@@ -90,12 +90,12 @@ def observe_lighting233(hass):
 
 def register(hass,context):
  if KEY in hass.data:raise ValueError('profile_handler_conflict')
- stop_observer233=observe_lighting233(hass)
- state=Display(hass,context);hass.data[KEY]=state;handlers={};registry=hass.data.get(websocket_api.DOMAIN,{})
+ stop_observer233=lambda:None
+ state=Display(hass,context);handlers={};registry=hass.data.get(websocket_api.DOMAIN,{})
  from .lighting_sync239 import Sync
  sync=Sync(hass)
  from .lighting_controls240 import register as register_controls240
- stop_controls240=register_controls240(hass)
+ stop_controls240=lambda:None
  sync_names=('cloudpelizzon/lighting/sync239/preview','cloudpelizzon/lighting/sync239/step')
  diagnostic='cloudpelizzon/lighting/read_diagnostic235'
  names=(PROFILE,'cloudpelizzon/private_updater/status','cloudpelizzon/private_updater/check',diagnostic,*sync_names)
@@ -124,6 +124,9 @@ def register(hass,context):
   for name,fn in handlers.items():
    if name in reg and reg[name][0] is fn:reg.pop(name)
  try:
+  stop_observer233=observe_lighting233(hass)
+  stop_controls240=register_controls240(hass)
+  hass.data[KEY]=state
   for name in names:
    if name in registry:raise ValueError('existing_profile_or_updater_handler')
    fn=websocket_api.websocket_command({probatio.Required('type'):name})(websocket_api.async_response(handler))
