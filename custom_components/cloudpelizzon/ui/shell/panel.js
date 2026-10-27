@@ -1,7 +1,7 @@
 import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 import "/cloudpelizzon-core/frontend/panel.js?v=7f1492e1498474d1d37dc0a8ffc7b0411d79c37ec71e64ecbe9369f8cd901b2a";
 import "/cloudpelizzon/frontend/optional-modules.js?v=ffd124945e1e1cd235919a8a8f23b0fc647269b7ee8e92a98609ccd1bc2c70b8";
-import "/cloudpelizzon-updater/frontend/panel.js?v=fe05dc5a139a541060f383d7462c57c443f4786285cc0417345a910300259bd4";
+import "/cloudpelizzon-updater/frontend/panel.js?v=de986185f5b0b6b485a79a3620447bd0f72a87b49f1f1871fc323f6bebd7e440";
 
 
 class CloudPelizzonPanel extends HTMLElement {
