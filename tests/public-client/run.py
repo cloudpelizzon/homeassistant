@@ -60,8 +60,8 @@ with tempfile.TemporaryDirectory(prefix='cp-public-native81-',dir='/tmp') as fol
         'failures':len(result.failures),'errors':len(result.errors),'skipped':len(result.skipped),
         'HA_flow_manager':'native_real','HA_Store':'native_real',
         'entry_runtime_setup':'patched_no_physical_execution',
-        'Fleet_HTTP':'synthetic_boundary','activation_SDK':'synthetic_boundary','trial_WS_tests':14,'automation_transport_tests':12,'automation_HTTP_capability':'synthetic_boundary','private_engines_in_fixture':False,
+        'Fleet_HTTP':'synthetic_boundary','activation_SDK':'synthetic_boundary','trial_WS_tests':17,'automation_transport_tests':12,'automation_HTTP_capability':'synthetic_boundary','private_engines_in_fixture':False,
         'customer_data_present':False,'network':'none','publication_allowed':False}
     print('CP_PUBLIC_NATIVE81='+json.dumps(report,separators=(',',':')),flush=True)
-    code=0 if result.wasSuccessful() and result.testsRun==146 and not result.skipped else 1
+    code=0 if result.wasSuccessful() and result.testsRun==149 and not result.skipped else 1
 raise SystemExit(code)

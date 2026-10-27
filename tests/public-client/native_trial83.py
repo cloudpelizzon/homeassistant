@@ -125,3 +125,31 @@ class TrialCommandTests(unittest.IsolatedAsyncioTestCase):
         await self.run_command()
         self.assertFalse(self.calls);self.assertFalse(self.results)
         self.assertEqual(self.errors[0][1],'trial_activation_denied_or_unconfirmed')
+
+    async def test505_lighting_without_native_preparation_never_activates(self):
+        self.message['sku']='CP-LIGHTING'
+        await self.run_command()
+        self.assertFalse(self.calls);self.assertFalse(self.results)
+        self.assertEqual(self.errors[0][1],'trial_activation_denied_or_unconfirmed')
+
+    async def test505_lighting_preparation_failure_never_activates(self):
+        self.close()
+        prepare=AsyncMock(side_effect=PermissionError('synthetic_native_unavailable'))
+        self.close=trial.register(self.hass,self.client,prepare=prepare)
+        self.message['sku']='CP-LIGHTING'
+        await self.run_command()
+        prepare.assert_awaited_once_with('CP-LIGHTING')
+        self.assertFalse(self.calls);self.assertFalse(self.results)
+        self.assertTrue(self.errors)
+
+    async def test505_lighting_explicit_start_prepares_then_calls_sdk_once(self):
+        self.close()
+        async def prepare(sku):
+            self.assertEqual(sku,'CP-LIGHTING')
+            self.assertFalse(self.calls)
+        self.close=trial.register(self.hass,self.client,prepare=prepare)
+        self.message['sku']='CP-LIGHTING'
+        await self.run_command()
+        self.assertEqual(self.calls,[('CP-LIGHTING',True)])
+        self.assertFalse(self.errors)
+        self.assertEqual(self.results[0][1]['sku'],'CP-LIGHTING')
