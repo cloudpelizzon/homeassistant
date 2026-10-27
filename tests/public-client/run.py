@@ -29,6 +29,8 @@ with tempfile.TemporaryDirectory(prefix='cp-public-native81-',dir='/tmp') as fol
     shutil.copyfile('/checks/native_commercial157.py',case/'native_commercial157.py')
     sys.path.insert(0,str(case))
     shutil.copyfile('/checks/native_lighting497.py',case/'native_lighting497.py')
+    shutil.copyfile('/checks/native_telemetry501.py',case/'native_telemetry501.py')
+    import native_telemetry501
     import native_lighting497
     import native_commercial157
     import native_setup, native_trial83, public_transport87, native_enrollment106, test_edge125, native_automation125, test_security_edge127, native_security127
@@ -52,13 +54,14 @@ with tempfile.TemporaryDirectory(prefix='cp-public-native81-',dir='/tmp') as fol
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_security134.NativeSecurity134Tests))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_commercial157.CommercialTests))
     suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_lighting497.LightingTests))
+    suite.addTests(unittest.defaultTestLoader.loadTestsFromTestCase(native_telemetry501.Tests))
     result=unittest.TextTestRunner(verbosity=2).run(suite)
     report={'schema':'cp.public.setup_and_activation83.github.native.v1','tests':result.testsRun,
         'failures':len(result.failures),'errors':len(result.errors),'skipped':len(result.skipped),
         'HA_flow_manager':'native_real','HA_Store':'native_real',
         'entry_runtime_setup':'patched_no_physical_execution',
-        'Fleet_HTTP':'synthetic_boundary','activation_SDK':'synthetic_boundary','trial_WS_tests':14,'automation_transport_tests':12,'automation_HTTP_capability':'synthetic_boundary','private_engines_in_fixture':False,
+        'Fleet_HTTP':'synthetic_boundary','activation_SDK':'synthetic_boundary','trial_WS_tests':17,'automation_transport_tests':12,'automation_HTTP_capability':'synthetic_boundary','private_engines_in_fixture':False,
         'customer_data_present':False,'network':'none','publication_allowed':False}
     print('CP_PUBLIC_NATIVE81='+json.dumps(report,separators=(',',':')),flush=True)
-    code=0 if result.wasSuccessful() and result.testsRun==144 and not result.skipped else 1
+    code=0 if result.wasSuccessful() and result.testsRun==149 and not result.skipped else 1
 raise SystemExit(code)

@@ -1,5 +1,14 @@
 # Notas de versão
 
+## 7.0.0-alpha.59 — estabilidade da telemetria
+
+- Corrige bloqueios prolongados da interface do HA durante a coleta periódica de telemetria. A coleta passa a iterar o cadastro de dispositivos uma única vez e usa uma tabela local para os cruzamentos por entidade.
+- Mantém compatibilidade com as versões que expõem o cadastro como mapeamento e com as que iteram os dispositivos diretamente. Não altera a seleção ou as contagens do diagnóstico.
+- Filtra os manuais e notas de módulos na aba Atualizações pelas licenças confirmadas pelo servidor. Core e documentação geral permanecem disponíveis.
+- Inclui regressões com 12.000 entidades e 1.000 dispositivos, preservando as contagens e rejeitando o uso das consultas obsoletas. Não inicia Trials nem modifica licenças ou cadastros.
+- Amplia as regressões da oferta de Iluminação para cadastro novo: estado assinado disponível, consulta não verificada, teste expirado e distinção entre contratado e instalado. A ativação explícita exige preparação nativa e sessão autorizada; falhas não disparam ativação nem repetição automática.
+- Documenta a separação entre esta atualização do cliente HA e as correções operacionais dos serviços privados em [Guia desta atualização](docs/atualizacao-alpha59.md).
+
 ## 7.0.0-alpha.58 — inicialização da Iluminação
 
 - Remove o registro duplicado dos controles de Iluminação durante a inicialização do cliente público.

@@ -1,5 +1,6 @@
 """Aggregate HA observations. Never reads secrets, entity values or calls services."""
 import time,sys
+from collections.abc import Mapping
 from collections import Counter,defaultdict
 from homeassistant.helpers import device_registry as dr,entity_registry as er
 
@@ -17,8 +18,15 @@ def counts(entries):
   else:result['pending']+=1
  return result
 
+def device_snapshot(hass):
+ """Use the supported entry iterator once, never deprecated per-entity lookups."""
+ entries=dr.async_get(hass).devices
+ # Older supported HA versions expose a mapping; newer versions iterate entries.
+ values=entries.values() if isinstance(entries,Mapping) else entries
+ return {entry.id:entry for entry in values}
+
 def collect(hass):
- devices=dr.async_get(hass).devices
+ devices=device_snapshot(hass)
  entities=er.async_get(hass).entities
  grouped=defaultdict(list);ec=Counter(total=0,available=0,unavailable=0,unknown=0,assumed=0)
  for e in entities.values():
