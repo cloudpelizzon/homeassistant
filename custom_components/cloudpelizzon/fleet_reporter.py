@@ -19,7 +19,7 @@ from .owner_profile155 import owner_display_name
 _LOGGER = logging.getLogger(__name__)
 
 
-def start(hass, entry):
+def start(hass, entry, *, trial_context=None):
     """Return an unload callback; never delay integration setup on Fleet."""
     data = entry.data
     if (data.get('fleet_reporting_consent') is not True
@@ -72,6 +72,16 @@ def start(hass, entry):
             except Exception as exc:
                 status['collection_error']=_error453(exc)
                 _LOGGER.debug('Operational telemetry unavailable; metadata reporting continues')
+            # Same existing consent and identity; observation never starts a trial.
+            if trial_context is not None:
+                try:
+                    from .module_tracking591 import collect as collect_modules591
+                    inventory = payload.get('telemetry437', {}).get('module_inventory443', [])
+                    payload['module_tracking591'] = await collect_modules591(hass, trial_context, inventory)
+                except asyncio.CancelledError:
+                    raise
+                except Exception:
+                    _LOGGER.debug('Module tracking unavailable; Fleet reporting continues')
             status['phase']='delivery'
             session = async_get_clientsession(hass)
             async with asyncio.timeout(12):

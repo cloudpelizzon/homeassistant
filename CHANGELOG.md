@@ -1,5 +1,13 @@
 # Notas de versão
 
+## 7.0.0-alpha.60 — acompanhamento de trials por módulo
+
+- Envia observações por módulo no cadastro Fleet consentido, com consulta de status somente leitura.
+- Abrange o catálogo completo e distingue presença instalada, prazo registrado e status não confirmado.
+- Preserva identidades e datas dos testes existentes. A associação administrativa usa o vínculo oficial Core/trial.
+- Mantém o envio básico quando a consulta de módulos falha, sem ativar ou renovar testes.
+- Documenta atualização, consentimento e separação entre o cliente público e os serviços privados.
+
 ## 7.0.0-alpha.59 — estabilidade da telemetria
 
 - Corrige bloqueios prolongados da interface do HA durante a coleta periódica de telemetria. A coleta passa a iterar o cadastro de dispositivos uma única vez e usa uma tabela local para os cruzamentos por entidade.

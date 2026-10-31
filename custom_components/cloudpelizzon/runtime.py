@@ -128,7 +128,8 @@ class Runtime:
                 await self.hass.config_entries.async_forward_entry_setups(self.entry, ['sensor'])
             from .module_registration298 import register as register_private_installer
             self.closers.append(await register_private_installer(self.hass, self.entry, context))
-            self.closers.append(fleet_reporter.start(self.hass, self.entry))
+            self.closers.append(fleet_reporter.start(self.hass, self.entry, trial_context={
+                'trial_id': context['trial_id'], 'fetch_verified': self.bridge.fetch_verified}))
             self.entry.async_on_unload(self.close)
             return self
         except BaseException:

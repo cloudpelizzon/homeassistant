@@ -6,6 +6,7 @@ from pathlib import Path
 import sys
 import types
 import unittest
+from unittest.mock import patch
 
 ROOT = Path(sys.argv.pop(1)).resolve()
 PACKAGE = 'fixture_fleet101'
@@ -71,6 +72,17 @@ def entry(**changes):
     return types.SimpleNamespace(data=data)
 
 class Tests(unittest.IsolatedAsyncioTestCase):
+    async def test_module_tracking_uses_same_consent_and_never_sends_signatures(self):
+        module=types.ModuleType(PACKAGE+'.module_tracking591');calls=[]
+        async def collect(hass,context,inventory):
+            calls.append(context)
+            return {'schema':'cp.module.tracking591.v1','modules':[]}
+        module.collect=collect
+        with patch.dict(sys.modules,{module.__name__:module}):
+            hass=Hass();close=reporter.start(hass,entry(),trial_context={'trial_id':'test'})
+            await hass.tasks[-1];self.assertIn('module_tracking591',hass.requests[-1][1]['json']);close()
+            blocked=Hass();reporter.start(blocked,entry(fleet_reporting_consent=False),trial_context={})()
+            self.assertEqual(len(calls),1);self.assertFalse(blocked.requests)
     async def test_current_version_on_start_and_periodic_checkin(self):
         hass = Hass(); saved = dict(hass.saved); close = reporter.start(hass, entry())
         await hass.tasks[-1]; hass.tick(); await hass.tasks[-1]
