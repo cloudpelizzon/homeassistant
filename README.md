@@ -2,7 +2,7 @@
 
 ![CloudPelizzon](custom_components/cloudpelizzon/ui/core/cloudpelizzon-logo.png)
 
-## TRIAL — 7.0.0-alpha.56
+## TRIAL — 7.0.0-alpha.60
 
 Cliente público completo para os cinco módulos desenvolvidos: **Inteligência Solar, Manutenção Residencial Preventiva, Central de Segurança Pro, Central Inteligente de Automações e Iluminação Inteligente**. A Central de Segurança base e os demais módulos anunciados como em desenvolvimento continuam indisponíveis para instalação.
 
@@ -11,7 +11,7 @@ O pacote reúne as interfaces, os recursos visuais e os adaptadores de comunica�
 ### Instalação pelo HACS
 
 1. Adicione `https://github.com/cloudpelizzon/homeassistant` como repositório personalizado do tipo **Integração**.
-2. Habilite a exibição de versões de pré-lançamento e selecione **7.0.0-alpha.56**.
+2. Habilite a exibição de versões de pré-lançamento e selecione **7.0.0-alpha.60**.
 3. Baixe a integração e reinicie o Home Assistant.
 4. Em **Configurações → Dispositivos e serviços → Adicionar integração**, procure **CloudPelizzon**.
 5. Leia os consentimentos, conclua o cadastro e a vinculação da instalação e abra o painel CloudPelizzon.
@@ -37,3 +37,5 @@ Cada versão inclui `SHA256SUMS` e um inventário fechado dos recursos da interf
 Esta é uma versão de pré-lançamento TRIAL, não uma versão estável. As notas de versão registram os testes realizados e suas limitações; validação automatizada não substitui o aceite da instalação, das integrações e dos dispositivos de cada residência.
 
 [Notas de versão](CHANGELOG.md) · [Segurança](SECURITY.md) · [Site](https://cloudpelizzon.com.br) · [Documentação](https://documentacao.cloudpelizzon.com.br) · [Portal do Cliente](https://cliente.cloudpelizzon.com.br)
+
+Acompanhamento por cliente e módulo: veja [o guia da alpha.60](docs/acompanhamento-trials-alpha60.md). As datas de trials vêm da autoridade e não são reiniciadas pela atualização.

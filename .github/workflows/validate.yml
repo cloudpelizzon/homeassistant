@@ -55,6 +55,8 @@ jobs:
         run: node tests/public-client/test_commercial157.cjs custom_components/cloudpelizzon
       - name: Verify consented Fleet metadata lifecycle
         run: python3 tests/public-client/test_fleet_reporter.py custom_components/cloudpelizzon
+      - name: Verify read-only module tracking and trial identity isolation
+        run: python3 tests/public-client/test_module_tracking591.py custom_components/cloudpelizzon
       - name: Verify trial offers match available modules
         run: node tests/public-client/test_trial_availability.cjs custom_components/cloudpelizzon/ui/core/panel.js
       - name: Verify legacy tabs receive updated trial and portal actions
