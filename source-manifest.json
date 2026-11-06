@@ -4,7 +4,7 @@
   "files": {
     ".gitattributes": "93f512b4c18b8cfaa204e76655eb936fa284546b49b0171700f2f3af7c5262e4",
     ".github/workflows/hacs.yml": "49ee7ee13d75c9f23e5bbfabe937e9f4f3446043e9e657adb24ad088669fec2b",
-    ".github/workflows/validate.yml": "c0ad341c0deb37c938cbda7b975b1f4fe47be00d55f56752df1fe5f6c1be01fd",
+    ".github/workflows/validate.yml": "72e367871fa28d8ae1eddb1f2ab8e40cd30b428f667045e739b4e463b7b66ea7",
     ".gitignore": "861f6bdee7ac8983b0946925848b8f35b312096ecb5eb0d4e8216e9b9ed3f21e",
     "CHANGELOG.md": "1d72e1cb55cb773260940085f0e3b1162c5a7ae84750277dc5bc3f868cbbe627",
     "LICENSE": "cbca8e08a579d17baccf35655af30ff2666c28e8bfb422717ee9e9f47fee28b2",
@@ -472,6 +472,7 @@
     "tests/public-client/native_usability131.py": "bd5b08875d22d10624cab43a4ef16a891c62569758aeaede141e3dde3ec224ae",
     "tests/public-client/public_transport87.py": "685b942d4bf5688d17451b8cfcd5910168a615dcf654773dbf11cf9fed9bdfb7",
     "tests/public-client/run.py": "74566e1749949649468e3252059e65b42738df8cb519443426259e1f69a46e1c",
+    "tests/public-client/run_current644.py": "2e09508210dde46d36313530e2d5260406ee07fba629a25349ed6d3d1b344a48",
     "tests/public-client/run_inventory_free632.py": "8ca9b7a3178427a95e61cc7dbc2c11f2e7ab20faa8a7f2a38cda09eb246929fd",
     "tests/public-client/test_automation148.cjs": "39def3f7f2160f368b9f73691b3a1af8c047246c7d7311ab6e64e837212d7708",
     "tests/public-client/test_automation149.cjs": "b64e1ce36723185af40faee68b7fd5a9f00f4b6fd9305373f6c6bbe6df93f818",

@@ -129,12 +129,10 @@ jobs:
         run: docker pull ghcr.io/home-assistant/home-assistant@sha256:c6c1ca9931036bf3a2c4cc088d8db25dfea3b33935a5ecc83c40349462e2f69e
       - name: Verify public client on Home Assistant 2026.11.0
         run: |
-          for test in run.py run_inventory_free632.py; do
-            docker run --rm --entrypoint python --network none --read-only --cap-drop ALL \
-              --security-opt no-new-privileges --user 65534:65534 \
-              --memory 1024m --cpus 2 --pids-limit 128 \
-              --tmpfs /tmp:rw,nosuid,nodev,size=536870912,mode=1777 \
-              -e PYTHONDONTWRITEBYTECODE=1 -e CP_HA_VERSION=2026.11.0 \
-              -v "$PWD/.:/candidate:ro" -v "$PWD/tests/public-client:/checks:ro" \
-              ghcr.io/home-assistant/home-assistant@sha256:c6c1ca9931036bf3a2c4cc088d8db25dfea3b33935a5ecc83c40349462e2f69e -B "/checks/$test" || exit 1
-          done
+          docker run --rm --entrypoint python --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --memory 1024m --cpus 2 --pids-limit 128 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=536870912,mode=1777 \
+            -e PYTHONDONTWRITEBYTECODE=1 -e CP_HA_VERSION=2026.11.0 \
+            -v "$PWD/.:/candidate:ro" -v "$PWD/tests/public-client:/checks:ro" \
+            ghcr.io/home-assistant/home-assistant@sha256:c6c1ca9931036bf3a2c4cc088d8db25dfea3b33935a5ecc83c40349462e2f69e -B /checks/run_current644.py || exit 1
