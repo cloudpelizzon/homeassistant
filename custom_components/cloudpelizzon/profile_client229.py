@@ -79,7 +79,7 @@ class Display:
   names={'CP-SOLAR':'Inteligência Solar','CP-MAINTENANCE':'Manutenção Residencial Preventiva','CP-SECURITY-PRO':'Central de Segurança Pro','CP-SECURITY':'Central de Segurança','CP-AUTOMATION':'Central Inteligente de Automações','CP-LIGHTING':'Iluminação','CP-INVENTORY':'Inventário'}
   for component in components:component.update(name=names.get(component['sku'],component['sku']),license_active=True,installed=True)
   if 'CP-INVENTORY' not in licensed and self.hass.data.get('cloudpelizzon_inventory_free632') is not None:
-   components.append({'sku':'CP-INVENTORY','name':'Inventário','version':'7.0.3','engine_mode':'free','signature_verified':False,'installed':True,'license_active':False})
+   components.append({'sku':'CP-INVENTORY','name':'Inventário','version':'7.0.4','engine_mode':'free','signature_verified':False,'installed':True,'license_active':False})
   present={component['sku'] for component in components}
   for sku in sorted(licensed):
    if sku not in present and sku in names:
