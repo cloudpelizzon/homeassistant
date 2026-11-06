@@ -1,0 +1,105 @@
+{
+  "license": "CC BY — attribution included in editor and this file",
+  "models": [
+    {
+      "id": "renault_duster585",
+      "sha256_original": "96253aa272e8c20965400ddbe99608ec3ecc8268f63a2810197c0f1be891247b",
+      "author": "razor24",
+      "authorUrl": "https://sketchfab.com/razor24",
+      "license": "CC Attribution",
+      "sourceName": "2011 Dacia (Renault) Duster",
+      "sourceUrl": "https://sketchfab.com/3d-models/30bc2e09de66426bb67be72c95fa2476",
+      "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
+    },
+    {
+      "id": "chevrolet_equinox585",
+      "sha256_original": "e7803045f07277b3ecc95f030dc7a663a2aec28ca4c00d0aaac27134dfb018af",
+      "author": "Q.SARDOR",
+      "authorUrl": "https://sketchfab.com/qsardor57913",
+      "license": "CC Attribution",
+      "sourceName": "Chevrolet Equinox 2020 Low-poly",
+      "sourceUrl": "https://sketchfab.com/3d-models/ce15ce4fb4e8492fba41e148c9c1ddce",
+      "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
+    },
+    {
+      "id": "vw_tcross585",
+      "sha256_original": "faf13d2ce63c243083dd42be26bbe5dd71c81c4b2ad38e547fb660b0041ec86e",
+      "author": "Levi",
+      "authorUrl": "https://sketchfab.com/Levi3DModels",
+      "license": "CC Attribution",
+      "sourceName": "Volkswagen T-Cross TSI LEGEND 2026",
+      "sourceUrl": "https://sketchfab.com/3d-models/d8417fa18b184b2d81174f81dfe131c6",
+      "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
+    },
+    {
+      "id": "vw_golf585",
+      "sha256_original": "3846272930663b4858a9ca65fdca6814eeae34c0fb344f31bccd645605edc0f0",
+      "author": "Mona x Supercars",
+      "authorUrl": "https://sketchfab.com/Car2022",
+      "license": "CC Attribution",
+      "sourceName": "Volkswagen Golf 8. GTI (A8)",
+      "sourceUrl": "https://sketchfab.com/3d-models/e87d7c0f8937481db236529beb5ecab7",
+      "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
+    },
+    {
+      "id": "renault_logan585",
+      "sha256_original": "2aa5b3c370a8745683bb6ed95d25abaf7d96a43206de2797fb52f6ea1f625cb5",
+      "author": "tiunov.se",
+      "authorUrl": "https://sketchfab.com/tiunov.se",
+      "license": "CC Attribution",
+      "sourceName": "Renault Logan",
+      "sourceUrl": "https://sketchfab.com/3d-models/f5ae16799df040d88ad155fb3fc7aacb",
+      "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
+    },
+    {
+      "id": "chevrolet_s10585",
+      "sha256_original": "7f66c530216410404650f956da95f95efaf0b95e74324b939514ffdaa8d46134",
+      "author": "Luquita",
+      "authorUrl": "https://sketchfab.com/speedmodel",
+      "license": "CC Attribution",
+      "sourceName": "Chevrolet S10",
+      "sourceUrl": "https://sketchfab.com/3d-models/2c2fcccdd96948aaa655f936aa325f0d",
+      "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
+    },
+    {
+      "id": "byd_dolphin585",
+      "sha256_original": "915287e01f3c796226970b8d21b1d1efb977a879b0f9bc9f66dab5ae6eda0621",
+      "author": "Nazh Design ✔",
+      "authorUrl": "https://sketchfab.com/NazhDesign",
+      "license": "CC Attribution",
+      "sourceName": "2024 BYD Dolphin Premium Long Range",
+      "sourceUrl": "https://sketchfab.com/3d-models/8d30880667524cf3abb9e3e66c5299b5",
+      "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
+    },
+    {
+      "id": "byd_seal585",
+      "sha256_original": "25b2377e901f35645c484a9f921b4a5ea93406849c4f6c4b5d0918280d7ecb87",
+      "author": "Nazh Design ✔",
+      "authorUrl": "https://sketchfab.com/NazhDesign",
+      "license": "CC Attribution",
+      "sourceName": "2024 BYD Seal Performance AWD",
+      "sourceUrl": "https://sketchfab.com/3d-models/96ec5c34852f4c3090a755d4445f5e98",
+      "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
+    },
+    {
+      "id": "chery_tiggo585",
+      "sha256_original": "7fd9cc472f244f2e907223d6e4ea66d2f7a660fe188e8ab9225bb9f3bf3f94d4",
+      "author": "Nazh Design ✔",
+      "authorUrl": "https://sketchfab.com/NazhDesign",
+      "license": "CC Attribution",
+      "sourceName": "2023 Chery Tiggo 8 Pro",
+      "sourceUrl": "https://sketchfab.com/3d-models/b8d34fba89ca45918e851eaab3b5b679",
+      "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
+    },
+    {
+      "id": "toyota_prius585",
+      "sha256_original": "9095a5576b159f1798167217950600c6775997521e2f0e8a6c40039612db32c2",
+      "author": "Doz3",
+      "authorUrl": "https://sketchfab.com/Doz3",
+      "license": "CC Attribution",
+      "sourceName": "Toyota Prius 2012",
+      "sourceUrl": "https://sketchfab.com/3d-models/04eaf6b288cc466785365b7d985e3b29",
+      "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
+    }
+  ]
+}

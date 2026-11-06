@@ -1,5 +1,16 @@
 # Notas de versão
 
+## 7.0.2 — experiência compartilhada do Inventário Free e Full
+
+- O Free usa os mesmos editores de cadastro, diagrama e cômodos 2D/3D da versão completa. A tela simplificada da 7.0.1 foi substituída.
+- Limites permanentes: dez equipamentos e dois cômodos completos, conferidos no servidor. O Inventário não tem Trial.
+- Cadastro com seis abas: identificação, rede, localização, compra/garantia, ciclo de vida e foto/observações. Inclui ícones, foto do equipamento, patrimônio e cálculo da depreciação anual; somente os anexos de NF e garantia permanecem pagos dentro do cadastro.
+- As descobertas aproveitam o tipo e as classes das entidades do HA para inserir os ícones correspondentes. Identificações sem evidência permanecem genéricas e editáveis.
+- Mesmos controles de móveis, materiais, paredes, portas, cobertura, altura dos dispositivos e cenas 3D nos dois cômodos. Posições, ligações e alterações ficam no HA, com desfazer e proteção contra gravação de uma versão antiga.
+- Conversão da planta básica anterior sem apagar cadastros. Um eventual terceiro cômodo anterior fica preservado no armazenamento, fora dos dois ambientes ativos da versão Free.
+- Impressão/exportação, descoberta ativa/agendada, conectores e integrações comerciais continuam licenciados. Os motores proprietários não integram o pacote público.
+- Modelos 3D públicos de veículos CC BY incluídos com atribuição, sem componentes executáveis privados.
+
 ## 7.0.1 — mapas básicos no Inventário Free
 
 - O Free abre um diagrama real de até dez equipamentos, com posições e ligações manuais salvas localmente. Clique no equipamento para editar seu cadastro.

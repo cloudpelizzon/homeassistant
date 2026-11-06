@@ -27,6 +27,8 @@ jobs:
         run: node tests/public-client/test_documents_hash638.cjs
       - name: Verify permanent Free Inventory boundaries and blocked commercial operations
         run: python3 tests/public-client/test_inventory_free632.py
+      - name: Verify shared Free workspace, complete registration and two-room quota
+        run: python3 tests/public-client/test_inventory_workspace646.py
       - name: Verify documentation follows confirmed module licenses
         run: node tests/test-updater-docs501.js
       - name: Verify Solar percentage pies and monitored energy ranking

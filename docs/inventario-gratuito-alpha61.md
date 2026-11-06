@@ -1,38 +1,27 @@
 # Inventário — gratuito permanente e versão completa
 
-O Inventário não tem Trial. O acesso gratuito permite manter até dez equipamentos, com cadastro básico local e seleção de dispositivos já registrados no Home Assistant. A versão gratuita não executa varreduras de rede, não deduz ligações, permite uma planta 2D básica de três cômodos em um andar e não exporta os relatórios comerciais.
+O Free permite conhecer o produto nas mesmas telas da versão Full, com até **10 equipamentos e 2 cômodos completos**, sem Trial e sem prazo de expiração.
 
-Todos os menus permanecem visíveis. As funções comerciais mostram sua finalidade e ficam bloqueadas: organização automática, plantas avançadas/3D, coberturas, descoberta agendada, patrimônio e depreciação, conectores, manutenção, histórico, resolução de conflitos e impressão. Alterar um botão no navegador não disponibiliza o motor privado ausente do pacote.
+## Cadastro completo
 
-Os dados básicos ficam no armazenamento privado do Home Assistant. O conector gratuito exige um administrador ativo, limita os cadastros no backend e não concede licenças nem inicia testes dos outros módulos.
+As seis abas são Identificação, Rede e endereços, Localização, Compra e garantia, Ciclo de vida e Foto e observações. Você pode informar IPs, MAC, fabricante, modelo, protocolo, série, patrimônio, fornecedor, referência da nota, valor/data de compra, depreciação anual, garantia, responsável, software, foto, ícone e observações. Os valores calculados são apresentados com a data local do HA. Apenas os arquivos anexos de nota fiscal e garantia ficam bloqueados no cadastro Free; a referência da nota e as datas de garantia continuam editáveis.
 
-## Versão completa
+## Rede e cômodos
 
-A versão completa depende de contratação, autorização comercial válida e instalação controlada do pacote privado compatível. O ZIP público inclui interfaces, adaptadores e verificadores; não inclui os motores comerciais, suas bibliotecas compiladas nem uma autorização de homologação. O fluxo de distribuição dos motores compilados continua controlado por instalação; a presença de uma licença na interface não prova que um pacote compatível já foi entregue.
+Abra Mapa para usar o mesmo diagrama da versão Full: mova e conecte os equipamentos cadastrados, selecione o tipo das ligações e abra o cadastro clicando no item. Conexões manuais não são evidência de uma conexão física detectada.
 
-Instalações que já possuem os pacotes comerciais compilados e seu cadastro de migração preservam as verificações de assinatura, identidade e permissões locais. O cliente público não cria esse cadastro de migração, não copia identidades de outra casa e não transforma uma instalação gratuita em licenciada.
+Na aba Cômodos, configure até dois ambientes. Use os mesmos editores 2D e 3D para móveis, materiais, paredes, portas, janelas, coberturas e montagem dos dispositivos. Salve o ambiente antes de fechar. O limite se aplica também a chamadas diretas ao servidor.
 
-No motor completo compatível, a depreciação anual considera os anos completos desde a aquisição e aplica o percentual sobre o saldo. O cálculo diário local atualiza o valor na data de aniversário, respeitando o fuso do HA. Valores manuais são preservados. O cálculo depende de valor, data de aquisição e percentual cadastrados.
+Descobertas lista dispositivos que já existem no HA. O tipo e o ícone inicial aproveitam as entidades e seus metadados; informações insuficientes resultam em ícone genérico editável. O Free não executa a varredura ativa nem a rotina comercial de descoberta. Informar um campo de atualização automática não habilita esses motores.
+
+## Dados existentes e versão completa
+
+Os cadastros anteriores são preservados. As posições da antiga planta básica são convertidas para o editor compartilhado. Se existia um terceiro cômodo, seus dados ficam retidos privadamente; apenas dois ficam ativos no Free. Não apague arquivos de armazenamento para alterar limites.
+
+Impressão/exportação, descoberta ativa/agendada, conectores, Portal e manutenção integrada continuam exclusivos da versão completa. A contratação exige pacote privado compatível e autorização comercial. Nenhum motor proprietário ou autorização comercial acompanha o ZIP público.
 
 ## Atualização
 
-No Marketplace / HACS, selecione a versão estável `7.0.1`, sem habilitar pré-lançamentos. Preserve `.storage`. Reinicie o HA e atualize a aba após salvar suas edições. Não reinstale a integração para reiniciar testes: o Inventário não tem Trial e os prazos dos outros módulos continuam controlados pela autoridade comercial.
+Atualize para **7.0.2** pelo Marketplace/HACS e reinicie o HA. Depois, recarregue a aba para trocar os editores antigos. Preserve `.storage` e os dados atuais. Atualizar não inicia nem renova testes de outros módulos.
 
-O cliente possui escala compacta de desktop, equivalente a 67% com o navegador em 100%. Celulares e impressão mantêm escala própria. As capturas pessoais de uma instalação não fazem parte do repositório; uma galeria configurada localmente permanece pertencendo àquela instalação.
-
-## Documentação
-
-- [Manual do Inventário](https://documentacao.cloudpelizzon.com.br/modulos/inventario/manual)
-- [Notas documentais do módulo](https://documentacao.cloudpelizzon.com.br/notas-de-versao/inventario/0-1-0-dev-r620)
-- [Portal do Cliente](https://cliente.cloudpelizzon.com.br)
-
-As notas documentais do módulo e a versão do cliente público são identificações independentes.
-
-
-## 7.0.1 — mapas básicos no Inventário Free
-
-- O Free abre um diagrama real de até dez equipamentos, com posições e ligações manuais salvas localmente. Clique no equipamento para editar seu cadastro.
-- Planta 2D de um andar com até três cômodos editáveis: nome, medidas, alocação e movimentação dos equipamentos.
-- Cadastro básico simplificado, incluindo tipo, IP, fabricante, modelo, série e observações. Seleção dos dispositivos já registrados no HA preservada.
-- Organização automática, plantas avançadas/3D, impressão, descoberta ativa e demais integrações continuam exclusivos da versão completa. O Free não tem Trial e não inclui motores comerciais.
-- Validação no servidor dos limites, vínculos e coordenadas; gravação atômica com revisão para impedir sobrescrita silenciosa entre sessões.
+[Manual do Inventário](https://documentacao.cloudpelizzon.com.br/modulos/inventario/manual) · [Portal](https://cliente.cloudpelizzon.com.br)

@@ -2,9 +2,9 @@
 
 ![CloudPelizzon](custom_components/cloudpelizzon/ui/core/cloudpelizzon-logo.png)
 
-## 7.0.1 — versão estável do cliente CloudPelizzon
+## 7.0.2 — versão estável do cliente CloudPelizzon
 
-O **Inventário** acrescenta cadastro gratuito permanente de até dez equipamentos, sem Trial. Inclui diagrama manual e planta 2D básica de até três cômodos em um andar. Organização automática, plantas avançadas/3D e demais funções comerciais permanecem bloqueadas até a contratação e instalação autorizada do motor privado. [Conheça os limites e a versão completa](docs/inventario-gratuito-alpha61.md).
+O **Inventário Free** usa as mesmas telas de cadastro, diagrama e cômodos 2D/3D da versão completa, limitado a **10 equipamentos e 2 cômodos completos**, sem Trial. O cadastro tem seis abas; somente os anexos de NF e garantia ficam bloqueados nele. Descoberta ativa, impressão/exportação e integrações comerciais continuam licenciadas. [Veja funcionalidades, limites e atualização](docs/inventario-gratuito-alpha61.md).
 
 Os testes dos cinco módulos anteriores continuam disponíveis nos seus fluxos próprios. Cliente público completo para os cinco módulos desenvolvidos: **Inteligência Solar, Manutenção Residencial Preventiva, Central de Segurança Pro, Central Inteligente de Automações e Iluminação Inteligente**. A Central de Segurança base e os demais módulos anunciados como em desenvolvimento continuam indisponíveis para instalação.
 
@@ -17,7 +17,7 @@ O pacote reúne as interfaces, os recursos visuais e os adaptadores de comunica�
 No HA 2026.11 ou posterior, use **Configurações → Marketplace**; em versões anteriores, use o HACS. O link acima oferece o cadastro do repositório personalizado quando ele ainda não existe na instalação.
 
 1. Adicione `https://github.com/cloudpelizzon/homeassistant` como repositório personalizado do tipo **Integração**.
-2. Selecione a versão estável **7.0.1**. Não é necessário habilitar pré-lançamentos. Quem já usa uma alpha pode atualizar pelo mesmo cadastro, preservando a integração e seus dados.
+2. Selecione a versão estável **7.0.2**. Não é necessário habilitar pré-lançamentos. Quem já usa uma alpha pode atualizar pelo mesmo cadastro, preservando a integração e seus dados.
 3. Baixe a integração e reinicie o Home Assistant.
 4. Em **Configurações → Dispositivos e serviços → Adicionar integração**, procure **CloudPelizzon**.
 5. Leia os consentimentos, conclua o cadastro e a vinculação da instalação e abra o painel CloudPelizzon.
