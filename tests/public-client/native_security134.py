@@ -60,8 +60,9 @@ class NativeSecurity134Tests(unittest.IsolatedAsyncioTestCase):
   device_registry.async_setup(hass)
   await bounded('issue_registry',issue_registry.async_load(hass))
   await bounded('device_registry',device_registry.async_load(hass))
-  await bounded('entity_registry',entity_registry.async_load(hass))
   await bounded('config_entries',hass.config_entries.async_initialize())
+  # HA 2026.11 entity-registry loading waits for config entries to initialize.
+  await bounded('entity_registry',entity_registry.async_load(hass))
   self.assertTrue(await bounded('setup_component',async_setup_component(hass,'alarm_control_panel',{})));await bounded('start',hass.async_start())
   edge=object.__new__(Edge);edge.closed=False;edge.connected=True;edge.native=None;edge.native_at=None;edge.native_listeners=set();edge.clock=lambda:datetime.now(timezone.utc)
   edge.native_update({'alarm':'disarmed','mode':'Casa','pending':None,'revision':1})
