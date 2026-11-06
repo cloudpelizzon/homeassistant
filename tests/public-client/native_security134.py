@@ -44,32 +44,39 @@ class NativeSecurity134Tests(unittest.IsolatedAsyncioTestCase):
   attrs=entity.extra_state_attributes;self.assertEqual(attrs['bypassed_sensors'],['binary_sensor.window']);self.assertEqual(attrs['arm_blockers'],{'partial_closed':['binary_sensor.door']});self.assertTrue(attrs['partial_open_bypass'])
 
  async def test_native_alarm_changes_are_written_into_the_actual_HA_state_machine(self):
-  import logging,shutil,uuid
+  import logging,shutil,uuid,asyncio
   from pathlib import Path
   from homeassistant import loader,config_entries
   from homeassistant.core import HomeAssistant
   from homeassistant.helpers import issue_registry,entity_registry,device_registry
   from homeassistant.setup import async_setup_component
   from homeassistant.components.alarm_control_panel.const import DATA_COMPONENT
+  async def bounded(label,operation):
+   print('NATIVE_ALARM_PHASE='+label,flush=True)
+   return await asyncio.wait_for(operation,15)
   root=Path('/tmp')/('native-alarm137-'+uuid.uuid4().hex);root.mkdir()
   hass=HomeAssistant(str(root));loader.async_setup(hass)
   hass.config_entries=config_entries.ConfigEntries(hass,{})
   device_registry.async_setup(hass)
-  await issue_registry.async_load(hass);await device_registry.async_load(hass);await entity_registry.async_load(hass);await hass.config_entries.async_initialize()
-  self.assertTrue(await async_setup_component(hass,'alarm_control_panel',{}));await hass.async_start()
+  await bounded('issue_registry',issue_registry.async_load(hass))
+  await bounded('device_registry',device_registry.async_load(hass))
+  await bounded('config_entries',hass.config_entries.async_initialize())
+  # HA 2026.11 entity-registry loading waits for config entries to initialize.
+  await bounded('entity_registry',entity_registry.async_load(hass))
+  self.assertTrue(await bounded('setup_component',async_setup_component(hass,'alarm_control_panel',{})));await bounded('start',hass.async_start())
   edge=object.__new__(Edge);edge.closed=False;edge.connected=True;edge.native=None;edge.native_at=None;edge.native_listeners=set();edge.clock=lambda:datetime.now(timezone.utc)
   edge.native_update({'alarm':'disarmed','mode':'Casa','pending':None,'revision':1})
   entity=PrivateAlarm(edge);component=hass.data[DATA_COMPONENT]
   try:
-   await component.async_add_entities([entity])
+   await bounded('add_entity',component.async_add_entities([entity]))
    self.assertEqual(hass.states.get(entity.entity_id).state,'disarmed')
    edge.native_update({'alarm':'arming','mode':'Casa','pending':{'kind':'exit','target':'armed_home','due':edge.clock().timestamp()+60},'revision':2})
    self.assertEqual(hass.states.get(entity.entity_id).state,'arming');self.assertEqual(hass.states.get(entity.entity_id).attributes['pending']['target'],'armed_home')
    edge.native_update({'alarm':'armed_home','mode':'Casa','pending':None,'revision':3,'bypassed_sensors':['binary_sensor.synthetic_open']})
    self.assertEqual(hass.states.get(entity.entity_id).state,'armed_home');self.assertEqual(hass.states.get(entity.entity_id).attributes['bypassed_sensors'],['binary_sensor.synthetic_open'])
-   await entity.async_remove();self.assertEqual(edge.native_listeners,set())
+   await bounded('remove_entity',entity.async_remove());self.assertEqual(edge.native_listeners,set())
   finally:
-   await hass.async_stop();shutil.rmtree(root)
+   await bounded('stop',hass.async_stop());shutil.rmtree(root)
 
  async def test_standard_siren_save_prepares_exact_on_off_and_read_permissions(self):
   from client81.adapters.security.configuration.api import prepare_siren_permissions

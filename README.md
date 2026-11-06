@@ -2,7 +2,7 @@
 
 ![CloudPelizzon](custom_components/cloudpelizzon/ui/core/cloudpelizzon-logo.png)
 
-## 7.0.0-alpha.61 — Inventário gratuito permanente
+## 7.0.0 — versão estável do cliente CloudPelizzon
 
 O **Inventário** acrescenta cadastro gratuito permanente de até dez equipamentos, sem Trial. Mapas, plantas 2D/3D e demais funções comerciais ficam visíveis e bloqueadas até a contratação e instalação autorizada do motor privado. [Conheça os limites e a versão completa](docs/inventario-gratuito-alpha61.md).
 
@@ -10,10 +10,14 @@ Os testes dos cinco módulos anteriores continuam disponíveis nos seus fluxos p
 
 O pacote reúne as interfaces, os recursos visuais e os adaptadores de comunicação. Os motores comerciais do teste executam nos servidores privados da CloudPelizzon e não fazem parte deste repositório. Os identificadores técnicos legados de Segurança são preservados para compatibilidade com as autorizações assinadas; a apresentação comercial distingue a versão Pro já desenvolvida da versão base em desenvolvimento.
 
-### Instalação pelo HACS
+### Instalação pelo Marketplace / HACS
+
+[![Abrir no Marketplace / HACS](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=cloudpelizzon&repository=homeassistant&category=integration)
+
+No HA 2026.11 ou posterior, use **Configurações → Marketplace**; em versões anteriores, use o HACS. O link acima oferece o cadastro do repositório personalizado quando ele ainda não existe na instalação.
 
 1. Adicione `https://github.com/cloudpelizzon/homeassistant` como repositório personalizado do tipo **Integração**.
-2. Habilite a exibição de versões de pré-lançamento e selecione **7.0.0-alpha.61**.
+2. Selecione a versão estável **7.0.0**. Não é necessário habilitar pré-lançamentos. Quem já usa uma alpha pode atualizar pelo mesmo cadastro, preservando a integração e seus dados.
 3. Baixe a integração e reinicie o Home Assistant.
 4. Em **Configurações → Dispositivos e serviços → Adicionar integração**, procure **CloudPelizzon**.
 5. Leia os consentimentos, conclua o cadastro e a vinculação da instalação e abra o painel CloudPelizzon.
@@ -36,7 +40,7 @@ O pacote público não inclui chaves privadas, tokens, bancos de dados, configur
 
 Cada versão inclui `SHA256SUMS` e um inventário fechado dos recursos da interface. Alterações de arquivos não correspondentes ao inventário são rejeitadas. A licença do repositório se aplica ao código público aqui distribuído; os componentes privados não integram esta distribuição.
 
-Esta é uma versão de pré-lançamento TRIAL, não uma versão estável. As notas de versão registram os testes realizados e suas limitações; validação automatizada não substitui o aceite da instalação, das integrações e dos dispositivos de cada residência.
+Esta é a versão estável do cliente público. O Inventário Free não tem Trial; os testes opcionais dos outros módulos continuam com os prazos e permissões comerciais existentes. Atualizar não inicia nem renova testes. O pacote pago compatível continua separado do ZIP público. As notas registram os testes e seus limites: a validação automatizada não substitui a conferência dos dispositivos de cada residência.
 
 [Notas de versão](CHANGELOG.md) · [Segurança](SECURITY.md) · [Site](https://cloudpelizzon.com.br) · [Documentação](https://documentacao.cloudpelizzon.com.br) · [Portal do Cliente](https://cliente.cloudpelizzon.com.br)
 

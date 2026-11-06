@@ -16,7 +16,7 @@ No motor completo compatível, a depreciação anual considera os anos completos
 
 ## Atualização
 
-No HACS, habilite pré-lançamentos e selecione `7.0.0-alpha.61`. Preserve `.storage`. Reinicie o HA e atualize a aba após salvar suas edições. Não reinstale a integração para reiniciar testes: o Inventário não tem Trial e os prazos dos outros módulos continuam controlados pela autoridade comercial.
+No Marketplace / HACS, selecione a versão estável `7.0.0`, sem habilitar pré-lançamentos. Preserve `.storage`. Reinicie o HA e atualize a aba após salvar suas edições. Não reinstale a integração para reiniciar testes: o Inventário não tem Trial e os prazos dos outros módulos continuam controlados pela autoridade comercial.
 
 O cliente possui escala compacta de desktop, equivalente a 67% com o navegador em 100%. Celulares e impressão mantêm escala própria. As capturas pessoais de uma instalação não fazem parte do repositório; uma galeria configurada localmente permanece pertencendo àquela instalação.
 

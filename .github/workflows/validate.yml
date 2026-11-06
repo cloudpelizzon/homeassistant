@@ -116,3 +116,23 @@ jobs:
             ghcr.io/home-assistant/home-assistant@sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0 \
             -B /checks/run_inventory_free632.py
 
+
+  native-current:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout reviewed public sources
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Pull official Home Assistant 2026.11.0 runtime
+        run: docker pull ghcr.io/home-assistant/home-assistant@sha256:c6c1ca9931036bf3a2c4cc088d8db25dfea3b33935a5ecc83c40349462e2f69e
+      - name: Verify public client on Home Assistant 2026.11.0
+        run: |
+          docker run --rm --entrypoint python --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --memory 1024m --cpus 2 --pids-limit 128 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=536870912,mode=1777 \
+            -e PYTHONDONTWRITEBYTECODE=1 -e CP_HA_VERSION=2026.11.0 \
+            -v "$PWD/.:/candidate:ro" -v "$PWD/tests/public-client:/checks:ro" \
+            ghcr.io/home-assistant/home-assistant@sha256:c6c1ca9931036bf3a2c4cc088d8db25dfea3b33935a5ecc83c40349462e2f69e -B /checks/run_current644.py || exit 1
