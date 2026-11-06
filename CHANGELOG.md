@@ -1,3 +1,9 @@
+## 7.0.3 — correção do limite de download do Marketplace
+
+- Pacote abaixo de 90 MiB, com margem para o limite de 100 MiB do Marketplace.
+- Banners convertidos para WebP sem perdas: mesmos pixels, dimensões e conteúdo; todas as imagens e funcionalidades preservadas.
+- Verificação automática do ZIP final e de seu tamanho em cada validação.
+
 # Notas de versão
 
 ## 7.0.2 — experiência compartilhada do Inventário Free e Full
