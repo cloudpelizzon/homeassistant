@@ -41,19 +41,45 @@ class Display:
  async def updates(self):
   body=await self.profile()
   licensed={r['sku'] for r in body['licenses'] if r['active']}
-  from . import ha_private212 as loader
-  local='CP-SOLAR' in licensed and await loader.async_prepare(self.hass)
   components=[]
-  if local:
-   def info():
-    # The installed manifest was verified by async_prepare; return display metadata only.
-    envelope=json.loads((Path(__file__).resolve().parent/'_paid_modules/solar/manifest.json').read_bytes())
-    manifest=envelope.get('manifest',{})
-    return {'sku':'CP-SOLAR','name':'Inteligência Solar','version':str(manifest.get('version','1.0.0')),'engine_mode':'local','signature_verified':True}
-   components.append(await self.hass.async_add_executor_job(info))
+  compiled=self.hass.data.get('cloudpelizzon_compiled628_active')
+  if compiled is not None and not compiled.closed:
+   # Observe verified libraries; never load the legacy engine in a native session.
+   def installed_native():
+    from .compiled_loader627 import Namespace
+    from .compiled_release628 import PUBLIC_KEY
+    root=Path(self.hass.config.path('.storage/cloudpelizzon_compiled627'))
+    marker=json.loads((root/'installed627.json').read_bytes())
+    result=[]
+    for sku,row in marker.get('modules',{}).items():
+     if sku not in licensed:continue
+     namespace=None
+     try:
+      if row.get('public_key')!=PUBLIC_KEY:continue
+      namespace=Namespace(row['folder'],sku=sku,public_key=PUBLIC_KEY,state_root=root)
+      manifest=namespace.manifest
+      result.append({'sku':sku,'version':str(manifest.get('version') or manifest.get('release') or 'Compilado local'),'engine_mode':'native','signature_verified':True})
+     except Exception:
+      # A license is not proof that a local library is present and intact.
+      continue
+     finally:
+      if namespace is not None:namespace.close()
+    return result
+   components=await self.hass.async_add_executor_job(installed_native)
+  else:
+   from . import ha_private212 as loader
+   local='CP-SOLAR' in licensed and await loader.async_prepare(self.hass)
+   if local:
+    def info():
+     envelope=json.loads((Path(__file__).resolve().parent/'_paid_modules/solar/manifest.json').read_bytes())
+     manifest=envelope.get('manifest',{})
+     return {'sku':'CP-SOLAR','name':'Inteligência Solar','version':str(manifest.get('version','1.0.0')),'engine_mode':'local','signature_verified':True}
+    components.append(await self.hass.async_add_executor_job(info))
   # CP_COMPONENTS470: license visibility is independent of a local paid archive.
-  names={'CP-SOLAR':'Inteligência Solar','CP-MAINTENANCE':'Manutenção Residencial Preventiva','CP-SECURITY-PRO':'Central de Segurança Pro','CP-SECURITY':'Central de Segurança','CP-AUTOMATION':'Central Inteligente de Automações','CP-LIGHTING':'Iluminação'}
-  for component in components:component.update(license_active=True,installed=True)
+  names={'CP-SOLAR':'Inteligência Solar','CP-MAINTENANCE':'Manutenção Residencial Preventiva','CP-SECURITY-PRO':'Central de Segurança Pro','CP-SECURITY':'Central de Segurança','CP-AUTOMATION':'Central Inteligente de Automações','CP-LIGHTING':'Iluminação','CP-INVENTORY':'Inventário'}
+  for component in components:component.update(name=names.get(component['sku'],component['sku']),license_active=True,installed=True)
+  if 'CP-INVENTORY' not in licensed and self.hass.data.get('cloudpelizzon_inventory_free632') is not None:
+   components.append({'sku':'CP-INVENTORY','name':'Inventário','version':'7.0.0-alpha.61','engine_mode':'free','signature_verified':False,'installed':True,'license_active':False})
   present={component['sku'] for component in components}
   for sku in sorted(licensed):
    if sku not in present and sku in names:

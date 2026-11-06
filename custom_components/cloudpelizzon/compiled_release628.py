@@ -1,0 +1,4 @@
+"""Reviewed commercial libraries; local full entitlements remain required."""
+PUBLIC_KEY='335e4e4795fc6abeb24e088e701f2939280f9f9736d92ed1d5580aef99d9215e'
+RELEASES={'CP-LIGHTING': '33c4104149723ccb2c73e4f3d4c16680794f979f7084103a11f7df37a78a6796', 'CP-MAINTENANCE': '9ba110c896584d20b4ec429650bbc1619c743d5b4005be20b418d6ce4d8a43df', 'CP-AUTOMATION': '247cd88c89ec9d73bf0cfaf838319e014943a72c04a85056fdefa1c41462e5aa', 'CP-SECURITY': 'b40f9731ccfec77c66cce7babc44695ec6e6d2ba86b558e8085b6e934bac77f0', 'CP-SOLAR': 'b885ccfd593eb64cc7d9fd3196db9075b2f0cde3760fa3b11bd229b220d3f0a9', 'CP-INVENTORY': '526e9656741bb6ec2be7c7bb006be281053d31a9c510c5409d5ab06140ef89f9'}
+READ_OPERATIONS={'CP-LIGHTING': 'lighting.config.read', 'CP-MAINTENANCE': 'maintenance.compat.snapshot.read', 'CP-AUTOMATION': 'automation.rules.read', 'CP-SECURITY': 'security.config.read', 'CP-SOLAR': 'solar.config.read', 'CP-INVENTORY': 'inventory.local'}

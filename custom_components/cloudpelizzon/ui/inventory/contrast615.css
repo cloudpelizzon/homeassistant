@@ -1,0 +1,67 @@
+/* Shared Inventory layout and contrast; does not recolor diagrams or 3D materials. */
+:host{--text:#f2f5fa !important;--muted:#c0c9d6 !important;--border:#627087 !important;--cyan:#9ce5cf !important;--blue:#a5cfff !important}
+:host #atlas-studio560.inventory.atlas514{--bg:#171c24 !important;--panel:#252d3a !important;--text:#f2f5fa !important;--muted:#c0c9d6 !important;--border:#627087 !important;--cyan:#9ce5cf !important;--blue:#a5cfff !important;background:#171c24 !important;color:var(--text) !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-nav{background:#1e2530 !important;border-color:#556279 !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-nav button{color:#d4dce8 !important;background:transparent !important;border-color:transparent !important;font-weight:600 !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-nav button i{color:#c4cedd !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-nav button:hover{background:#303b4b !important;color:#fff !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-nav button.active{background:#35463f !important;color:#ddfff1 !important;border-color:#8fcbb6 !important;box-shadow:inset 3px 0 #a5ebd2 !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-nav button.active i{color:#b5f2dc !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-nav-label,:host #atlas-studio560.inventory.atlas514 .local small,:host #atlas-studio560.inventory.atlas514 .atlas-local-summary{color:#c0cad8 !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-header{background:#202733 !important;border-color:#627087 !important;padding-top:12px !important;padding-bottom:12px !important;gap:16px !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-breadcrumb{color:#c5cfde !important}:host #atlas-studio560.inventory.atlas514 .atlas-breadcrumb strong{color:#f2f5fa !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-main{padding:24px 26px !important;display:block !important}
+:host #atlas-studio560.inventory.atlas514 .card,:host #atlas-studio560.inventory.atlas514 .atlas-panel,:host #atlas-studio560.inventory.atlas514 .source-card,:host #atlas-studio560.inventory.atlas514 .batch-toolbar{background:#252d3a !important;border:1px solid #627087 !important;box-shadow:0 6px 18px #00000018 !important;border-radius:12px !important}
+:host #atlas-studio560.inventory.atlas514 .card{padding:22px !important;margin-bottom:20px !important}
+:host #atlas-studio560.inventory.atlas514 h1,:host #atlas-studio560.inventory.atlas514 h2,:host #atlas-studio560.inventory.atlas514 h3,:host #atlas-studio560.inventory.atlas514 h4{color:#f4f7fb !important;line-height:1.35 !important}
+:host #atlas-studio560.inventory.atlas514 h2{font-size:21px !important;margin-bottom:12px !important}:host #atlas-studio560.inventory.atlas514 h3{font-size:16px !important;margin-bottom:10px !important}
+:host #atlas-studio560.inventory.atlas514 p,:host #atlas-studio560.inventory.atlas514 small,:host #atlas-studio560.inventory.atlas514 .muted,:host #atlas-studio560.inventory.atlas514 .hint{color:#c0c9d6 !important}
+:host #atlas-studio560.inventory.atlas514 p{line-height:1.65 !important}:host #atlas-studio560.inventory.atlas514 label{color:#e1e7f0 !important;font-weight:550 !important}
+:host #atlas-studio560.inventory.atlas514 input:not([type=checkbox]):not([type=radio]):not([type=color]):not([type=range]),:host #atlas-studio560.inventory.atlas514 select,:host #atlas-studio560.inventory.atlas514 textarea{background:#141b25 !important;color:#f6f8fc !important;border:1px solid #8491a5 !important;border-radius:7px !important;min-height:36px !important;font-size:13px !important;padding:8px 11px !important}
+:host #atlas-studio560.inventory.atlas514 input::placeholder,:host #atlas-studio560.inventory.atlas514 textarea::placeholder{color:#aeb9c9 !important;opacity:1 !important}
+:host #atlas-studio560.inventory.atlas514 select option{background:#1d2632 !important;color:#f4f7fb !important}
+:host #atlas-studio560.inventory.atlas514 button{background:#344154 !important;color:#f2f6fc !important;border:1px solid #8292a9 !important;border-radius:7px !important;min-height:34px !important;padding:7px 12px !important;font-size:12px !important;line-height:1.4 !important;font-weight:650 !important;box-shadow:none !important}
+:host #atlas-studio560.inventory.atlas514 button:hover{background:#43536b !important;filter:none !important;border-color:#c3d1e3 !important}
+:host #atlas-studio560.inventory.atlas514 button:disabled{background:#2c3441 !important;color:#a8b3c3 !important;border-color:#5c687b !important;opacity:1 !important;cursor:not-allowed !important}
+:host #atlas-studio560.inventory.atlas514 button.danger{background:#63323e !important;border-color:#e29ca9 !important;color:#ffe7ec !important}
+:host #atlas-studio560.inventory.atlas514 button.text{background:transparent !important;color:#b4eedb !important;border-color:transparent !important}
+:host #atlas-studio560.inventory.atlas514 button[type=submit],:host #atlas-studio560.inventory.atlas514 [data-diagnostic-run614],:host #atlas-studio560.inventory.atlas514 [data-save-room567],:host #atlas-studio560.inventory.atlas514 [data-save612]{background:#a3e5cd !important;border-color:#a3e5cd !important;color:#102e25 !important}
+:host #atlas-studio560.inventory.atlas514 button:focus-visible,:host #atlas-studio560.inventory.atlas514 input:focus-visible,:host #atlas-studio560.inventory.atlas514 select:focus-visible,:host #atlas-studio560.inventory.atlas514 textarea:focus-visible{outline:3px solid #ffd58a !important;outline-offset:3px !important}
+:host #atlas-studio560.inventory.atlas514 input[type=checkbox],:host #atlas-studio560.inventory.atlas514 input[type=radio]{accent-color:#9ce5cf !important;width:17px !important;height:17px !important;flex:0 0 17px !important;margin:0 !important}
+:host #atlas-studio560.inventory.atlas514 .check{display:inline-flex !important;align-items:center !important;gap:8px !important;line-height:1.5 !important;min-height:30px !important}
+:host #atlas-studio560.inventory.atlas514 .section-head{display:flex !important;align-items:flex-start !important;justify-content:space-between !important;gap:18px !important;margin-bottom:18px !important}:host #atlas-studio560.inventory.atlas514 .section-head>div{min-width:0 !important}:host #atlas-studio560.inventory.atlas514 .section-head p{margin-bottom:0 !important}
+:host #atlas-studio560.inventory.atlas514 .actions,:host #atlas-studio560.inventory.atlas514 .toolbar{display:flex !important;align-items:center !important;gap:10px !important;flex-wrap:wrap !important;margin:12px 0 !important}
+:host #atlas-studio560.inventory.atlas514 .actions>input{flex:1 1 260px !important;min-width:160px !important}:host #atlas-studio560.inventory.atlas514 .actions>select{flex:0 1 240px !important;width:auto !important;min-width:160px !important}:host #atlas-studio560.inventory.atlas514 .actions>button{flex:0 0 auto !important}
+:host #atlas-studio560.inventory.atlas514 fieldset{border:1px solid #6d7c92 !important;border-radius:9px !important;padding:18px !important;margin:16px 0 !important}:host #atlas-studio560.inventory.atlas514 legend{padding:0 8px !important;color:#efd092 !important;font-weight:650 !important}
+:host #atlas-studio560.inventory.atlas514 .table-scroll{overflow:auto !important;border:1px solid #627087 !important;border-radius:8px !important;margin-top:14px !important}
+:host #atlas-studio560.inventory.atlas514 table{border-collapse:collapse !important;width:100% !important;background:#202936 !important}
+:host #atlas-studio560.inventory.atlas514 th{background:#354155 !important;color:#f3f6fb !important;border-bottom:1px solid #8a98ae !important;font-size:11px !important;letter-spacing:.4px !important;padding:12px !important;text-align:left !important}
+:host #atlas-studio560.inventory.atlas514 td{color:#e5ebf4 !important;border-bottom:1px solid #536176 !important;padding:12px !important;vertical-align:top !important;line-height:1.55 !important}
+:host #atlas-studio560.inventory.atlas514 tr:nth-child(even) td{background:#283343 !important}:host #atlas-studio560.inventory.atlas514 tr:hover td{background:#354459 !important}
+:host #atlas-studio560.inventory.atlas514 .badge{background:#344256 !important;border:1px solid #8194ae !important;color:#eaf2ff !important;padding:6px 10px !important;border-radius:6px !important}
+:host #atlas-studio560.inventory.atlas514 .notice{background:#3b3527 !important;border:1px solid #c6a45d !important;color:#fff0c9 !important;padding:12px 15px !important;border-radius:8px !important}
+:host #atlas-studio560.inventory.atlas514 .error{background:#522d39 !important;border:1px solid #df9bac !important;color:#ffe7ee !important;padding:12px 15px !important;border-radius:8px !important}
+:host #atlas-studio560.inventory.atlas514 .automation-settings612{display:grid !important;grid-template-columns:repeat(2,minmax(0,1fr)) !important;gap:14px 22px !important}:host #atlas-studio560.inventory.atlas514 .automation-settings612>p,:host #atlas-studio560.inventory.atlas514 .automation-days612{grid-column:1/-1 !important}:host #atlas-studio560.inventory.atlas514 .automation-settings612 label{margin:0 !important}
+:host #atlas-studio560.inventory.atlas514 .maintenance-job612,:host #atlas-studio560.inventory.atlas514 .maintenance-rule612{border-color:#75849b !important;background:#202936 !important;color:#ecf1f8 !important}
+:host #atlas-studio560.inventory.atlas514 .atlas-global-search{background:#141b25 !important;border-color:#8491a5 !important}
+:host dialog{background:#252d3a !important;color:#f2f5fa !important;border:1px solid #8896aa !important;border-radius:12px !important;box-shadow:0 24px 80px #0009 !important}
+:host dialog p,:host dialog small,:host dialog label{color:#cbd4e2 !important}
+:host dialog input:not([type=color]):not([type=checkbox]):not([type=radio]):not([type=range]),:host dialog select,:host dialog textarea{background:#141b25 !important;color:#f5f8fc !important;border:1px solid #8998ae !important;border-radius:7px !important;padding:9px 11px !important;font-size:13px !important}
+:host dialog button{background:#344154 !important;color:#f2f6fc !important;border:1px solid #8b9bb2 !important;border-radius:7px !important;padding:8px 13px !important;font-size:12px !important;font-weight:650 !important}
+:host dialog button.danger{background:#63323e !important;color:#ffe7ec !important;border-color:#dd9aac !important}
+:host dialog :is(.close-form,[data-dialog-close587]){z-index:30 !important}
+:host dialog input::placeholder{color:#aeb9c9 !important;opacity:1 !important}
+@media(max-width:900px){:host #atlas-studio560.inventory.atlas514 .atlas-main{padding:16px !important}:host #atlas-studio560.inventory.atlas514 .card{padding:16px !important}:host #atlas-studio560.inventory.atlas514 .automation-settings612{grid-template-columns:1fr !important}:host #atlas-studio560.inventory.atlas514 .section-head{flex-wrap:wrap !important}}
+@media(prefers-reduced-motion:reduce){:host #atlas-studio560.inventory.atlas514 button{transition:none !important}}
+
+/* Natural CSS sizing replaces the old page-wide zoom workaround. */
+@media(min-width:900px){:host{zoom:1!important}}
+:host #atlas-studio560.inventory.atlas514{grid-template-columns:190px minmax(0,1fr)!important;min-height:calc(100dvh - 64px)!important;font-size:13px!important}
+:host #atlas-studio560.inventory.atlas514 .atlas-header{height:auto!important;min-height:64px!important;padding:12px 22px!important}
+:host #atlas-studio560.inventory.atlas514 .atlas-main{padding:22px!important;max-width:1780px!important}
+:host #atlas-studio560.inventory.atlas514 :is(p,label,td){font-size:13px!important}
+:host #atlas-studio560.inventory.atlas514 small{font-size:11px!important;line-height:1.55!important}
+:host #atlas-studio560.inventory.atlas514 .atlas-nav nav>button{font-size:12px!important;height:32px!important;min-height:32px!important}
+:host #atlas-studio560.inventory.atlas514 .automation-days612{display:flex!important;gap:10px 16px!important;flex-wrap:wrap!important;align-items:center!important}
+:host #atlas-studio560.inventory.atlas514 fieldset>label.check{display:inline-flex!important;margin:5px 12px 5px 0!important}
+@media(max-width:900px){:host #atlas-studio560.inventory.atlas514{display:block!important}}

@@ -1,0 +1,20 @@
+{
+  "components": [
+    {
+      "name": "Three.js",
+      "license": "MIT",
+      "notice": "Threejs-LICENSE.txt"
+    },
+    {
+      "name": "Draco decoder",
+      "license": "Apache-2.0",
+      "notice": "Draco-LICENSE.txt"
+    },
+    {
+      "name": "meshoptimizer 0.22",
+      "license": "MIT",
+      "notice": "Meshoptimizer-LICENSE.txt"
+    }
+  ],
+  "commercial_models_in_public_package": false
+}

@@ -1,5 +1,16 @@
 # Notas de versão
 
+## 7.0.0-alpha.61 — Inventário gratuito, sem Trial
+
+- Cadastro básico local de até dez equipamentos, com seleção no registro do HA e limite aplicado no backend.
+- Menus comerciais visíveis e bloqueados; motores privados e autorizações individuais ficam fora do pacote público.
+- Catálogo, detalhes, Atualizações e links do Inventário integrados à interface.
+- Escala compacta de desktop e formulários consistentes com navegador em 100%.
+- Compatibilidade de leitura dos pacotes comerciais compilados já instalados, sem transformar licença exibida em confirmação de instalação.
+- Interface compatível com depreciação anual no motor completo; cálculo comercial não é disponibilizado pelo conector gratuito.
+- Mantém os fluxos de Trial dos cinco módulos anteriores e não cria um Trial de Inventário.
+
+
 ## 7.0.0-alpha.60 — acompanhamento de trials por módulo
 
 - Envia observações por módulo no cadastro Fleet consentido, com consulta de status somente leitura.

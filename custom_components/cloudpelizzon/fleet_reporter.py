@@ -239,7 +239,7 @@ def _validate453(value, now=None):
         rows = []
         seen = set()
         for module in inventory:
-            if not isinstance(module, dict) or module.get('sku') not in ('CP-SOLAR', 'CP-MAINTENANCE', 'CP-SECURITY', 'CP-AUTOMATION', 'CP-LIGHTING') or type(module.get('imported')) is not bool or (module.get('state') not in ('runtime_loaded', 'interface_loaded', 'not_observed')):
+            if not isinstance(module, dict) or module.get('sku') not in ('CP-SOLAR', 'CP-MAINTENANCE', 'CP-SECURITY', 'CP-AUTOMATION', 'CP-LIGHTING', 'CP-INVENTORY') or type(module.get('imported')) is not bool or (module.get('state') not in ('runtime_loaded', 'interface_loaded', 'not_observed')):
                 raise ValueError('telemetry_inventory_invalid')
             if module['sku'] in seen or (module['state'] != 'not_observed' and (not module['imported'])):
                 raise ValueError('telemetry_inventory_invalid')

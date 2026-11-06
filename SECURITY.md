@@ -13,3 +13,7 @@ O servidor é a autoridade dos prazos e permissões comerciais. A interface não
 Baixe o ZIP pela release oficial, compare seu SHA-256 com `SHA256SUMS` e preserve a identidade local. O inventário de arquivos da interface precisa corresponder aos arquivos instalados. Não desative TLS ou verificações de assinatura para contornar erros de acesso.
 
 Pacotes pagos são obtidos separadamente pelos canais autenticados e precisam de assinatura e autorização válidas. A presença do código de um carregador público não concede acesso ao motor privado nem altera uma licença.
+
+## Inventário gratuito
+
+O conector público básico tem limite de dez equipamentos e não contém os algoritmos comerciais de descoberta, correlação ou persistência de plantas. A interface é pública e inspecionável; a proteção comercial não depende de esconder botões. Motores assinados são entregues separadamente após autorização e verificam sua licença localmente. Compilação não é garantia absoluta contra engenharia reversa no computador de um administrador. Nenhuma chave privada de assinatura ou licença de uma instalação deve ser publicada.
