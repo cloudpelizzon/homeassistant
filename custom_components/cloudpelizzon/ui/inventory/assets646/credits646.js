@@ -1,4 +1,4 @@
-{
+export default {
   "license": "CC BY — attribution included in editor and this file",
   "models": [
     {
@@ -102,4 +102,4 @@
       "changes": "Original optimized model packed losslessly as gzip GLB; scene scale/materials set by the editor."
     }
   ]
-}
+};

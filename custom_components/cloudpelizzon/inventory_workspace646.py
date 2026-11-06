@@ -32,7 +32,10 @@ class Workspace:
     if len(v)>100:raise ValueError('invalid_house_configuration')
     for x in v:safe(x,depth+1)
    elif isinstance(v,str):
-    if len(v)>2000 or '<script' in v.lower():raise ValueError('invalid_house_configuration')
+    if v.startswith('data:image/'):
+     from .inventory_fields646 import image
+     image(v,174790)
+    elif len(v)>2000 or '<script' in v.lower():raise ValueError('invalid_house_configuration')
    elif isinstance(v,(int,float)) and not isinstance(v,bool):
     if not math.isfinite(v) or abs(v)>100000:raise ValueError('invalid_house_configuration')
    elif v is not None and not isinstance(v,bool):raise ValueError('invalid_house_configuration')
@@ -101,7 +104,10 @@ class Workspace:
    key=args.get('id')
    allowed={'renault_duster585','chevrolet_equinox585','vw_tcross585','vw_golf585','renault_logan585','chevrolet_s10585','byd_dolphin585','byd_seal585','chery_tiggo585','toyota_prius585'}
    if key not in allowed:raise PermissionError('inventory_full_license_required')
-   def load():return json.loads((Path(__file__).parent/'ui/inventory/assets646'/(key+'.json')).read_bytes())
+   def load():
+    raw=(Path(__file__).parent/'ui/inventory/assets646'/(key+'.js')).read_text(encoding='utf8')
+    if not raw.startswith('export default ') or not raw.endswith(';\n'):raise ValueError('invalid_public_model')
+    return json.loads(raw[15:-2])
    if self.owner.hass is not None and hasattr(self.owner.hass,'async_add_executor_job'):return await self.owner.hass.async_add_executor_job(load)
    return load()
   if op=='types.list':return self.types()
@@ -139,8 +145,10 @@ class Workspace:
   if op=='catalog.photo.upload':
    from .inventory_fields646 import image
    p=args.get('photo',{});data=image(p.get('image'),174790)
+   width,height=float(p.get('width_m',1)),float(p.get('height_m',1))
+   if not data or any(not math.isfinite(v) or not .01<=v<=50 for v in (width,height)):raise ValueError('invalid_asset_photo')
    if len(self.data['photos'])>=30:raise ValueError('photo_limit')
-   row={'id':'photo-'+uuid.uuid4().hex,'label':str(p.get('label','Foto do objeto'))[:80],'width_m':float(p.get('width_m',1)),'height_m':float(p.get('height_m',1)),'image':data};self.data['photos'].append(row);return {'id':row['id']}
+   row={'id':'photo-'+uuid.uuid4().hex,'label':str(p.get('label','Foto do objeto'))[:80],'width_m':width,'height_m':height,'image':data};self.data['photos'].append(row);return {'id':row['id']}
   if op in ('topology.undo','map.undo'):
    if not self.data['map_undo']:raise ValueError('map_undo_empty')
    s.map=self.data['map_undo'].pop();return self.topology()

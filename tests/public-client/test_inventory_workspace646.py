@@ -38,6 +38,11 @@ async def run():
  else:raise AssertionError('failed house write accepted')
  assert s.workspace.data==before
  s.store.fail=False;restored=m.LimitedInventory(None);restored.store.value=copy.deepcopy(s.store.value);await restored.load();assert restored.workspace.data==s.workspace.data
+ import gzip
+ model=await s.command('catalog.model',{'id':'renault_duster585'});assert model['format']=='glb' and gzip.decompress(base64.b64decode(model['gzip'])).startswith(b'glTF')
+ legacy=copy.deepcopy(s.store.value);legacy.pop('workspace646');legacy['map']['rooms']=[{'id':'old-'+str(i),'name':'Ambiente antigo '+str(i),'width':3,'depth':4} for i in range(3)];legacy['map']['placements']={aid:{'room':'old-0','x':20,'y':30}}
+ migrated=m.LimitedInventory(None);migrated.store.value=legacy;await migrated.load();assert len(migrated.workspace.data['house']['rooms'])==2 and len(migrated.workspace.data['retained_rooms'])==1 and len(migrated.assets)==2
+ assert migrated.workspace.data['house']['rooms'][0]['device_positions'][aid]['x']==.2
  device=types.SimpleNamespace(name='Smart Camera',name_by_user=None,manufacturer='Tuya',model='Camera')
  assert classify(device,[types.SimpleNamespace(entity_id='camera.example',device_class=None,original_device_class=None,disabled_by=None)])==('camera','camera')
  for name,category in [('Roteador','router'),('Switch da sala','switch'),('Proxmox PVE','server'),('Notebook','computer')]:assert classify(types.SimpleNamespace(name=name),[])[0]==category
