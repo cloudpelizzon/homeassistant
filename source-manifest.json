@@ -101,7 +101,7 @@
     "custom_components/cloudpelizzon/homolog_mirror/options.py": "5ebf916549d15919ce03cc233b76b8d6b10b864b08759cd1551d6247d5669e18",
     "custom_components/cloudpelizzon/homolog_mirror/policy.py": "c9554e926500d8620a2feb737b56c809639e24eb9e4e772600142e230319b18e",
     "custom_components/cloudpelizzon/homolog_mirror/source132.py": "c2dc3f520f9ff1d7c58315c3de4a6354fb1aefa912b3e42e9c8ac848a7433896",
-    "custom_components/cloudpelizzon/inventory_free632.py": "d884bd35210686f5542330a25baed75372511edc07d435b276a8e08af285aa73",
+    "custom_components/cloudpelizzon/inventory_free632.py": "834799043b595c0336b95aee9feb9159399e340429776ede38d0bb8b1138a6dd",
     "custom_components/cloudpelizzon/lighting_controls240.py": "7ef3c6dcc771e8d24a634b37a79e989f7f1c8244b68c7b01d96501602a59151e",
     "custom_components/cloudpelizzon/lighting_diagnostic235.py": "631b7a195ba3b386ff4364de1c065f2529fefbf1619cf6de171cbc0108974289",
     "custom_components/cloudpelizzon/lighting_local296.py": "457c728ffb04c6ef5773a3d17a2c514928c11f7dea3568f74438401bffd84295",
