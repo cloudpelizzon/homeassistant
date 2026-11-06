@@ -1259,7 +1259,7 @@ p.closePresentation476=function(...args){const result=close.apply(this,args);if(
 (()=>{
  const prototype=customElements.get('cloudpelizzon-core-panel').prototype,css=prototype.css;
  prototype.css=function(...args){return css.apply(this,args)+`<style>
-  .detail{font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  :host main.detail.detail{zoom:1!important;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
   .detail p,.detail .block p,.detail .features p,.detail .buy p,.detail .board-copy p{
     font-size:20px!important;line-height:1.65!important;color:#d5e3ed!important;
     font-weight:400;overflow-wrap:anywhere;max-width:78ch;
