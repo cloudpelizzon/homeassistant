@@ -10,6 +10,7 @@
 - Conversão da planta básica anterior sem apagar cadastros. Um eventual terceiro cômodo anterior fica preservado no armazenamento, fora dos dois ambientes ativos da versão Free.
 - Impressão/exportação, descoberta ativa/agendada, conectores e integrações comerciais continuam licenciados. Os motores proprietários não integram o pacote público.
 - Modelos 3D públicos de veículos CC BY incluídos com atribuição, sem componentes executáveis privados.
+- Galeria com as seis imagens autorizadas da homologação, capa preservada e 12 funcionalidades da versão Full detalhadas para conhecer e contratar.
 
 ## 7.0.1 — mapas básicos no Inventário Free
 
