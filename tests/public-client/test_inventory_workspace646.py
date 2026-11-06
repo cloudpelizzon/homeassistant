@@ -48,3 +48,17 @@ async def run():
  for name,category in [('Roteador','router'),('Switch da sala','switch'),('Proxmox PVE','server'),('Notebook','computer')]:assert classify(types.SimpleNamespace(name=name),[])[0]==category
 
 asyncio.run(run());print('WORKSPACE646=PASS: complete registration, two rooms, shared map persistence, icon evidence, paid documents blocked')
+
+# HA registries larger than one page must remain fully browsable in Free.
+state=m.LimitedInventory(None)
+state.candidates=lambda:[{'id':str(i),'name':f'Dispositivo {i:03}', 'manufacturer':'Exemplo','model':'Modelo'} for i in range(219)]
+pages=[state.snapshot({'candidate_page':i}) for i in range(5)]
+assert [len(page['candidates']) for page in pages]==[50,50,50,50,19]
+assert len({d['id'] for page in pages for d in page['candidates']})==219
+assert state.snapshot({'candidate_page':100})['candidate_page']==4
+assert len(state.snapshot({'candidate_page_size':'all'})['candidates'])==219
+assert len(state.snapshot({'candidate_page_size':100})['candidates'])==100
+filtered=state.snapshot({'candidate_query':'Dispositivo 218','candidate_page':4})
+assert filtered['candidate_page']==0 and filtered['candidate_filtered_count']==1 and filtered['candidates'][0]['id']=='218'
+assert state.snapshot({'candidate_query':'ausente'})['candidates']==[]
+print('DISCOVERY650=PASS: every one of 219 candidates, paging, sizes, filtering and stale page clamp')

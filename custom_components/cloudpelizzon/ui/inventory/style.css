@@ -462,3 +462,42 @@ dialog:not([open]){display:none!important}
 :host dialog.document-preview637{zoom:calc(1 / var(--inventory-density631,1))!important;width:calc(100vw - 48px)!important;height:calc(100dvh - 48px)!important;max-width:none!important;max-height:none!important;box-sizing:border-box!important;padding:18px!important;overflow:hidden!important}
 .document-preview637>header{display:flex!important;justify-content:space-between!important;gap:20px!important;height:auto!important;padding:0 0 12px!important}.document-preview637 h2{font-size:18px!important;margin:0!important;overflow-wrap:anywhere}.document-preview637 :is(iframe,img,pre){width:100%;height:calc(100% - 62px);border:0;background:#fff;color:#18212c;object-fit:contain;box-sizing:border-box}.document-preview637 pre{white-space:pre-wrap;overflow:auto;max-height:none;padding:16px}.document-preview637 .close-form{display:none}
 @media(max-width:899px){:host dialog.cmdb-dialog515[data-layout637]{padding:12px!important;width:calc(100vw - 16px)!important;height:calc(100dvh - 16px)!important}:host dialog.cmdb-dialog515[data-layout637] #device-form{grid-template-columns:1fr!important;grid-template-rows:auto auto minmax(0,1fr) auto auto!important}:host dialog.cmdb-dialog515[data-layout637] .cmdb-tabs515{grid-column:1!important;grid-row:1!important;display:flex!important;flex-wrap:wrap!important;border:0!important;padding:0!important}:host dialog.cmdb-dialog515[data-layout637] .cmdb-tabs515 button{padding:6px!important;min-height:28px!important;font-size:11px!important}:host dialog.cmdb-dialog515[data-layout637] .cmdb-pager637{grid-column:1;grid-row:2}:host dialog.cmdb-dialog515[data-layout637] .cmdb-deck515{grid-column:1!important;grid-row:3!important}:host dialog.cmdb-dialog515[data-layout637] #device-form>.actions{grid-row:4!important}:host dialog.cmdb-dialog515[data-layout637] #cmdb-error{grid-row:5!important}}
+
+/* Fullscreen follows the browser viewport, independently of compact page density. */
+:host([data-map-fullscreen650]){zoom:1!important}
+:host([data-map-fullscreen650]) .network511-paper.expanded512{
+ position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
+ max-width:none!important;max-height:none!important;margin:0!important;box-sizing:border-box!important;
+ z-index:2147483000!important;display:flex!important;flex-direction:column!important;
+}
+:host([data-map-fullscreen650]) .network511-paper.expanded512 .flow-viewport{flex:1!important;min-height:0!important;height:auto!important}
+:host dialog.cmdb-dialog515[data-layout637][data-layout650]{
+ zoom:1!important;width:min(calc(1500px / var(--inventory-density631,1)),calc((100vw - 32px) / var(--inventory-density631,1)))!important;
+ height:calc((100dvh - 48px) / var(--inventory-density631,1))!important;max-height:none!important;
+ overflow:hidden!important;font-size:16px!important;
+}
+:host dialog.cmdb-dialog515[data-layout650] #device-form{grid-template-rows:minmax(0,1fr) auto auto!important;grid-template-columns:190px minmax(0,1fr)!important}
+:host dialog.cmdb-dialog515[data-layout650] .cmdb-tabs515{grid-row:1!important}
+:host dialog.cmdb-dialog515[data-layout650] .cmdb-deck515{
+ grid-row:1!important;overflow-y:auto!important;overflow-x:hidden!important;scrollbar-gutter:stable;overscroll-behavior:contain;
+ padding:0 18px 20px 0!important;
+}
+:host dialog.cmdb-dialog515[data-layout650] .cmdb-page515{height:auto!important;max-height:none!important;overflow:visible!important}
+:host dialog.cmdb-dialog515[data-layout650] #device-form>.actions{grid-row:2!important}
+:host dialog.cmdb-dialog515[data-layout650] #cmdb-error{grid-row:3!important}
+:host dialog.cmdb-dialog515[data-layout650] .cmdb-page-title515:has(+.cmdb-fields [data-documents635]){display:block!important}
+:host dialog.cmdb-dialog515[data-layout650] :is(input,select,textarea){font-size:17px!important;min-height:40px!important}
+:host dialog.cmdb-dialog515[data-layout650] label{font-size:16px!important;line-height:1.5!important}
+:host dialog.cmdb-dialog515[data-layout650] button{font-size:16px!important;min-height:40px!important}
+.discovery-search650,.discovery-pager650,.discovery-pager650>div{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.discovery-search650{margin-bottom:18px;align-items:end}.discovery-search650 label:first-child{flex:1;min-width:200px}
+.discovery-pager650{justify-content:space-between;padding:16px 0;font-size:14px;color:#d5e3ed}
+.discovery-pager650 button:disabled{cursor:default}
+@media(max-width:899px){
+ :host dialog.cmdb-dialog515[data-layout650]{width:calc(100vw - 16px)!important;height:calc(100dvh - 24px)!important}
+ :host dialog.cmdb-dialog515[data-layout650] #device-form{grid-template-columns:minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr) auto auto!important}
+ :host dialog.cmdb-dialog515[data-layout650] .cmdb-tabs515{grid-row:1!important}
+ :host dialog.cmdb-dialog515[data-layout650] .cmdb-deck515{grid-column:1!important;grid-row:2!important;padding-right:8px!important}
+ :host dialog.cmdb-dialog515[data-layout650] #device-form>.actions{grid-row:3!important}
+ :host dialog.cmdb-dialog515[data-layout650] #cmdb-error{grid-row:4!important}
+}

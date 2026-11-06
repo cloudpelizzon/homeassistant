@@ -61,8 +61,18 @@ class LimitedInventory:
   return sorted(result,key=lambda d:(d['name'].casefold(),d['id']))
  def snapshot(self,args):
   devices=list(copy.deepcopy(self.assets).values());candidates=self.candidates();query=str(args.get('query','')).casefold();devices=[d for d in devices if not query or query in d['name'].casefold()]
+  candidate_total=len(candidates)
+  candidate_query=str(args.get('candidate_query',''))[:200].strip().casefold()
+  if candidate_query:candidates=[d for d in candidates if candidate_query in ' '.join(str(d.get(k,'')) for k in ('name','manufacturer','model')).casefold()]
+  candidate_count=len(candidates)
+  raw_size=args.get('candidate_page_size',50)
+  candidate_size=max(1,candidate_count) if raw_size=='all' else (100 if str(raw_size)=='100' else 50)
+  try:candidate_page=max(0,int(args.get('candidate_page',0)))
+  except (ValueError,TypeError,OverflowError):candidate_page=0
+  candidate_page=min(candidate_page,max(0,(candidate_count-1)//candidate_size))
+  candidate_rows=candidates[candidate_page*candidate_size:(candidate_page+1)*candidate_size]
   settings={'portal_sync616':{},'automation612':{'mode':'interval','times':[],'days':list(range(7)),'auto_add':'off','update_ip':False,'update_areas':False,'update_fields':False,'diagnostic_minutes':60},'device_highlight':True,'networks':[],'active_discovery_enabled':False,'schedule_minutes':0,'scheduled_sources':['ha'],'portal_map_consent':False,'house_undo_count':0,'house':{'floors':[{'id':'free-floor','name':'Andar básico'}],'rooms':copy.deepcopy(self.map['rooms'])},'retention_days':90,'connector_targets':[],'topology_orientation':'vertical','topology_can_undo':False}
-  return self.workspace.snapshot({'schema':'cp.inventory.snapshot.v1','capabilities':self.capabilities(),'summary':{'managed':len(self.assets),'frozen':0,'candidates':len(candidates),'relations':len(self.map['links']),'relationships':len(self.map['links']),'conflicts':0,'recent':0,'observed_available':0,'classified':sum(d.get('category')!='unknown' for d in devices)},'devices':devices,'filtered_count':len(devices),'page':0,'candidates':candidates[:50],'candidate_filtered_count':len(candidates),'candidate_page':0,'discovery_summary':{'equipment':len(candidates),'software':0,'group':0,'protocols':{}},'device_types':[],'device_type_groups':[],'categories':['unknown','router','switch','computer','server','television','sensor','actuator','other'],'connectors':{},'runs':[],'relations':[],'conflicts':[],'settings':settings,'limits':{'devices':LIMIT,'rooms':2}})
+  return self.workspace.snapshot({'schema':'cp.inventory.snapshot.v1','capabilities':self.capabilities(),'summary':{'managed':len(self.assets),'frozen':0,'candidates':candidate_total,'relations':len(self.map['links']),'relationships':len(self.map['links']),'conflicts':0,'recent':0,'observed_available':0,'classified':sum(d.get('category')!='unknown' for d in devices)},'devices':devices,'filtered_count':len(devices),'page':0,'candidates':candidate_rows,'candidate_filtered_count':candidate_count,'candidate_page':candidate_page,'candidate_page_size':candidate_size,'discovery_summary':{'equipment':len(candidates),'software':0,'group':0,'protocols':{}},'device_types':[],'device_type_groups':[],'categories':['unknown','router','switch','computer','server','television','sensor','actuator','other'],'connectors':{},'runs':[],'relations':[],'conflicts':[],'settings':settings,'limits':{'devices':LIMIT,'rooms':2}})
  def topology(self):return self.workspace.topology()
  def clean(self,values):return clean(values)
  async def command(self,op,args,authorize=None):
