@@ -23,6 +23,8 @@ jobs:
           persist-credentials: false
       - name: Verify reviewed public hashes and reject sensitive artifacts
         run: python3 tools/verify_public_tree.py
+      - name: Verify permanent Free Inventory boundaries and blocked commercial operations
+        run: python3 tests/public-client/test_inventory_free632.py
       - name: Verify documentation follows confirmed module licenses
         run: node tests/test-updater-docs501.js
       - name: Verify Solar percentage pies and monitored energy ranking
@@ -100,8 +102,15 @@ jobs:
             -v "$PWD/tests/public-client:/checks:ro" \
             ghcr.io/home-assistant/home-assistant@sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0 \
             -B /checks/run.py
-
-
-
-
+      - name: Test permanent Free Inventory with native registries, persistence and permissions
+        run: |
+          docker run --rm --entrypoint python --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --memory 1024m --cpus 2 --pids-limit 128 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=536870912,mode=1777 \
+            -e PYTHONDONTWRITEBYTECODE=1 \
+            -v "$PWD/.:/candidate:ro" \
+            -v "$PWD/tests/public-client:/checks:ro" \
+            ghcr.io/home-assistant/home-assistant@sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0 \
+            -B /checks/run_inventory_free632.py
 

@@ -9,6 +9,9 @@ import stat
 import re
 
 ROUTES = {
+    '/cloudpelizzon-inventory/frontend': 'ui/inventory',
+    '/cloudpelizzon-inventory/frontend': 'ui/inventory',
+    '/cloudpelizzon-inventory/frontend': 'ui/inventory',
     '/cloudpelizzon-lighting/frontend': 'ui/lighting',
     '/cloudpelizzon/frontend': 'ui/shell',
     '/cloudpelizzon-core/frontend': 'ui/core',
@@ -69,7 +72,7 @@ def verify(root):
     if type(document) is not dict or set(document) != {'schema', 'files'} or document['schema'] != 'cp.ui.inventory73.v1':
         raise ValueError('invalid_public_inventory')
     expected = document['files']
-    if type(expected) is not dict or not 7 <= len(expected) <= 256:
+    if type(expected) is not dict or not 7 <= len(expected) <= 320:
         raise ValueError('invalid_public_inventory_size')
     seen = set()
     sections = set()
@@ -114,12 +117,12 @@ def verify(root):
                         hashlib.sha256(expanded).hexdigest() != expected[source]):
                     raise ValueError('public_gzip_integrity')
                 total += len(compressed) + len(expanded)
-                if total > 96*1024*1024:
+                if total > 128*1024*1024:
                     raise ValueError('public_asset_size')
                 continue
             data = regular(asset, 8*1024*1024)
             total += len(data)
-            if total > 96*1024*1024 or hashlib.sha256(data).hexdigest() != expected[relative]:
+            if total > 128*1024*1024 or hashlib.sha256(data).hexdigest() != expected[relative]:
                 raise ValueError('public_asset_integrity')
             actual.add(relative)
     if actual != set(expected):

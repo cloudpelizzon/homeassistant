@@ -2,16 +2,18 @@
 
 ![CloudPelizzon](custom_components/cloudpelizzon/ui/core/cloudpelizzon-logo.png)
 
-## TRIAL — 7.0.0-alpha.60
+## 7.0.0-alpha.61 — Inventário gratuito permanente
 
-Cliente público completo para os cinco módulos desenvolvidos: **Inteligência Solar, Manutenção Residencial Preventiva, Central de Segurança Pro, Central Inteligente de Automações e Iluminação Inteligente**. A Central de Segurança base e os demais módulos anunciados como em desenvolvimento continuam indisponíveis para instalação.
+O **Inventário** acrescenta cadastro gratuito permanente de até dez equipamentos, sem Trial. Mapas, plantas 2D/3D e demais funções comerciais ficam visíveis e bloqueadas até a contratação e instalação autorizada do motor privado. [Conheça os limites e a versão completa](docs/inventario-gratuito-alpha61.md).
+
+Os testes dos cinco módulos anteriores continuam disponíveis nos seus fluxos próprios. Cliente público completo para os cinco módulos desenvolvidos: **Inteligência Solar, Manutenção Residencial Preventiva, Central de Segurança Pro, Central Inteligente de Automações e Iluminação Inteligente**. A Central de Segurança base e os demais módulos anunciados como em desenvolvimento continuam indisponíveis para instalação.
 
 O pacote reúne as interfaces, os recursos visuais e os adaptadores de comunicação. Os motores comerciais do teste executam nos servidores privados da CloudPelizzon e não fazem parte deste repositório. Os identificadores técnicos legados de Segurança são preservados para compatibilidade com as autorizações assinadas; a apresentação comercial distingue a versão Pro já desenvolvida da versão base em desenvolvimento.
 
 ### Instalação pelo HACS
 
 1. Adicione `https://github.com/cloudpelizzon/homeassistant` como repositório personalizado do tipo **Integração**.
-2. Habilite a exibição de versões de pré-lançamento e selecione **7.0.0-alpha.60**.
+2. Habilite a exibição de versões de pré-lançamento e selecione **7.0.0-alpha.61**.
 3. Baixe a integração e reinicie o Home Assistant.
 4. Em **Configurações → Dispositivos e serviços → Adicionar integração**, procure **CloudPelizzon**.
 5. Leia os consentimentos, conclua o cadastro e a vinculação da instalação e abra o painel CloudPelizzon.

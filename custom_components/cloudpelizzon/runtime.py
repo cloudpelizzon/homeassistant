@@ -32,7 +32,9 @@ async def load_context(hass):
 async def solar(hass, entry):
     from .adapters.solar import async_setup_runtime
     from .ha_private212 import async_prepare
-    await async_prepare(hass)
+    from .compiled_bootstrap628 import enabled
+    if not await enabled(hass):
+        await async_prepare(hass)
     return await async_setup_runtime(hass, entry)
 
 
@@ -126,8 +128,15 @@ class Runtime:
                 self.sensor_forwarded = True
                 self.stage = 'sensor_platform'
                 await self.hass.config_entries.async_forward_entry_setups(self.entry, ['sensor'])
-            from .module_registration298 import register as register_private_installer
+            from .compiled_bootstrap628 import register as register_private_installer
             self.closers.append(await register_private_installer(self.hass, self.entry, context))
+            if not self.hass.data.get('cloudpelizzon_compiled628_active'):
+                from .inventory_free632 import register as register_inventory_free
+                try:self.closers.append(await register_inventory_free(self.hass,self.entry,context))
+                except Exception:
+                    # Preserve other modules and any unreadable Free store.
+                    self.hass.data['cloudpelizzon_inventory_unavailable632']=True
+
             self.closers.append(fleet_reporter.start(self.hass, self.entry, trial_context={
                 'trial_id': context['trial_id'], 'fetch_verified': self.bridge.fetch_verified}))
             self.entry.async_on_unload(self.close)

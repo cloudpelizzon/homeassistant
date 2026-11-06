@@ -61,6 +61,11 @@ def collect(hass):
   running=bool(key and isinstance(runtime,dict) and isinstance(runtime.get(key),dict) and cp['loaded'] and not cp['failed'] and not cp['pending'])
   interface=bool((sku in ('CP-SECURITY','CP-AUTOMATION') or sku=='CP-LIGHTING' and lighting_interface461(hass,prefix)) and imported and cp['loaded'] and not cp['failed'] and not cp['pending'])
   inventory.append({'sku':sku,'imported':imported,'state':'runtime_loaded' if running else 'interface_loaded' if interface else 'not_observed'})
+ from homeassistant.components import websocket_api
+ instance=hass.data.get('cloudpelizzon_inventory506')
+ endpoint=hass.data.get(websocket_api.DOMAIN,{}).get('cloudpelizzon/inventory/command')
+ observed=bool(instance is not None and not getattr(instance,'closed',True) and getattr(instance,'engine',None) is not None and isinstance(endpoint,(tuple,list)) and endpoint and callable(endpoint[0]) and cp['loaded'] and not cp['failed'] and not cp['pending'])
+ inventory.append({'sku':'CP-INVENTORY','imported':observed,'state':'interface_loaded' if observed else 'not_observed'})
  return {'schema':'cp.ha.telemetry437.v1','measured_at':int(time.time()),'ha_running':bool(hass.is_running),'entries':counts(all_entries),'cloudpelizzon':cp,'entities':dict(ec),'devices':dict(dc),'module_inventory443':inventory,'usage444':collect_usage(hass,devices,entities),'details447':collect_details447(hass,devices,entities)}
 
 """Classify usage independently of availability. Read-only registry metadata."""
