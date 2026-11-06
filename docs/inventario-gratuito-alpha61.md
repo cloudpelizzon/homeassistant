@@ -1,8 +1,8 @@
 # Inventário — gratuito permanente e versão completa
 
-O Inventário não tem Trial. O acesso gratuito permite manter até dez equipamentos, com cadastro básico local e seleção de dispositivos já registrados no Home Assistant. A versão gratuita não executa varreduras de rede, não deduz ligações, não cria a planta da casa e não exporta os relatórios comerciais.
+O Inventário não tem Trial. O acesso gratuito permite manter até dez equipamentos, com cadastro básico local e seleção de dispositivos já registrados no Home Assistant. A versão gratuita não executa varreduras de rede, não deduz ligações, permite uma planta 2D básica de três cômodos em um andar e não exporta os relatórios comerciais.
 
-Todos os menus permanecem visíveis. As funções comerciais mostram sua finalidade e ficam bloqueadas: mapa de rede, planta 2D/3D, coberturas, descoberta agendada, patrimônio e depreciação, conectores, manutenção, histórico, resolução de conflitos e impressão. Alterar um botão no navegador não disponibiliza o motor privado ausente do pacote.
+Todos os menus permanecem visíveis. As funções comerciais mostram sua finalidade e ficam bloqueadas: organização automática, plantas avançadas/3D, coberturas, descoberta agendada, patrimônio e depreciação, conectores, manutenção, histórico, resolução de conflitos e impressão. Alterar um botão no navegador não disponibiliza o motor privado ausente do pacote.
 
 Os dados básicos ficam no armazenamento privado do Home Assistant. O conector gratuito exige um administrador ativo, limita os cadastros no backend e não concede licenças nem inicia testes dos outros módulos.
 
@@ -16,7 +16,7 @@ No motor completo compatível, a depreciação anual considera os anos completos
 
 ## Atualização
 
-No Marketplace / HACS, selecione a versão estável `7.0.0`, sem habilitar pré-lançamentos. Preserve `.storage`. Reinicie o HA e atualize a aba após salvar suas edições. Não reinstale a integração para reiniciar testes: o Inventário não tem Trial e os prazos dos outros módulos continuam controlados pela autoridade comercial.
+No Marketplace / HACS, selecione a versão estável `7.0.1`, sem habilitar pré-lançamentos. Preserve `.storage`. Reinicie o HA e atualize a aba após salvar suas edições. Não reinstale a integração para reiniciar testes: o Inventário não tem Trial e os prazos dos outros módulos continuam controlados pela autoridade comercial.
 
 O cliente possui escala compacta de desktop, equivalente a 67% com o navegador em 100%. Celulares e impressão mantêm escala própria. As capturas pessoais de uma instalação não fazem parte do repositório; uma galeria configurada localmente permanece pertencendo àquela instalação.
 
@@ -27,3 +27,12 @@ O cliente possui escala compacta de desktop, equivalente a 67% com o navegador e
 - [Portal do Cliente](https://cliente.cloudpelizzon.com.br)
 
 As notas documentais do módulo e a versão do cliente público são identificações independentes.
+
+
+## 7.0.1 — mapas básicos no Inventário Free
+
+- O Free abre um diagrama real de até dez equipamentos, com posições e ligações manuais salvas localmente. Clique no equipamento para editar seu cadastro.
+- Planta 2D de um andar com até três cômodos editáveis: nome, medidas, alocação e movimentação dos equipamentos.
+- Cadastro básico simplificado, incluindo tipo, IP, fabricante, modelo, série e observações. Seleção dos dispositivos já registrados no HA preservada.
+- Organização automática, plantas avançadas/3D, impressão, descoberta ativa e demais integrações continuam exclusivos da versão completa. O Free não tem Trial e não inclui motores comerciais.
+- Validação no servidor dos limites, vínculos e coordenadas; gravação atômica com revisão para impedir sobrescrita silenciosa entre sessões.
