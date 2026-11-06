@@ -1,5 +1,16 @@
 # Notas de versão
 
+## 7.0.0 — distribuição estável do cliente público
+
+- Publicação como release estável, disponível sem habilitar versões alpha no Marketplace / HACS.
+- Manual de instalação revisado para Marketplace no HA 2026.11 e HACS nas versões anteriores, com link oficial para cadastro do repositório.
+- Mantém cadastro ampliado, etapas sem rolagem interna e visualização de anexos na versão completa.
+- Inventário Free permanente até dez equipamentos, sem Trial. As licenças e os prazos dos demais módulos são preservados.
+- Mantém a distribuição separada dos motores comerciais e a verificação de integridade dos pacotes privados.
+- Verificação adicional do cliente e do Inventário Free no runtime oficial HA 2026.11.0, além do HA 2026.10.1.
+
+Publicar a release estável não inclui automaticamente o repositório no catálogo global do Marketplace. Até a aprovação desse catálogo, use o link oficial de repositório personalizado descrito no README.
+
 ## 7.0.0-alpha.62 — cadastro ampliado e documentos do Inventário
 
 - Cadastro ocupa quase toda a tela, independentemente da escala compacta do módulo.

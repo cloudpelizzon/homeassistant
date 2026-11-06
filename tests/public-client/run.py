@@ -1,5 +1,6 @@
 """Run public-client setup checks without private engines or customer data."""
 import importlib.metadata
+import os
 import json
 import logging
 from pathlib import Path
@@ -9,7 +10,7 @@ import tempfile
 import unittest
 
 logging.disable(logging.CRITICAL)
-assert importlib.metadata.version('homeassistant')=='2026.10.1'
+assert importlib.metadata.version('homeassistant')==os.environ.get('CP_HA_VERSION','2026.10.1')
 with tempfile.TemporaryDirectory(prefix='cp-public-native81-',dir='/tmp') as folder:
     case=Path(folder)
     shutil.copytree('/candidate/custom_components/cloudpelizzon',case/'client81')
