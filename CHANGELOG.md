@@ -1,5 +1,13 @@
 # Notas de versão
 
+## 7.0.1 — mapas básicos no Inventário Free
+
+- O Free abre um diagrama real de até dez equipamentos, com posições e ligações manuais salvas localmente. Clique no equipamento para editar seu cadastro.
+- Planta 2D de um andar com até três cômodos editáveis: nome, medidas, alocação e movimentação dos equipamentos.
+- Cadastro básico simplificado, incluindo tipo, IP, fabricante, modelo, série e observações. Seleção dos dispositivos já registrados no HA preservada.
+- Organização automática, plantas avançadas/3D, impressão, descoberta ativa e demais integrações continuam exclusivos da versão completa. O Free não tem Trial e não inclui motores comerciais.
+- Validação no servidor dos limites, vínculos e coordenadas; gravação atômica com revisão para impedir sobrescrita silenciosa entre sessões.
+
 ## 7.0.0 — distribuição estável do cliente público
 
 - Publicação como release estável, disponível sem habilitar versões alpha no Marketplace / HACS.

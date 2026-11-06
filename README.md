@@ -2,9 +2,9 @@
 
 ![CloudPelizzon](custom_components/cloudpelizzon/ui/core/cloudpelizzon-logo.png)
 
-## 7.0.0 — versão estável do cliente CloudPelizzon
+## 7.0.1 — versão estável do cliente CloudPelizzon
 
-O **Inventário** acrescenta cadastro gratuito permanente de até dez equipamentos, sem Trial. Mapas, plantas 2D/3D e demais funções comerciais ficam visíveis e bloqueadas até a contratação e instalação autorizada do motor privado. [Conheça os limites e a versão completa](docs/inventario-gratuito-alpha61.md).
+O **Inventário** acrescenta cadastro gratuito permanente de até dez equipamentos, sem Trial. Inclui diagrama manual e planta 2D básica de até três cômodos em um andar. Organização automática, plantas avançadas/3D e demais funções comerciais permanecem bloqueadas até a contratação e instalação autorizada do motor privado. [Conheça os limites e a versão completa](docs/inventario-gratuito-alpha61.md).
 
 Os testes dos cinco módulos anteriores continuam disponíveis nos seus fluxos próprios. Cliente público completo para os cinco módulos desenvolvidos: **Inteligência Solar, Manutenção Residencial Preventiva, Central de Segurança Pro, Central Inteligente de Automações e Iluminação Inteligente**. A Central de Segurança base e os demais módulos anunciados como em desenvolvimento continuam indisponíveis para instalação.
 
@@ -17,7 +17,7 @@ O pacote reúne as interfaces, os recursos visuais e os adaptadores de comunica�
 No HA 2026.11 ou posterior, use **Configurações → Marketplace**; em versões anteriores, use o HACS. O link acima oferece o cadastro do repositório personalizado quando ele ainda não existe na instalação.
 
 1. Adicione `https://github.com/cloudpelizzon/homeassistant` como repositório personalizado do tipo **Integração**.
-2. Selecione a versão estável **7.0.0**. Não é necessário habilitar pré-lançamentos. Quem já usa uma alpha pode atualizar pelo mesmo cadastro, preservando a integração e seus dados.
+2. Selecione a versão estável **7.0.1**. Não é necessário habilitar pré-lançamentos. Quem já usa uma alpha pode atualizar pelo mesmo cadastro, preservando a integração e seus dados.
 3. Baixe a integração e reinicie o Home Assistant.
 4. Em **Configurações → Dispositivos e serviços → Adicionar integração**, procure **CloudPelizzon**.
 5. Leia os consentimentos, conclua o cadastro e a vinculação da instalação e abra o painel CloudPelizzon.
@@ -45,3 +45,12 @@ Esta é a versão estável do cliente público. O Inventário Free não tem Tria
 [Notas de versão](CHANGELOG.md) · [Segurança](SECURITY.md) · [Site](https://cloudpelizzon.com.br) · [Documentação](https://documentacao.cloudpelizzon.com.br) · [Portal do Cliente](https://cliente.cloudpelizzon.com.br)
 
 Acompanhamento por cliente e módulo: veja [o guia da alpha.60](docs/acompanhamento-trials-alpha60.md). As datas de trials vêm da autoridade e não são reiniciadas pela atualização.
+
+
+## 7.0.1 — mapas básicos no Inventário Free
+
+- O Free abre um diagrama real de até dez equipamentos, com posições e ligações manuais salvas localmente. Clique no equipamento para editar seu cadastro.
+- Planta 2D de um andar com até três cômodos editáveis: nome, medidas, alocação e movimentação dos equipamentos.
+- Cadastro básico simplificado, incluindo tipo, IP, fabricante, modelo, série e observações. Seleção dos dispositivos já registrados no HA preservada.
+- Organização automática, plantas avançadas/3D, impressão, descoberta ativa e demais integrações continuam exclusivos da versão completa. O Free não tem Trial e não inclui motores comerciais.
+- Validação no servidor dos limites, vínculos e coordenadas; gravação atômica com revisão para impedir sobrescrita silenciosa entre sessões.
