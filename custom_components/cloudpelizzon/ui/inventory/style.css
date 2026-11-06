@@ -464,7 +464,7 @@ dialog:not([open]){display:none!important}
 @media(max-width:899px){:host dialog.cmdb-dialog515[data-layout637]{padding:12px!important;width:calc(100vw - 16px)!important;height:calc(100dvh - 16px)!important}:host dialog.cmdb-dialog515[data-layout637] #device-form{grid-template-columns:1fr!important;grid-template-rows:auto auto minmax(0,1fr) auto auto!important}:host dialog.cmdb-dialog515[data-layout637] .cmdb-tabs515{grid-column:1!important;grid-row:1!important;display:flex!important;flex-wrap:wrap!important;border:0!important;padding:0!important}:host dialog.cmdb-dialog515[data-layout637] .cmdb-tabs515 button{padding:6px!important;min-height:28px!important;font-size:11px!important}:host dialog.cmdb-dialog515[data-layout637] .cmdb-pager637{grid-column:1;grid-row:2}:host dialog.cmdb-dialog515[data-layout637] .cmdb-deck515{grid-column:1!important;grid-row:3!important}:host dialog.cmdb-dialog515[data-layout637] #device-form>.actions{grid-row:4!important}:host dialog.cmdb-dialog515[data-layout637] #cmdb-error{grid-row:5!important}}
 
 /* Fullscreen follows the browser viewport, independently of compact page density. */
-:host([data-map-fullscreen650]){zoom:1!important}
+:host([data-map-fullscreen650]){--inventory-density631:1!important;zoom:1!important}
 :host([data-map-fullscreen650]) .network511-paper.expanded512{
  position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
  max-width:none!important;max-height:none!important;margin:0!important;box-sizing:border-box!important;

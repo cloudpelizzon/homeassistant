@@ -1,4 +1,4 @@
-import "/cloudpelizzon-inventory/frontend/panel.js?v=2a35f8b92f186a8194100427d4a78b4aadb61acdb2450396d2a3fc099ca27ac7";
+import "/cloudpelizzon-inventory/frontend/panel.js?v=ed8f1245087bd7de8ab0cfd1e481cddd34c74c8a4dd1892251a74155dac0790a";
 
 
 
