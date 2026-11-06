@@ -435,3 +435,30 @@ dialog:not([open]){display:none!important}
 }
 @media(max-width:899px){:host{--inventory-density631:1;zoom:1!important}}
 @media print{:host{zoom:1!important}}
+
+/* The editor fills the viewport independently of the compact module density. */
+:host dialog.cmdb-dialog515[data-layout637]{zoom:calc(1 / var(--inventory-density631,1))!important;box-sizing:border-box!important;width:calc(100vw - 32px)!important;max-width:none!important;height:calc(100dvh - 32px)!important;max-height:none!important;margin:auto!important;padding:18px 22px!important;overflow:hidden!important;display:flex!important;flex-direction:column!important;gap:10px!important}
+:host dialog.cmdb-dialog515[data-layout637]>h2{flex:none!important;font-size:20px!important;margin:0 42px 0 0!important;padding-bottom:10px!important}
+:host dialog.cmdb-dialog515[data-layout637]>.actions{flex:none!important;margin:0!important;padding:0!important}
+:host dialog.cmdb-dialog515[data-layout637] #device-form{display:grid!important;grid-template-columns:156px minmax(0,1fr)!important;grid-template-rows:auto minmax(0,1fr) auto auto!important;gap:10px 20px!important;flex:1!important;min-height:0!important;overflow:hidden!important;margin:0!important}
+:host dialog.cmdb-dialog515[data-layout637] .cmdb-tabs515{grid-column:1!important;grid-row:1/3!important;align-self:start!important}
+:host dialog.cmdb-dialog515[data-layout637] .cmdb-pager637{grid-column:2;grid-row:1;display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:34px;font-size:12px}
+:host dialog.cmdb-dialog515[data-layout637] .cmdb-deck515{grid-column:2!important;grid-row:2!important;max-height:none!important;height:100%!important;overflow:hidden!important;min-height:0!important}
+:host dialog.cmdb-dialog515[data-layout637] #device-form>.actions{grid-column:1/-1!important;grid-row:3!important;position:static!important;display:flex!important;justify-content:flex-end!important;padding:10px 0 0!important;border-top:1px solid #576778!important}
+:host dialog.cmdb-dialog515[data-layout637] #cmdb-error{grid-column:1/-1;grid-row:4;margin:0!important}
+:host dialog.cmdb-dialog515[data-layout637] .cmdb-page-title515{padding:0 0 10px!important;margin:0 0 10px!important}
+:host dialog.cmdb-dialog515[data-layout637] .cmdb-page-title515 h3{font-size:20px!important}
+:host dialog.cmdb-dialog515[data-layout637] .cmdb-fields{gap:10px 18px!important}
+:host dialog.cmdb-dialog515[data-layout637] .cmdb-page515{padding:0!important;min-height:0!important}
+:host dialog.cmdb-dialog515[data-layout637] :is(.cmdb-part-hidden637,[hidden]){display:none!important}
+:host dialog.cmdb-dialog515[data-layout637] [data-documents635]{margin:0!important;padding:0!important;border:0!important}
+:host dialog.cmdb-dialog515[data-layout637] [data-documents635] h3{margin:0 0 8px!important}
+:host dialog.cmdb-dialog515[data-layout637] .cmdb-page515:has([data-documents635]:not(.cmdb-part-hidden637)) .cmdb-page-title515{display:none!important}
+:host dialog.cmdb-dialog515[data-layout637] [data-documents635] h3{font-size:18px!important;line-height:1.3!important}
+:host dialog.cmdb-dialog515[data-layout637] [data-documents635] p{font-size:12px!important;line-height:1.4!important;margin:8px 0!important}
+:host dialog.cmdb-dialog515[data-layout637] [data-doc-slots635]{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+:host dialog.cmdb-dialog515[data-layout637] [data-doc-slots635] fieldset{padding:10px!important}
+:host dialog.cmdb-dialog515[data-layout637] .cmdb-photo img{max-height:110px!important;object-fit:contain}
+:host dialog.document-preview637{zoom:calc(1 / var(--inventory-density631,1))!important;width:calc(100vw - 48px)!important;height:calc(100dvh - 48px)!important;max-width:none!important;max-height:none!important;box-sizing:border-box!important;padding:18px!important;overflow:hidden!important}
+.document-preview637>header{display:flex!important;justify-content:space-between!important;gap:20px!important;height:auto!important;padding:0 0 12px!important}.document-preview637 h2{font-size:18px!important;margin:0!important;overflow-wrap:anywhere}.document-preview637 :is(iframe,img,pre){width:100%;height:calc(100% - 62px);border:0;background:#fff;color:#18212c;object-fit:contain;box-sizing:border-box}.document-preview637 pre{white-space:pre-wrap;overflow:auto;max-height:none;padding:16px}.document-preview637 .close-form{display:none}
+@media(max-width:899px){:host dialog.cmdb-dialog515[data-layout637]{padding:12px!important;width:calc(100vw - 16px)!important;height:calc(100dvh - 16px)!important}:host dialog.cmdb-dialog515[data-layout637] #device-form{grid-template-columns:1fr!important;grid-template-rows:auto auto minmax(0,1fr) auto auto!important}:host dialog.cmdb-dialog515[data-layout637] .cmdb-tabs515{grid-column:1!important;grid-row:1!important;display:flex!important;flex-wrap:wrap!important;border:0!important;padding:0!important}:host dialog.cmdb-dialog515[data-layout637] .cmdb-tabs515 button{padding:6px!important;min-height:28px!important;font-size:11px!important}:host dialog.cmdb-dialog515[data-layout637] .cmdb-pager637{grid-column:1;grid-row:2}:host dialog.cmdb-dialog515[data-layout637] .cmdb-deck515{grid-column:1!important;grid-row:3!important}:host dialog.cmdb-dialog515[data-layout637] #device-form>.actions{grid-row:4!important}:host dialog.cmdb-dialog515[data-layout637] #cmdb-error{grid-row:5!important}}

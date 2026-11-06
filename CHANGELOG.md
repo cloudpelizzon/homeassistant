@@ -1,5 +1,15 @@
 # Notas de versão
 
+## 7.0.0-alpha.62 — cadastro ampliado e documentos do Inventário
+
+- Cadastro ocupa quase toda a tela, independentemente da escala compacta do módulo.
+- Etapas Anterior/Próxima distribuem os campos sem rolagem interna, preservando o preenchimento.
+- Anexos separados de nota fiscal e garantia na versão completa, com upload privado de até 10 MB por arquivo.
+- Visualização interna de PDF, JPG, PNG e XML da NF-e, mantendo as opções Baixar, Substituir e Remover.
+- Conferência SHA-256 dos arquivos e descarte das URLs temporárias ao fechar a visualização.
+- Referência pública atualizada para o motor comercial compatível; o motor compilado e os fontes privados não integram o GitHub.
+- Inventário Free continua permanente, limitado a dez equipamentos, sem Trial nem acesso aos anexos comerciais.
+
 ## 7.0.0-alpha.61 — Inventário gratuito, sem Trial
 
 - Cadastro básico local de até dez equipamentos, com seleção no registro do HA e limite aplicado no backend.
