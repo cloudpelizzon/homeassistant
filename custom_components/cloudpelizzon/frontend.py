@@ -44,7 +44,7 @@ async def register(hass, root):
         await panel_custom.async_register_panel(hass,
             frontend_url_path=URL, webcomponent_name='cloudpelizzon-panel',
             sidebar_title='CloudPelizzon', sidebar_icon='mdi:cloud-outline',
-            module_url='/cloudpelizzon/frontend/panel.js?v=47c8771e5b1df10272cb1b546422bc44ebd5b18b871afd49ea70799bc5db305e',
+            module_url='/cloudpelizzon/frontend/panel.js?v=a9f31f51f48a530944825e84b683a2dc62196d89fc6b8c666b05aabc59831736',
             embed_iframe=False, trust_external=False, require_admin=False,
             handle_safe_area=False)
         state['panel'] = marker(hass)

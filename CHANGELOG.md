@@ -1,3 +1,10 @@
+## 7.0.5 — navegação e edição do Inventário
+
+- Tela cheia do mapa usa o viewport real e sai com Escape.
+- Descobertas Free com busca, páginas de 50/100 itens e opção Mostrar todos.
+- Cadastro com escala compacta, rolagem contínua por seção e sem Anterior/Próxima para campos.
+- Abertura e navegação do módulo começam no topo; atualizações periódicas preservam a posição.
+
 ## 7.0.4 — leitura e contraste dos detalhes dos módulos
 
 - Descrições ampliadas, texto claro e espaçamento confortável nos detalhes dos módulos.
