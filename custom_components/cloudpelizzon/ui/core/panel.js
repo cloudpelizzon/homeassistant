@@ -1254,3 +1254,60 @@ p.closePresentation476=function(...args){const result=close.apply(this,args);if(
  const sales=`<section class="block inventory-commercial647"><header><div><span class="eyebrow">INVENTÁRIO COMPLETO · SUA INSTALAÇÃO EM CADA DETALHE</span><h2>Conheça dois cômodos. Descubra o potencial da casa inteira.</h2><p>Experimente os mesmos editores no Free e amplie o controle da sua instalação com a versão completa.</p></div></header><div class="features"><article><div><h3>Comece gratuitamente</h3><p>Até 10 equipamentos, cadastro completo e 2 cômodos com edição 2D/3D. Sem prazo de expiração. Os anexos de NF e garantia ficam na versão completa.</p></div></article><article><div><h3>Avance com a versão Full</h3><p>Amplie equipamentos e ambientes conforme sua licença, automatize a atualização dos cadastros e use documentos, relatórios e integrações comerciais.</p></div></article><article><div><h3>Transforme informação em cuidado</h3><p>Tenha documentos e valores à mão, localize seus ativos e conecte a infraestrutura às rotinas de manutenção, quando o módulo correspondente estiver licenciado.</p></div></article></div><div class="buy"><div><h3>Organização para conhecer. Controle para cuidar.</h3><p>Licença para uma instalação. Sem mensalidade obrigatória para o uso local da versão adquirida. Consulte o escopo, a compatibilidade e as condições comerciais antes de contratar.</p></div><div>${licensed?'<button class="primary big" data-open="inventory">Abrir meu Inventário</button>':'<button class="primary big" data-request="CP-INVENTORY">Quero a versão completa</button>'}<button class="secondary big" data-open="inventory">Explorar o Inventário Free</button></div></div></section>`;
  return html.replace('<section class="block">',sales+'<section class="block">');};
 })();
+
+/* Readable product descriptions at the shell's compact desktop density. */
+(()=>{
+ const prototype=customElements.get('cloudpelizzon-core-panel').prototype,css=prototype.css;
+ prototype.css=function(...args){return css.apply(this,args)+`<style>
+  :host main.detail.detail{zoom:1!important;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+  .detail p,.detail .block p,.detail .features p,.detail .buy p,.detail .board-copy p{
+    font-size:20px!important;line-height:1.65!important;color:#d5e3ed!important;
+    font-weight:400;overflow-wrap:anywhere;max-width:78ch;
+  }
+  .detail .features{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:18px!important}
+  .detail .features article{padding:24px!important;min-height:0!important;align-items:flex-start;
+    background:#0b2130!important;border-color:#385a70!important}
+  .detail .features article>div:last-child{min-width:0}
+  .detail h3,.detail .features h3{font-size:24px!important;line-height:1.35!important;color:#f5f9fc!important;margin:0 0 12px}
+  .detail h2{font-size:32px!important;line-height:1.3!important;color:#f5f9fc!important}
+  .detail .eyebrow{font-size:15px!important;line-height:1.5;color:#6bdcff!important;letter-spacing:.1em}
+  .detail .home-slide-caption{align-items:flex-start;gap:14px;flex-wrap:wrap}
+  .detail .home-slide-caption b,.detail .real-preview-head b{font-size:21px!important;line-height:1.4!important;color:#f5f9fc!important}
+  .detail .home-slide-caption span,.detail .home-carousel-footer>span,
+  .detail .real-preview-note span,.detail .cpauto-gallery-controls>span{
+    font-size:18px!important;line-height:1.6!important;color:#d5e3ed!important;
+    max-width:78ch;overflow-wrap:anywhere;
+  }
+  .detail .real-preview-card figcaption{padding:18px!important;display:grid!important;gap:8px!important}
+  .detail .real-preview-card figcaption b{font-size:21px!important;line-height:1.4!important;color:#f5f9fc!important}
+  .detail .real-preview-card figcaption span{font-size:18px!important;line-height:1.6!important;color:#d5e3ed!important}
+  .detail .real-preview-note b{font-size:20px!important;line-height:1.5!important;color:#f5f9fc!important}
+  .detail .home-slide-caption span{text-align:left}
+  .detail .home-slide-caption{position:relative!important}
+  .detail .home-carousel-stage{padding-bottom:0!important}
+  .detail .real-preview-note{padding:20px!important;gap:14px}
+  .detail .buy{gap:24px;flex-wrap:wrap}
+  .detail .buy>div:last-child{flex-wrap:wrap}
+  .detail button:not([data-home-dot]){font-size:18px!important;line-height:1.4!important;min-height:48px;white-space:normal}
+  @media(max-width:1400px){.detail .features{grid-template-columns:repeat(2,minmax(0,1fr))!important}}
+  @media(max-width:1100px){
+    .detail p,.detail .block p,.detail .features p,.detail .buy p,.detail .board-copy p{font-size:16px!important}
+    .detail h3,.detail .features h3{font-size:20px!important}
+    .detail h2{font-size:27px!important}
+    .detail .home-slide-caption b,.detail .real-preview-head b,.detail .real-preview-card figcaption{padding:18px!important;display:grid!important;gap:8px!important}
+  .detail .real-preview-card figcaption b{font-size:21px!important;line-height:1.4!important;color:#f5f9fc!important}
+  .detail .real-preview-card figcaption span{font-size:18px!important;line-height:1.6!important;color:#d5e3ed!important}
+  .detail .real-preview-note b{font-size:18px!important}
+    .detail .home-slide-caption span,.detail .home-carousel-footer>span,.detail .real-preview-note span,.detail .cpauto-gallery-controls>span{font-size:16px!important}
+    .detail button:not([data-home-dot]){font-size:16px!important}
+  }
+  @media(max-width:700px){
+    .detail .features{grid-template-columns:minmax(0,1fr)!important}
+    .detail .features article{padding:18px!important}
+    .detail .home-slide-caption span{max-width:100%!important}
+    .detail .cpauto-gallery-controls{flex-wrap:wrap!important}
+    .detail .cpauto-gallery-controls>span{order:3;flex-basis:100%;text-align:center}
+    .detail .buy{padding:20px!important}
+  }
+ </style>`;};
+})();

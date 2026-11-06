@@ -1,3 +1,9 @@
+## 7.0.4 — leitura e contraste dos detalhes dos módulos
+
+- Descrições ampliadas, texto claro e espaçamento confortável nos detalhes dos módulos.
+- Cards com até três colunas, adaptação para celular e legendas legíveis na galeria.
+- Preserva a densidade compacta das demais telas e o limite de download do Marketplace.
+
 ## 7.0.3 — correção do limite de download do Marketplace
 
 - Pacote abaixo de 90 MiB, com margem para o limite de 100 MiB do Marketplace.
