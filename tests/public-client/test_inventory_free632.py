@@ -1,7 +1,7 @@
 from pathlib import Path
 import sys,types,asyncio,json,importlib.util,copy
 H=Path(__file__).resolve().parents[2]
-for n in ('homeassistant','homeassistant.components','homeassistant.helpers','homeassistant.components.websocket_api','homeassistant.helpers.device_registry','homeassistant.helpers.area_registry','homeassistant.helpers.storage','voluptuous'):sys.modules[n]=types.ModuleType(n)
+for n in ('homeassistant','homeassistant.components','homeassistant.helpers','homeassistant.components.websocket_api','homeassistant.helpers.device_registry','homeassistant.helpers.area_registry','homeassistant.helpers.storage','homeassistant.helpers.entity_registry','voluptuous'):sys.modules[n]=types.ModuleType(n)
 class Storage:
  def __init__(self,*a,**k):self.value=None;self.fail=False
  async def async_load(self):return self.value
@@ -11,7 +11,9 @@ class Storage:
 sys.modules['homeassistant.helpers.storage'].Store=Storage
 sys.modules['homeassistant.helpers.device_registry'].async_get=lambda h:types.SimpleNamespace(devices={})
 sys.modules['homeassistant.helpers.area_registry'].async_get=lambda h:types.SimpleNamespace(areas={})
-s=importlib.util.spec_from_file_location('free632',H/'custom_components/cloudpelizzon/inventory_free632.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
+sys.modules['homeassistant.helpers.entity_registry'].async_get=lambda h:types.SimpleNamespace(entities={})
+pkg=types.ModuleType('free_fixture646');pkg.__path__=[str(H/'custom_components/cloudpelizzon')];sys.modules[pkg.__name__]=pkg
+s=importlib.util.spec_from_file_location('free_fixture646.free632',H/'custom_components/cloudpelizzon/inventory_free632.py');m=importlib.util.module_from_spec(s);s.loader.exec_module(m)
 async def run():
  state=m.LimitedInventory(types.SimpleNamespace());await state.load()
  assert state.capabilities()['mode']=='free' and not state.capabilities()['trial_available']
@@ -32,7 +34,7 @@ async def run():
   else:raise AssertionError('invalid manual map accepted')
   assert state.free_map()==before
  restored=m.LimitedInventory(types.SimpleNamespace());restored.store.value=copy.deepcopy(state.store.value);await restored.load();assert restored.free_map()==state.free_map()
- for op in ('scan.start','settings.save','map.link','house.save','report','maintenance.rule.save','catalog.model','backup','license.install'):
+ for op in ('scan.start','settings.save','house.save','report','maintenance.rule.save','catalog.model','backup','license.install','documents.upload.start','documents.list'):
   try:await state.command(op,{})
   except PermissionError:pass
   else:raise AssertionError('commercial operation allowed: '+op)

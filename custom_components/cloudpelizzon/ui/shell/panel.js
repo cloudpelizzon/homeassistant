@@ -1,4 +1,4 @@
-import "/cloudpelizzon-inventory/frontend/panel.js?v=4cc71e030cf043f1c7c3e1cc9e19419cad8a6d60257740f9703cb67698ff8d8b";
+import "/cloudpelizzon-inventory/frontend/panel.js?v=72ecb105ea65f557589f32e4e854a4d7a16d7fc3c53c8ce4886d7e82ccc747cf";
 
 
 
@@ -60,7 +60,7 @@ import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 
 
 
-import "/cloudpelizzon-core/frontend/panel.js?v=d2a421cd7a73b1a758e889a540e60c7146c2ab34cc3c738d5cbcca10c6126876";
+import "/cloudpelizzon-core/frontend/panel.js?v=e122812f9148e696343ea65bb905a4957128f5398d203344289fb1c397f79040";
 
 
 
