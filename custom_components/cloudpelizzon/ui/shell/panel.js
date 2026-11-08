@@ -1,4 +1,4 @@
-import "/cloudpelizzon-inventory/frontend/panel.js?v=ed8f1245087bd7de8ab0cfd1e481cddd34c74c8a4dd1892251a74155dac0790a";
+import "/cloudpelizzon-inventory/frontend/panel.js?v=34931710bb66e3105d93aca3cdc306ba2638a5b8886507ddacb0104a25133833";
 
 
 
@@ -91,7 +91,7 @@ import "/cloudpelizzon-core/frontend/panel.js?v=f4e131d91452bb0a9b57d7cb7fbc1c30
 
 
 
-import "/cloudpelizzon/frontend/optional-modules.js?v=554387e673310d3d5d80707b69fa4b69f43037981178101c7c04af0b36d70ef1";
+import "/cloudpelizzon/frontend/optional-modules.js?v=3610e2205406e5e0c24fedc7349ed4a0ee8e582a3177af534b235f74d516a3bc";
 
 
 

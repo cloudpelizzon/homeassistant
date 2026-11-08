@@ -918,7 +918,7 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
 
   render() {
     this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="/cloudpelizzon-maintenance/frontend/maintenance-v311.css?v=013352b2be6b" data-maintenance-style="v285">
+      <link rel="stylesheet" href="/cloudpelizzon-maintenance/frontend/maintenance-v311.css?v=6c56c68944d6" data-maintenance-style="v285">
       <ha-card>
         <div class="shell">
           <aside class="sidebar">
@@ -2567,7 +2567,7 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
   registerModal(returnTo = null) {
     const I = this.items().sort((a, b) => a.category.localeCompare(b.category) || a.name.localeCompare(b.name));
     const modal = this.shadowRoot.querySelector("#modal");
-    modal.innerHTML = `<div class="overlay"><div class="register-modal"><div class="modal-head"><div><h2>🗓 Registrar manutenção</h2><p>Selecione o item que acabou de ser realizado.</p></div><button data-close>✕</button></div><div class="register-list">${I.map(i => `<button data-register-item="${i.date_entity}"><span>${this.icon(i.category)}</span><div><b>${i.name}</b><small>${i.category} • ${i.cycle} • Prev. ${this.money(this.estimateFor(i).total)}</small></div><i>›</i></button>`).join("")}</div></div></div>`;
+    modal.innerHTML = `<div class="overlay maintenance-entry-overlay"><div class="register-modal"><div class="modal-head"><div><h2>🗓 Registrar manutenção</h2><p>Selecione o item que acabou de ser realizado.</p></div><button data-close>✕</button></div><div class="register-list">${I.map(i => `<button data-register-item="${i.date_entity}"><span>${this.icon(i.category)}</span><div><b>${i.name}</b><small>${i.category} • ${i.cycle} • Prev. ${this.money(this.estimateFor(i).total)}</small></div><i>›</i></button>`).join("")}</div></div></div>`;
     const back = () => {
       modal.innerHTML = "";
       if (returnTo) requestAnimationFrame(() => returnTo());
@@ -2640,7 +2640,7 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
     const modal = this.shadowRoot.querySelector("#modal");
     const today = this._localDateValue();
     const estimate = this.estimateFor(item);
-    modal.innerHTML = `<div class="overlay"><div class="finance-entry-modal">
+    modal.innerHTML = `<div class="overlay maintenance-entry-overlay"><div class="finance-entry-modal">
       <button class="modal-close" data-close>✕</button>
       <div class="finance-entry-head"><div class="finance-entry-icon"><ha-icon icon="${this.maintenanceMdi(item)}"></ha-icon></div><div><span>${this.icon(item.category)} ${item.category}</span><h2>${this.escapeHtml(item.name)}</h2><p>Registre a execução, as compras e o impacto financeiro.</p></div></div>
       <div class="finance-section-title"><ha-icon icon="mdi:chart-timeline-variant"></ha-icon><span>Previsão / provisão desta manutenção</span></div>
