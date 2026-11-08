@@ -60,7 +60,7 @@ import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 
 
 
-import "/cloudpelizzon-core/frontend/panel.js?v=f4e131d91452bb0a9b57d7cb7fbc1c306661804c6bc4a0961df0a0c122d9a91f";
+import "/cloudpelizzon-core/frontend/panel.js?v=5a3395487636a4d997f09b5930f65a706a1312ffe6a193678dc8ddad51d2cde7";
 
 
 
@@ -31340,6 +31340,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
 
         <button data-view="inventory"><ha-icon icon="mdi:lan"></ha-icon>Inventário</button>
+        <button data-view="finance"><ha-icon icon="mdi:finance"></ha-icon>Finanças</button>
 
 
 
@@ -56574,6 +56575,7 @@ if (
 
 
  p.showProtectedView=async function(view){
+    if(view==='finance'){window.location.assign('/cloudpelizzon-finance');return;}
 
 
 
