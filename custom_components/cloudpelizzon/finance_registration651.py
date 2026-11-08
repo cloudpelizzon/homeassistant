@@ -12,7 +12,7 @@ from pathlib import Path
 import voluptuous as vol
 from homeassistant.components import websocket_api
 from homeassistant.helpers import area_registry
-from .finance_loader651 import Namespace, package_folder
+from .finance_loader651 import Namespace, package_folder, safe
 from .compiled_release628 import PUBLIC_KEY
 
 KEY='cloudpelizzon_finance651_runtime'
@@ -63,15 +63,29 @@ def normalize_statement(args):
 class LocalFinance:
     def __init__(self,hass,context):
         self.hass=hass;self.context=context;self.closed=False;self.lock=asyncio.Lock()
-        self.namespace=None;self.service=None;self.integrations=None
+        self.namespace=None;self.service=None;self.integrations=None;self.integrations_module=None
     def _load(self):
-        root=Path(self.hass.config.path('.storage/cloudpelizzon_compiled627'))
+        root=safe(self.hass.config.path('.storage/cloudpelizzon_compiled627'))
+        identity=json.loads(safe(root/'identity.json').read_bytes())
+        if identity!={'core_id':self.context['core_id'],'installation_id':self.context['trial_id']}:
+            raise PermissionError('finance_HA_identity_changed')
         package=package_folder(root,public_key=PUBLIC_KEY)
         namespace=Namespace(package,sku='CP-FINANCE',public_key=PUBLIC_KEY,state_root=root)
-        dbroot=Path(self.hass.config.path('.storage/cloudpelizzon_finance651'))
-        dbroot.mkdir(mode=0o700,exist_ok=True)
+        # Business rules must be a compiled member of this signed package.
+        # No plaintext fallback and no database creation for an incomplete package.
+        try:
+            integrations_module=namespace.load('finance_integrations651.py')
+            if not callable(getattr(integrations_module,'FinanceIntegrations',None)):
+                raise PermissionError('finance_private_integrations_required')
+            dbroot=safe(self.hass.config.path('.storage/cloudpelizzon_finance651'))
+            dbroot.mkdir(mode=0o700,exist_ok=True)
+            service=namespace.module.Service(dbroot/'finance.sqlite',self.context['core_id'])
+        except BaseException:
+            namespace.close()
+            raise
         self.namespace=namespace
-        self.service=namespace.module.Service(dbroot/'finance.sqlite',self.context['core_id'])
+        self.integrations_module=integrations_module
+        self.service=service
     async def execute(self,connection,operation,args):
         if self.closed:raise PermissionError('finance_closed')
         actor=connection.user.id
@@ -110,10 +124,13 @@ class LocalFinance:
                 if not user.is_admin or state['user']['role']!='admin' or not active():
                     raise PermissionError('finance_integrations_admin_required')
                 if operation=='integrations_get':
+                    # Opening a settings screen never opts into collection or messages.
+                    view=self.integrations.view()
                     if not self.integrations.saved.get('actor'):
-                        await self.integrations.configure(actor,self.integrations.suggested())
-                        self.hass.async_create_task(self.integrations.scheduled(None))
-                    return self.integrations.view()
+                        view={**view,'scheduled':False,'config':{**view.get('config',{}),
+                            'inventory':False,'maintenance':False,'quotes':False,
+                            'sensors':[],'mobile':'','alexa':''}}
+                    return view
                 if operation=='integrations_save':
                     return await self.integrations.configure(actor,args)
                 if operation=='integrations_test':
@@ -133,7 +150,7 @@ class LocalFinance:
 
             result=await command(operation,args)
             if operation=='state' and self.integrations and result['user']['role'] in {'admin','manager'}:
-                from .finance_integrations651 import MARKET_ASSETS
+                MARKET_ASSETS=self.integrations_module.MARKET_ASSETS
                 result={**result,'market_quotes':self.integrations.saved.get('market_quotes',[]),
                         'market_b3_history':self.integrations.saved.get('market_b3_history',{}),
                         'market_status':self.integrations.saved.get('last',{}).get('quotes',{}),
@@ -205,11 +222,10 @@ class LocalFinance:
         self.hass.async_create_task(close_service())
 
 async def register(hass,context,bridge):
-    from .finance_integrations651 import FinanceIntegrations
     runtime=LocalFinance(hass,context)
     if KEY in hass.data:raise RuntimeError('finance_already_registered')
     await hass.async_add_executor_job(runtime._load)
-    runtime.integrations=FinanceIntegrations(runtime)
+    runtime.integrations=runtime.integrations_module.FinanceIntegrations(runtime)
     try:
         await runtime.integrations.start()
     except Exception:

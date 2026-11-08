@@ -1,12 +1,14 @@
 """Public native-library loader: verify before executing any C initializer."""
 import base64, hashlib, importlib, importlib.util, json, platform, re, sys, sysconfig, threading, time
 from pathlib import Path
-from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
+from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey, Ed25519PrivateKey
+from cryptography.hazmat.primitives import serialization
 DOMAIN = b'CP-NATIVE-PACKAGE627-V1\n'
 ENTITLEMENT = b'CP-COMPILED-ENTITLEMENT627-V1\n'
 ENTRIES = {'CP-FINANCE': 'cp_finance651'}
 LOCK = threading.RLock()
 VERIFIED_MODULES = {}
+REQUIRED_MODULES = frozenset({'finance_integrations651', '_cp_finance_guard653'})
 
 def canonical(v):
     return json.dumps(v, sort_keys=True, separators=(',', ':'), ensure_ascii=False, allow_nan=False).encode()
@@ -51,6 +53,8 @@ class Namespace:
             raise PermissionError('native_package_compatibility')
         if m['test_only'] and (not allow_test):
             raise PermissionError('test_package_not_commercial')
+        if not REQUIRED_MODULES <= set(m.get('modules', [])):
+            raise PermissionError('finance_private_modules_required')
         if len(m['files']) != 1:
             raise PermissionError('one_native_library_required')
         name, digest = next(iter(m['files'].items()))
@@ -60,10 +64,18 @@ class Namespace:
         if binary.stat().st_size > 268435456 or hashlib.sha256(binary.read_bytes()).hexdigest() != digest:
             raise PermissionError('native_binary_integrity')
         state = safe(state_root)
-        grant = json.loads((state / sku / 'license.json').read_bytes())
+        grant = json.loads(safe(state / sku / 'license.json').read_bytes())
         Ed25519PublicKey.from_public_bytes(bytes.fromhex(public_key)).verify(base64.b64decode(grant['signature'], validate=True), ENTITLEMENT + canonical(grant['claims']))
         from .finance_access653 import validate_finance_access
-        validate_finance_access(grant['claims'], int(time.time()))
+        claims = grant['claims']
+        validate_finance_access(claims, int(time.time()))
+        identity = json.loads(safe(state / 'identity.json').read_bytes())
+        if identity != {'core_id': claims.get('core_id'), 'installation_id': claims.get('installation_id')}:
+            raise PermissionError('finance_entitlement_identity')
+        key = Ed25519PrivateKey.from_private_bytes(safe(state / 'installation.key').read_bytes())
+        own = key.public_key().public_bytes(serialization.Encoding.Raw, serialization.PublicFormat.Raw).hex()
+        if own != claims.get('installation_public_key'):
+            raise PermissionError('finance_entitlement_key')
         with LOCK:
             current = sys.modules.get(m['entry'])
             if current is not None:
@@ -85,7 +97,7 @@ class Namespace:
                 self.module = module
         self.manifest = m
         self.closed = False
-        self.guard = importlib.import_module('_cp_finance_guard653')
+        self.guard = self.load('_cp_finance_guard653.py')
         self.guard.verify(sku)
 
     def load(self, path):

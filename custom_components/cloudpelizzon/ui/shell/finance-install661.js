@@ -17,7 +17,9 @@ class CloudPelizzonFinanceInstall661 extends HTMLElement {
     toolbar.style.cssText = "padding:12px 16px;background:var(--card-background-color);color:var(--primary-text-color)";
     this.status = document.createElement("div");
     this.status.setAttribute("role", "status");
-    if (this._hass.user?.is_admin) {
+    this.status.textContent = "Instalação e Trial do Finanças aguardam a revisão do pacote privado assinado.";
+    const releaseReady = false;
+    if (releaseReady && this._hass.user?.is_admin) {
       for (const [mode, text] of [["paid", "Instalar com minha licença"], ["trial", "Iniciar Trial de 7 dias"]]) {
         const button = document.createElement("button");
         button.textContent = text;

@@ -16,13 +16,21 @@ from .compiled_activation627 import ActivationClient, HTTPSActivation, install, 
 from .compiled_loader627 import canonical, safe
 from .compiled_release628 import PUBLIC_KEY
 from .finance_access653 import validate_finance_access
+from .finance_loader651 import REQUIRED_MODULES
 
 SKU = "CP-FINANCE"
 RELEASE = "386d95b169c716121a75e237fcc64e69a2f8194c9b73a649c2dcf79086dded47"
+# The existing pin has not been verified to include the private integration rules.
+# Replace it only after rebuilding, signing and testing the private package.
+RELEASE_READY = False
 COMMAND = "cloudpelizzon/finance/install"
 HOST = "portal.cloudpelizzon.com.br"
 
 def install_finance(root, context, mode):
+    if not RELEASE_READY:
+        raise PermissionError("finance_private_release_not_reviewed")
+    if mode not in {"paid", "trial"}:
+        raise ValueError("finance_installation_mode")
     root = safe(root)
     root.mkdir(mode=0o700, parents=True, exist_ok=True)
     marker = safe(root / "installed627.json")
@@ -64,6 +72,8 @@ def install_finance(root, context, mode):
     manifest = response["package"]["manifest"]
     if hashlib.sha256(canonical(manifest)).hexdigest() != RELEASE:
         raise PermissionError("reviewed_native_release_required")
+    if not REQUIRED_MODULES <= set(manifest.get("modules", [])):
+        raise PermissionError("finance_private_integrations_required")
     claims = response["license"]["claims"]
     validate_finance_access(claims, int(time.time()))
     if claims["trial"] is not (mode == "trial"):

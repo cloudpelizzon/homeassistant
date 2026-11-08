@@ -3,7 +3,7 @@ const $ = (s, root = document) => root.querySelector(s);
 const main = $('#main');
 let state, overview, csrf, route = 'overview', privateValues = false, submitForm;
 const BRL = new Intl.NumberFormat('pt-BR', {style:'currency',currency:'BRL'});
-const money = n => BRL.format((n || 0) / 100);
+const money = n => Number.isFinite(n) ? BRL.format(n / 100) : 'Indisponível';
 const humanDate = s => s ? new Date(s + 'T12:00:00').toLocaleDateString('pt-BR') : 'Não informado';
 const names = {
   overview:'Visão geral',reports:'Relatórios',transactions:'Lançamentos',accounts:'Contas',cards:'Cartões',calendar:'Calendário',budgets:'Orçamentos',subscriptions:'Assinaturas',goals:'Metas',projects:'Projetos e reformas',properties:'Imóveis',categories:'Categorias',assets:'Patrimônio da casa',maintenance:'Manutenção em números',utilities:'Consumo e mobilidade',investments:'Investimentos',quotes:'Cotações',trades:'Operações',documents:'Documentos',imports:'Importar extrato',recurrences:'Recorrências',requests:'Aprovações',reimbursements:'Divisões e reembolsos',users:'Pessoas e permissões',settings:'Preferências',audit:'Histórico de alterações',connections:'Integrações'
@@ -152,11 +152,11 @@ function renderRecords(collection){
   const readings=rows.map(r=>({...r,
     reading:r.quantity!=null?quantities.format(Number(r.quantity))+' '+(r.unit||''):'Sem leitura',
     source:state.utility_costs?.[r.id]?.source||'—',
-    estimate:state.utility_costs?.[r.id]?money(state.utility_costs[r.id].estimated_cents):r.tariff_cents==null||String(r.assumption||'').includes('tarifa não informada')?'Sem tarifa':money(Math.round(Number(r.quantity||0)*r.tariff_cents)),
+    estimate:money(state.utility_costs?.[r.id]?.estimated_cents),
     bill:r.actual_cents==null?'Não informada':money(r.actual_cents)
   })).sort((a,b)=>String(b.period).localeCompare(String(a.period)));
   table(p,[['Medição','name'],['Categoria','kind',v=>enums.utilityKind[v]||v],['Mês','period'],['Leitura','reading'],['Custo estimado','estimate'],['Fonte do custo no HA','source'],['Fatura','bill']],readings);
-  notice('O custo pode vir pronto do Home Assistant ou ser calculado pela tarifa. A fatura fica separada.',p);
+  notice('O custo estimado é exibido quando fornecido pelo backend. A fatura fica separada.',p);
  }
  const actions=(r,td)=>{td.append(button('Editar',()=>editRecord(collection,r),'small'));if(collection==='requests'&&(r.status||'pending')==='pending')td.append(button('Aprovar',async()=>{await api('approve',{id:r.id});await refresh();},'small'));td.append(button('Excluir',async()=>{if(confirm('Excluir este cadastro? Vínculos e histórico financeiro impedem exclusão.')){await api('delete_record',{id:r.id,revision:r.revision});await refresh();}},'small danger'));};
  const columns=recordColumns(collection);
@@ -174,7 +174,7 @@ function renderRecords(collection){
  }
  const p=panel('Cadastros');const input=node('input');input.placeholder='Buscar nesta lista';const tool=node('div','toolbar');tool.append(input);p.append(tool);const target=node('div');p.append(target);
  const render=()=>{target.replaceChildren();const filtered=rows.filter(r=>JSON.stringify(r).toLocaleLowerCase().includes(input.value.toLocaleLowerCase()));table(target,columns,filtered,actions);};input.addEventListener('input',render);render();
- if(collection==='goals')for(const r of rows){const p=panel(r.name);bars(p,[['Reservado · meta '+money(r.target_cents),r.saved_cents||0]]);}
+ if(collection==='goals')for(const r of rows){const p=panel(r.name);bars(p,[['Reservado · meta '+money(r.target_cents),r.saved_cents]]);}
  if(collection==='settings')notice('Configure seus canais e preferências. Os envios dependem dos serviços conectados e das permissões concedidas.');
 }
 function renderTransactions(){titlePage('transactions',button('+ Lançamento',newTransaction,'primary'));const p=panel('Movimentações');const filter=node('input');filter.placeholder='Buscar descrição, conta ou situação';const tools=node('div','toolbar');tools.append(filter);p.append(tools);const container=node('div');p.append(container);const render=()=>{container.replaceChildren();table(container,[['Descrição','description'],['Data','date',humanDate],['Conta','account_id',labelFor],['Natureza','kind',v=>enums.transactionKind[v]],['Valor','amount_cents',money],['Situação','status',v=>enums.status[v]]],state.transactions.filter(t=>(t.description+' '+labelFor(t.account_id)+' '+t.status).toLowerCase().includes(filter.value.toLowerCase())),(t,td)=>{if(t.status==='draft'){td.append(button('Conferir',()=>showForm('Conciliar rascunho',configs.transaction.filter(f=>['kind','description','to_account_id','category_id','property_id','project_id','room','due_date'].includes(f[0])),t,data=>api('reconcile',{id:t.id,expected:{kind:t.kind,description:t.description,status:t.status,due_date:t.due_date},changes:data})),'small'));td.append(button('Confirmar',async()=>{await api('post',{id:t.id});await refresh();},'small'));}if(t.status!=='void')td.append(button('Cancelar',async()=>{const reason=prompt('Motivo do cancelamento:');if(reason){await api('void',{id:t.id,reason});await refresh();}},'small danger'));});};filter.addEventListener('input',render);render();}
@@ -186,22 +186,13 @@ function renderInvestments(){titlePage('investments',button('+ Investimento',()=
 function renderMarketCenter(){
  const market=panel('Central de Mercado');
  const automatic=new Map((state.market_quotes||[]).map(row=>[row.ticker,row]));
- const manual=state.market_imports||{};
- const b3History=state.market_b3_history||{};
+ // Optional market_display rows are resolved by the backend, including source precedence.
+ const resolved=new Map((state.market_display||[]).map(row=>[row.ticker,row]));
  const rows=(state.market_catalog||[]).map(asset=>{
-  const quote=automatic.get(asset.ticker);
-  const imported=manual[asset.ticker]||[];
-  const b3=b3History[asset.ticker];
-  const automaticHistory=b3||quote?.history||[];
-  const source=b3?'OkaneBox · B3':quote?.source;
-  const history=[...new Map([...imported,...automaticHistory])].sort(([a],[b])=>a.localeCompare(b));
-  const historySource=[automaticHistory.length&&source,imported.length&&'CSV local'].filter(Boolean).join(' / ')||'—';
-  const last=imported.at(-1);
-  if(quote)return {...asset,...quote,history,historySource};
-  const previous=imported.at(-2);
-  return {...asset,history,historySource,as_of:last?.[0],price_cents:last?.[1],
-   change_percent:previous?100*(last[1]/previous[1]-1):null,fromCsv:!!last,
-   source:last?'CSV local':asset.automatic?'Aguardando cotação':'Disponível por CSV'};
+  const quote=resolved.get(asset.ticker)||automatic.get(asset.ticker);
+  return {...asset,...quote,history:Array.isArray(quote?.history)?quote.history:[],
+   historySource:quote?.historySource||quote?.source||'Indisponível',
+   source:quote?.source||'Cotação indisponível no backend'};
  });
  const moneyFor=(value,row)=>value==null?'—':new Intl.NumberFormat('pt-BR',{style:'currency',currency:row.currency}).format(value/100);
  const percent=value=>value==null?'—':new Intl.NumberFormat('pt-BR',{maximumFractionDigits:2,signDisplay:'exceptZero'}).format(value)+'%';
@@ -222,38 +213,20 @@ function renderMarketCenter(){
   comparison.replaceChildren(node('h2','','Comparar ativos'));
   const subset=rows.filter(row=>selected.has(row.ticker));
   if(subset.length<2){comparison.append(node('p','muted','Marque de dois a quatro ativos na lista.'));return;}
-  const maps=subset.map(row=>new Map(row.history));
-  const days=[...maps[0].keys()].filter(day=>maps.every(values=>values.has(day))).sort();
-  const first=days[0], last=days.at(-1);
-  const metrics=subset.map((row,i)=>{
-   const values=maps[i];
-   const returns=days.slice(1).map((day,j)=>100*(values.get(day)/values.get(days[j])-1));
-   const mean=returns.length?returns.reduce((a,b)=>a+b,0)/returns.length:0;
-   const variation=days.length>=2?100*(values.get(last)/values.get(first)-1):null;
-   const dispersion=returns.length>=10?Math.sqrt(returns.reduce((sum,value)=>sum+(value-mean)**2,0)/returns.length):null;
-   return {...row,variation,dispersion};
-  });
+  const result=(state.market_comparisons||[]).find(result=>Array.isArray(result.tickers)&&
+   result.tickers.length===subset.length&&new Set(result.tickers).size===subset.length&&result.tickers.every(ticker=>selected.has(ticker)));
   table(comparison,[['Empresa','company'],['Ativo','ticker'],['Moeda','currency'],['Cotação','price_cents',moneyFor],
-   ['Variação no recorte','variation',percent],['Dispersão dos retornos','dispersion',percent],['Histórico','historySource']],metrics);
-  if(days.length<2){
-   if(subset.some(row=>row.change_percent!=null)){
-    xyChart(comparison,'Última variação disponível por ativo (%)',subset.map(row=>row.ticker),
-     [{name:'Variação (%)',values:subset.map(row=>row.change_percent??null)}],'bar',
-     {money:false,note:'Cada barra usa a última variação da própria fonte. As datas podem diferir; consulte a tabela de cotações.'});
-   }
-   const missing=subset.filter(row=>row.history.length<2).map(row=>row.ticker);
-   notice('A evolução precisa de dois ou mais fechamentos em datas comuns.'+
-    (missing.length?' Histórico insuficiente para '+missing.join(', ')+'.':' Os históricos selecionados têm períodos diferentes.'),comparison);
-   return;
-  }
-  const from=humanDate(first), to=humanDate(last);
-  notice('Fechamentos em '+days.length+' datas comuns, de '+from+' a '+to+'. Variação na moeda local, sem conversão cambial, proventos ou ajustes por eventos societários. A dispersão exige pelo menos 10 intervalos.',comparison);
-  const ranked=metrics.filter(row=>row.dispersion!=null).sort((a,b)=>a.dispersion-b.dispersion);
-  if(ranked.length>=2)comparison.append(node('p','muted',ranked[0].ticker+' teve a menor dispersão no recorte ('+percent(ranked[0].dispersion)+'). Confira setor, moeda e concentração da carteira ao avaliar o ativo.'));
-  xyChart(comparison,'Evolução dos fechamentos · base 100',days.map(day=>day.slice(8,10)+'/'+day.slice(5,7)),
-   subset.map((row,i)=>({name:row.ticker,values:days.map(day=>100*maps[i].get(day)/maps[i].get(first))})),
-   'line',{money:false,axisBase:100,maxXLabels:5,markers:false,rawLabels:days.map(humanDate),xLabel:'Data',
-     note:'Período de '+from+' a '+to+'. Veja todas as datas e valores no botão Dados.'});
+   ['Variação no recorte','variation',percent],['Dispersão dos retornos','dispersion',percent],['Histórico','historySource']],
+   subset.map(row=>({...row,variation:result?.metrics?.[row.ticker]?.variation??null,dispersion:result?.metrics?.[row.ticker]?.dispersion??null})));
+  if(!result){notice('Comparação indisponível no backend para os ativos selecionados.',comparison);return;}
+  if(result.note)notice(result.note,comparison);
+  if(Array.isArray(result.days)&&Array.isArray(result.series)&&result.series.length===subset.length&&
+   new Set(result.series.map(series=>series.name)).size===subset.length&&
+   result.series.every(series=>selected.has(series.name)&&Array.isArray(series.values)&&series.values.length===result.days.length)){
+   xyChart(comparison,'Evolução dos fechamentos · base 100',result.days.map(humanDate),result.series,
+    'line',{money:false,axisBase:100,maxXLabels:5,markers:false,xLabel:'Data',note:result.note||'Valores fornecidos pelo backend.'});
+  }else notice('Evolução comparativa indisponível no backend.',comparison);
+
  }
  function drawListing(){
   listing.replaceChildren();
@@ -285,7 +258,7 @@ function renderMarketCenter(){
  for(const input of [search,exchange,coverage])input.addEventListener('input',()=>{page=0;drawListing();});
  drawListing();drawComparison();
  if(state.market_status?.status==='falha')notice('A última coleta falhou. Confira a data das cotações exibidas.',market);
- notice('B3: preço e variação da brapi. O histórico adicional vem da OkaneBox, com atraso de cerca de 15 dias. O gráfico informa o período em comum. EUA: preço em USD e variação entre os dois últimos fechamentos disponíveis de sessões regulares completas da Market History.',market);
+ notice('Confira a fonte e a data de cada cotação. Históricos consolidados, variações e comparações são exibidos somente quando fornecidos pelo backend.',market);
  const sources=node('p','muted','Consultar demonstrações financeiras ');
  for(const [label,url] of [['CVM · Brasil','https://dados.cvm.gov.br/dataset/cia_aberta-doc-itr'],['SEC · EUA','https://www.sec.gov/edgar/search/']]){
   const link=node('a','',label);link.href=url;link.target='_blank';link.rel='noopener noreferrer';sources.append(' · ',link);
@@ -297,7 +270,7 @@ function renderMarketCenter(){
   'Exporte os preços históricos do seu provedor ou corretora. Use o preço de fechamento por unidade, sem quantidade, saldo ou dados da sua conta.',
   'Marque os ativos e baixe o modelo. Ele já traz código e moeda, além dos dois últimos fechamentos quando houver histórico. Complete as linhas em branco ou acrescente uma linha por ativo e pregão, com data AAAA-MM-DD e preço unitário.',
   'Salve em CSV, selecione o arquivo e clique em Conferir arquivo. Revise o código, a moeda, o período e o total de fechamentos antes de confirmar.',
-  'Depois de confirmar, volte ao catálogo, marque pelo menos dois ativos e abra a comparação. Use datas em comum para ver a evolução.'
+  'Depois de confirmar, volte ao catálogo. Cotações consolidadas e comparações dependem dos resultados fornecidos pelo backend.'
  ])steps.append(node('li','',step));
  const file=node('input');file.type='file';file.accept='.csv,text/csv';file.setAttribute('aria-label','CSV de fechamentos');
  const preview=node('div');preview.setAttribute('aria-live','polite');

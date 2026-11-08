@@ -6,12 +6,18 @@ import json
 import subprocess
 import zipfile
 
+from verify_public_tree import verify
+
 ROOT = Path(__file__).resolve().parents[1]
 COMPONENT = ROOT / 'custom_components' / 'cloudpelizzon'
 MARKETPLACE_LIMIT = 100 * 1024 * 1024
 PACKAGE_BUDGET = 90 * 1024 * 1024
 
 def build(output):
+    reviewed = subprocess.check_output(['git', 'ls-files', '-z'], cwd=ROOT).decode().split('\0')
+    issues = verify(ROOT, [name for name in reviewed if name])
+    if issues:
+        raise ValueError('Public source review failed: ' + '; '.join(issues))
     names = subprocess.check_output(
         ['git', 'ls-files', '-z', 'custom_components/cloudpelizzon'], cwd=ROOT
     ).decode().split('\0')

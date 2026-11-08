@@ -17,7 +17,7 @@ class CloudPelizzonFinance651 extends HTMLElement {
     window.addEventListener('resize',this.fit);
     window.visualViewport?.addEventListener('resize',this.fit);
     this.frame=document.createElement('iframe');
-    this.frame.src='/cloudpelizzon/frontend/finance/index.html?v=981f5bf2d4c92a95455725629002227f49ef91f3a170189ee00a946da3e9a2f1';
+    this.frame.src='/cloudpelizzon/frontend/finance/index.html?v=99affc6de521daad1530b518acef44e986ddd902575165377da003dbc774997d';
     this.frame.title='CloudPelizzon Finanças';
     this.frame.style.cssText='display:block;width:100%;height:100%;border:0';
     this.append(this.frame);

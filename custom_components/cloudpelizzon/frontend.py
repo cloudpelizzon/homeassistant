@@ -58,7 +58,7 @@ async def register(hass, root):
                 hass, frontend_url_path='cloudpelizzon-finance',
                 webcomponent_name='cloudpelizzon-finance-install-panel',
                 sidebar_title='Finanças', sidebar_icon='mdi:finance',
-                module_url='/cloudpelizzon/frontend/finance-install661.js?v=6dba6593f68579db',
+                module_url='/cloudpelizzon/frontend/finance-install661.js?v=a8664b08bfa0ab',
                 embed_iframe=False, trust_external=False, require_admin=False,
                 handle_safe_area=False)
             state['finance'] = True

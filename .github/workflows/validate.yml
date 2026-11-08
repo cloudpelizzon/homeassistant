@@ -25,6 +25,8 @@ jobs:
         run: python3 tools/verify_public_tree.py
       - name: Build exact HACS archive below Marketplace size budget
         run: python3 tools/build_public_release.py --output /tmp/cloudpelizzon.zip
+      - name: Verify Finance is presentation only without local financial rules
+        run: node tests/public-client/test_finance_presentation707.cjs
       - name: Verify document SHA-256 with HTTP fallback and 10 MB files
         run: node tests/public-client/test_documents_hash638.cjs
       - name: Verify permanent Free Inventory boundaries and blocked commercial operations
@@ -97,6 +99,16 @@ jobs:
         run: docker run --rm -v "$PWD/.:/github/workspace:ro" ghcr.io/home-assistant/hassfest
       - name: Pull pinned Home Assistant runtime
         run: docker pull ghcr.io/home-assistant/home-assistant@sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0
+      - name: Verify Finance public boundary without private engines or external effects
+        run: |
+          docker run --rm --entrypoint python --network none --read-only --cap-drop ALL \
+            --security-opt no-new-privileges --user 65534:65534 \
+            --memory 1024m --cpus 2 --pids-limit 128 \
+            --tmpfs /tmp:rw,nosuid,nodev,size=536870912,mode=1777 \
+            -e PYTHONDONTWRITEBYTECODE=1 \
+            -v "$PWD/.:/candidate:ro" \
+            ghcr.io/home-assistant/home-assistant@sha256:130241f28d01fa80dfa3b44f7d89781c188d8642ecab9024f079f19f9f82baa0 \
+            -B /candidate/tests/public-client/test_finance_boundary707.py
       - name: Test native flow manager and private local identity storage
         run: |
           docker run --rm --entrypoint python --network none --read-only --cap-drop ALL \

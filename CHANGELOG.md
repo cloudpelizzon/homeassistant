@@ -1,3 +1,11 @@
+## 7.0.7 — candidata em revisão, não publicada
+
+- Separa regras financeiras do pacote público e exige implementação no módulo nativo assinado.
+- Remove cálculos financeiros locais da interface e sinaliza resultados indisponíveis.
+- Impede que a abertura das integrações ative coleta ou notificações e isola o Finance dos módulos existentes.
+- Instalação e Trial permanecem bloqueados até a revisão e homologação do pacote privado compatível.
+- Veja `docs/release-7.0.7-public-review.md` para os limites desta candidata.
+
 ## 7.0.6 — localização e tela cheia do Inventário, formulário de Manutenção
 
 - Inventário: ao digitar um local no cadastro do equipamento, o formulário seleciona o modo manual e salva o local informado.

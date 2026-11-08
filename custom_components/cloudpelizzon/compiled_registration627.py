@@ -24,7 +24,7 @@ class Registration:
    marker=json.loads((self.root/'installed627.json').read_bytes())
    if marker['schema']!='cp.native.installed627.v1' or not set(marker['modules'])<=set(ENTRIES):raise PermissionError('HA_compiled_marker')
    data=json.loads((self.root/'data627.json').read_bytes())
-   return marker['modules'],data
+   return {sku:row for sku,row in marker['modules'].items() if sku!='CP-FINANCE'},data
   modules,data=await self.hass.async_add_executor_job(read)
   expected=str(self.root)
   current=os.environ.setdefault('CP_COMPILED_HOME627',expected)
