@@ -1,3 +1,9 @@
+## 7.0.6 — localização e tela cheia do Inventário, formulário de Manutenção
+
+- Inventário: ao digitar um local no cadastro do equipamento, o formulário seleciona o modo manual e salva o local informado.
+- Inventário: o mapa ocupa toda a janela mesmo quando o navegador impede a tela cheia nativa.
+- Manutenção: as telas de seleção do serviço e registro da execução ganharam mais espaço e se ajustam a telas menores.
+
 ## 7.0.5 — navegação e edição do Inventário
 
 - Tela cheia do mapa usa o viewport real e sai com Escape.
