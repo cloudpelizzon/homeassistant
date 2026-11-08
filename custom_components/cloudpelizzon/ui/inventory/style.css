@@ -501,3 +501,18 @@ dialog:not([open]){display:none!important}
  :host dialog.cmdb-dialog515[data-layout650] #device-form>.actions{grid-row:3!important}
  :host dialog.cmdb-dialog515[data-layout650] #cmdb-error{grid-row:4!important}
 }
+
+/* The map can occupy the viewport even when native fullscreen is unavailable. */
+:host([data-map-fullscreen650]){--inventory-density631:1!important;zoom:1!important}
+:host([data-map-fullscreen650]) .network511-paper.expanded512{
+ position:fixed!important;inset:0!important;width:100vw!important;height:100dvh!important;
+ min-width:0!important;max-width:none!important;max-height:none!important;margin:0!important;
+ box-sizing:border-box!important;z-index:2147483000!important;display:flex!important;
+ flex-direction:column!important;overflow:hidden;border-radius:0;
+}
+:host([data-map-fullscreen650]) .network511-paper.expanded512:popover-open{
+ color:inherit;padding:0;overflow:hidden;
+}
+:host([data-map-fullscreen650]) .network511-paper.expanded512 .flow-viewport{
+ flex:1 1 0!important;min-height:0!important;height:auto!important;
+}

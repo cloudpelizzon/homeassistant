@@ -1,4 +1,4 @@
-import {renderIcon520} from '/cloudpelizzon-inventory/frontend/topology.js?v=4707fb1f677f09e955f46710b27aba40191e7adb14535924c478462c40bbbc39';
+import {renderIcon520} from '/cloudpelizzon-inventory/frontend/topology.js?v=0eacbdb93c31ae29a54b1dafd8691fdfefac4590de84e5abb90509894b8963e2';
 /* The Free tier uses the same CMDB, network and room renderers as Full. */
 export function installFree645(p){
  const isFree=s=>s.data?.capabilities?.mode==='free',previous={ws:p.ws,render:p.render,navigate:p.navigate,dialog:p.dialog};
