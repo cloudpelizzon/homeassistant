@@ -3,6 +3,7 @@ import base64,hashlib,http.client,io,json,os,re,secrets,tarfile,time,uuid,syscon
 from pathlib import Path
 from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 from .compiled_loader627 import canonical,DOMAIN,ENTITLEMENT,ENTRIES,safe
+from .finance_access653 import validate_finance_access
 
 def write(path,data):
  path=safe(path);temp=path.with_name(path.name+'.'+uuid.uuid4().hex+'.new')
@@ -58,7 +59,17 @@ def _install(response,archive,*,root,sku,public_key,core_id,iid,allow_test=False
  if len(archive)>67108864 or hashlib.sha256(archive).hexdigest()!=manifest['archive_sha256']:raise PermissionError('activation_archive_integrity')
  grant=response['license'];pub.verify(base64.b64decode(grant['signature'],validate=True),ENTITLEMENT+canonical(grant['claims']))
  c=grant['claims']
- if c['schema']!='cp.compiled.entitlement627.v1' or c['sku']!=sku or c['core_id']!=core_id or c['installation_id']!=iid or c['edition']!='full' or c['trial'] is not False:raise PermissionError('activation_entitlement_binding')
+ if c['schema']!='cp.compiled.entitlement627.v1' or c['sku']!=sku or c['core_id']!=core_id or c['installation_id']!=iid:raise PermissionError('activation_entitlement_binding')
+ if sku=='CP-FINANCE':
+  validate_finance_access(c,int(time.time()))
+  previous=safe(root/sku/'license.json')
+  if c['trial'] is True and previous.is_file():
+   existing=json.loads(previous.read_bytes())
+   pub.verify(base64.b64decode(existing['signature'],validate=True),ENTITLEMENT+canonical(existing['claims']))
+   before=existing['claims']
+   if before.get('trial') is not True or any(before.get(k)!=c[k] for k in ('sku','core_id','installation_id','license_id','expires_at')):
+    raise PermissionError('finance_trial_cannot_replace_existing_license')
+ elif c['edition']!='full' or c['trial'] is not False:raise PermissionError('activation_entitlement_binding')
  if type(c['issued_at']) is not int or c['issued_at']>time.time()+30 or type(c['not_before']) is not int or c['not_before']>time.time():raise PermissionError('activation_entitlement_time')
  if c['expires_at'] is not None and time.time()>=c['expires_at']:raise PermissionError('activation_expired')
  # No customer identities or key are replaced by an installation response.

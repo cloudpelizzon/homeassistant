@@ -1,0 +1,119 @@
+/* Shared light palette for the Finance workspace and its print reports. */
+:root {
+  color-scheme: light;
+  --bg: #edf4fb;
+  --surface: #fff;
+  --raised: #e9f1f9;
+  --line: #c9d7e6;
+  --text: #172840;
+  --muted: #465b72;
+  --green: #087761;
+  --gold: #935014;
+  --red: #a52648;
+  --blue: #2859ad;
+  --paper-shadow: 0 10px 30px #234b7111;
+}
+
+body { background: linear-gradient(135deg,#f4f9ff 0%,#eef5fc 60%,#f4f0fc 100%); color: var(--text); }
+body::before { opacity:.8; background:radial-gradient(ellipse at 72% 0%,#b0e9df99,transparent 42%),radial-gradient(ellipse at 98% 44%,#c9b7f75c,transparent 45%); }
+aside { background:#f8fbfff5; border-color:var(--line); box-shadow:4px 0 24px #1c44690a; }
+.brandmark { color:#fff; background:linear-gradient(145deg,#087761,#245ea4); border-color:transparent; box-shadow:0 4px 12px #1a758850; }
+.brand,.topbar strong { color:var(--text); }
+.brand small,.topbar .eyebrow,.section-label,.details-link { color:var(--green); }
+nav a,nav .group,.nav-section summary,.local,.local small,footer { color:var(--muted); }
+nav a .symbol { color:var(--blue); }
+nav a.active { color:#084c56; background:linear-gradient(100deg,#cef2e9,#e1ebfc); box-shadow:inset 3px 0 #00826d; }
+nav a.active .symbol { color:#087761; }
+nav a:hover { background:#dceafb; }
+.nav-section summary { border-color:var(--line); }
+.topbar { background:#f8fcfff2; border-color:var(--line); box-shadow:var(--paper-shadow); }
+.page-head h1 { color:var(--text); }
+.page-head::after { background:linear-gradient(120deg,#2ed5ad45,#8a7be027); }
+.panel,.dashboard-filters,.report-controls,.report-chart-tables {
+  background:#ffffffee; color:var(--text); border:1px solid var(--line); box-shadow:var(--paper-shadow);
+}
+.panel:hover { border-color:#99b4cf; box-shadow:0 14px 35px #3159831c; }
+.stat { --tint:#e8f0fe; --stripe:#3a6ec5; background:linear-gradient(145deg,var(--tint),#fff 82%); border-color:var(--line); box-shadow:var(--paper-shadow); }
+.stat:nth-child(4n+2) { --tint:#eae2fb; --stripe:#7854c2; }
+.stat:nth-child(4n+3),.stat.gold { --tint:#fff0db; --stripe:#b86b16; }
+.stat:nth-child(4n+4),.stat.green { --tint:#ddf6ec; --stripe:#0e8a70; }
+.stat::before { left:0; right:0; height:3px; background:var(--stripe); }
+.stat:hover { border-color:var(--stripe); box-shadow:0 12px 32px #305f8828; }
+.stat .label,.stat em,.chart-panel .panel-head p,.chart-legend,.period-caption,.dashboard-filters label,.dashboard-notes summary { color:var(--muted); }
+.stat strong { position:relative; overflow-wrap:anywhere; }
+.theme-shortcut,.theme-shortcut:nth-child(3n+2),.theme-shortcut:nth-child(3n+3) { color:#194779; background:#e6f0ff; border-color:#bbcff0; }
+.theme-shortcut:nth-child(3n+2) { color:#553a8e; background:#f1eafa; border-color:#d9caee; }
+.theme-shortcut:nth-child(3n+3) { color:#7c4519; background:#fff0dc; border-color:#ead3b0; }
+.theme-shortcut:hover { border-color:currentColor; box-shadow:var(--paper-shadow); }
+.hub-tab,.pill { background:#e0f4ed; color:#075e50; border-color:#aacfc3; }
+.hub-tab:hover,.donut-key:hover,.ranking-row:hover { background:#e2eef9; }
+.pill.gold { color:#764519; background:#fff0db; border-color:#e5c79d; }
+label,.fields label { color:#334c67; }
+input,select,textarea,.dashboard-filters input,.dashboard-filters select { background:#f7fbff; color:var(--text); border-color:#a9bcd2; }
+input:focus,select:focus,textarea:focus { outline-color:#087761; box-shadow:0 0 0 4px #08776119; }
+button,.chart-data { background:#edf4ff; color:#244c7b; border-color:#b7c9e0; box-shadow:none; }
+button:hover,.chart-data:hover { background:#dbeaff; color:#153d6d; border-color:#87a8ce; box-shadow:var(--paper-shadow); }
+button.primary,button.primary:hover { color:#fff; border-color:#096d65; background:linear-gradient(120deg,#067662,#17618e); }
+button.danger { color:var(--red); }
+#motion-toggle { color:#176356; }
+th { color:#294967; background:#eaf2fc; }
+td { color:var(--text); border-color:#dce5ef; }
+.table-wrap { border-color:var(--line); }
+tbody tr:hover { background:#eef5fc; }
+.notice,.insight,.dashboard-notes,.calendar-day { color:var(--text); border-color:var(--line); background:#edf4fc; }
+.notice { border-left-color:#b96a16; }
+dialog { background:#fbfdff; border-color:#99b4cf; box-shadow:0 20px 70px #142d5155; }
+dialog::backdrop { background:#18334e65; }
+#toast,.modern-tooltip { background:#153952; color:#fff; border-color:#52949e; }
+.theme-chart text,.theme-chart .axis-money,.donut-caption,.donut-total,.gauge-value { fill:var(--text); }
+.theme-chart .gridline,.chart line { stroke:#cad8e6; }
+.theme-chart .baseline { stroke:#9badbf; }
+.theme-chart .modern-point { stroke:white; }
+.theme-chart .modern-line,.donut-chart,.gauge-chart { filter:drop-shadow(0 4px 6px #31598320); }
+.donut-key { color:var(--text); background:transparent; }
+.ranking-row { background:transparent; }
+.bar-track { background:#dce9f4; }
+.bar-fill { background:linear-gradient(90deg,#119c83,#2c72c6); }
+@media print {
+  @page finance-report { size:A4 landscape; margin:10mm; }
+  .report-view main { page:finance-report; padding:0; min-height:0; }
+  .report-view #workspace { margin:0; }
+  body,.report-chart-tables { background:white!important; color:#152741!important; }
+  .maintenance-forecast-filters,.report-view .report-controls,.report-view .dashboard-filters,.report-view .report-status,.report-view .chart-data { display:none!important; }
+  .report-view .page-head { margin:0 0 8px; padding:0; }
+  .report-view .page-head h1 { font-size:19pt; margin:0 0 4px; }
+  .report-view .page-head::after { display:none; }
+  .report-view .stats { grid-template-columns:repeat(4,minmax(0,1fr)); margin:8px 0; }
+  .report-view .stat,.report-view .panel { padding:8px 10px; margin-bottom:6px; }
+  .report-view .stat strong { font-size:15pt; margin:4px 0; }
+  .report-view .donut-content { flex-direction:row; min-height:0; align-items:center; }
+  .report-view .donut-chart { display:block; width:48%; height:48mm; max-height:none; overflow:visible; }
+  .report-view .chart-panel { overflow:visible!important; break-inside:avoid; }
+  .report-view .chart-panel::before { display:none!important; }
+  .report-view .ranking-row,.report-view .donut-key { display:flex; pointer-events:none; background:transparent; border:0; padding:3px; color:#152741; }
+  .report-view .donut-key { display:flex!important; }
+  .report-view .ranking-row { display:block; }
+  .report-view .dashboard-grid { display:grid!important; grid-template-columns:repeat(2,minmax(0,1fr))!important; gap:8px; break-inside:avoid; }
+  .report-view .dashboard-grid>.panel,.report-view .stats { break-inside:avoid; }
+  .report-view .table-wrap { display:block; overflow:visible!important; max-height:none!important; }
+  .report-view table { table-layout:auto; }
+  .report-view thead { display:table-header-group; }
+  .report-view th,.report-view td { position:static; padding:4px 5px; font-size:8pt; white-space:normal; overflow-wrap:anywhere; }
+  .report-view tr { break-inside:avoid; }
+  .report-view h2,.report-view h3 { break-after:avoid; }
+  .report-view .theme-chart { min-height:0; max-height:55mm; }
+  .report-view svg,.report-view th { print-color-adjust:exact; }
+  .report-view .bar-track,.report-view .bar-fill,.report-view .donut-key i { print-color-adjust:exact; }
+  body.privacy.report-view main>* { display:none!important; }
+  body.privacy.report-view main::after { content:'Relatório oculto pelo modo privacidade.'; }
+}
+@media screen {
+  .market-list .table-wrap { max-height: min(62dvh, 680px); overflow: auto; }
+  .market-list thead th { position: sticky; top: 0; z-index: 2; background: var(--raised); }
+}
+.finance-sync-feedback651{display:flex;align-items:center;gap:.65rem;color:var(--text);font-weight:600}
+.finance-sync-feedback651:not([data-state=""]){margin:.35rem 0 1rem}
+.finance-sync-feedback651[data-state="warning"]{border-inline-start:3px solid #d69538;padding-inline-start:.65rem}
+.finance-sync-spinner651{display:inline-block;width:1rem;height:1rem;flex:none;border:2px solid currentColor;border-inline-end-color:transparent;border-radius:50%;animation:financeSyncSpin651 .8s linear infinite}
+.finance-sync-spinner651[hidden]{display:none}
+@keyframes financeSyncSpin651{to{transform:rotate(360deg)}}

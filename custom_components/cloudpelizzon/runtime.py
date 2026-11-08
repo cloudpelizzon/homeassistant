@@ -130,6 +130,17 @@ class Runtime:
                 await self.hass.config_entries.async_forward_entry_setups(self.entry, ['sensor'])
             from .compiled_bootstrap628 import register as register_private_installer
             self.closers.append(await register_private_installer(self.hass, self.entry, context))
+            from .finance_installer661 import register as register_finance_installer
+            self.closers.append(register_finance_installer(self.hass, context))
+            finance_grant = Path(self.hass.config.path(".storage/cloudpelizzon_compiled627/CP-FINANCE/license.json"))
+            if await self.hass.async_add_executor_job(finance_grant.is_file):
+                from .finance_registration651 import register as register_finance
+                try:
+                    self.closers.append(await register_finance(self.hass, context, self.bridge))
+                except Exception:
+                    # An expired or unreadable grant affects only Finance.
+                    self.hass.data['cloudpelizzon_finance_unavailable661'] = True
+
             if not self.hass.data.get('cloudpelizzon_compiled628_active'):
                 from .inventory_free632 import register as register_inventory_free
                 try:self.closers.append(await register_inventory_free(self.hass,self.entry,context))

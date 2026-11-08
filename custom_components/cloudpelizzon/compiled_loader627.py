@@ -5,7 +5,7 @@ from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PublicKey
 
 DOMAIN=b'CP-NATIVE-PACKAGE627-V1\n'
 ENTITLEMENT=b'CP-COMPILED-ENTITLEMENT627-V1\n'
-ENTRIES={'CP-INVENTORY':'cp_inventory','CP-LIGHTING':'lighting_service','CP-MAINTENANCE':'cp_maintenance','CP-SOLAR':'solar_engine','CP-SECURITY':'live126','CP-AUTOMATION':'cp_automation25'}
+ENTRIES={'CP-FINANCE':'cp_finance651','CP-INVENTORY':'cp_inventory','CP-LIGHTING':'lighting_service','CP-MAINTENANCE':'cp_maintenance','CP-SOLAR':'solar_engine','CP-SECURITY':'live126','CP-AUTOMATION':'cp_automation25'}
 LOCK=threading.RLock()
 # Nuitka rewrites __file__/__spec__ to virtual .py paths. Only reuse modules
 # this verified loader actually loaded from the signed binary in this process.

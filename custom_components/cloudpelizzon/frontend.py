@@ -27,7 +27,7 @@ async def register(hass, root):
         await hass.http.async_register_static_paths(paths)
         # HA does not unregister its HTTP static resources during entry reload.
         hass.data[STATIC_KEY] = verified
-    state = {'panel': None,'extra':False}
+    state = {'panel': None,'extra':False,'finance':False}
 
     def close():
         if hass.data.get(PANEL_KEY) is state:
@@ -35,6 +35,9 @@ async def register(hass, root):
         if state['panel'] is not None and marker(hass) is state['panel']:
             frontend.async_remove_panel(hass, URL, warn_if_unknown=False)
         state['panel'] = None
+        if state['finance']:
+            frontend.async_remove_panel(hass, 'cloudpelizzon-finance', warn_if_unknown=False)
+            state['finance'] = False
         if state['extra']:
             frontend.remove_extra_js_url(hass,EXTRA_BRAND_URL)
             state['extra']=False
@@ -50,6 +53,15 @@ async def register(hass, root):
         state['panel'] = marker(hass)
         if state['panel'] is None:
             raise RuntimeError('panel_registration_not_confirmed')
+        if not frontend.async_panel_exists(hass, 'cloudpelizzon-finance'):
+            await panel_custom.async_register_panel(
+                hass, frontend_url_path='cloudpelizzon-finance',
+                webcomponent_name='cloudpelizzon-finance-install-panel',
+                sidebar_title='Finanças', sidebar_icon='mdi:finance',
+                module_url='/cloudpelizzon/frontend/finance-install661.js?v=6dba6593f68579db',
+                embed_iframe=False, trust_external=False, require_admin=False,
+                handle_safe_area=False)
+            state['finance'] = True
         frontend.add_extra_js_url(hass,EXTRA_BRAND_URL)
         state['extra']=True
     except BaseException:
