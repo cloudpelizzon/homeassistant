@@ -1,5 +1,10 @@
 ## 7.0.6 — localização e tela cheia do Inventário, formulário de Manutenção
 
+## 7.0.13
+
+- Show the installed Core version and report the active Inventory and Maintenance packages in the Updates tab.
+- Keep local information available during Release Center outages and list stable publications separately from installed versions.
+
 ## 7.0.12
 
 - Open showcase images in native fullscreen and fill the viewport when fullscreen is unavailable, including in scaled Home Assistant panels.

@@ -6,6 +6,8 @@ from cryptography.hazmat.primitives import hashes,serialization
 from cryptography.hazmat.primitives.asymmetric import padding
 import probatio
 from homeassistant.components import websocket_api
+from homeassistant.loader import async_get_integration
+from .public_core.metadata import MODULES
 from .private_protocol216 import SIGNER_SHA256,canonical
 
 def post(path,value):
@@ -38,56 +40,84 @@ class Display:
    body=await self.hass.async_add_executor_job(fetch,self.context)
    if self.closed:raise PermissionError('profile_unloaded')
    self.cached=body;return body
- async def updates(self):
-  body=await self.profile()
-  licensed={r['sku'] for r in body['licenses'] if r['active']}
-  components=[]
+ def local_components(self, core_version):
+  """Describe attached runtimes. A catalog entry never proves local installation."""
+  components={}
+  def add(sku, version, mode, verified=False):
+   components[sku]={'sku':sku,'name':MODULES.get(sku,{}).get('name',sku),
+                    'version':str(version) if version else None,'engine_mode':mode,
+                    'signature_verified':verified,'installed':True}
+
+  for key in ('cloudpelizzon_private_local_ready253','cloudpelizzon_private_local_ready295'):
+   for sku, row in self.hass.data.get(key,{}).items():
+    if row.get('core_id')==self.context['core_id'] and row.get('signed_id')==self.context['trial_id']:
+     add(sku,row.get('version'),'local',True)
+
+  inventory=self.hass.data.get('cloudpelizzon_inventory_free632')
+  if inventory is not None and not inventory.closed:
+   add('CP-INVENTORY',core_version,'free')
+  namespace=self.hass.data.get('cloudpelizzon_inventory_installed709')
+  if namespace is not None and not namespace.closed:
+   add('CP-INVENTORY',namespace.manifest.get('version') or namespace.manifest.get('release'),'native',True)
+
   compiled=self.hass.data.get('cloudpelizzon_compiled628_active')
   if compiled is not None and not compiled.closed:
-   # Observe verified libraries; never load the legacy engine in a native session.
-   def installed_native():
-    from .compiled_loader627 import Namespace
-    from .compiled_release628 import PUBLIC_KEY
-    root=Path(self.hass.config.path('.storage/cloudpelizzon_compiled627'))
-    marker=json.loads((root/'installed627.json').read_bytes())
-    result=[]
-    for sku,row in marker.get('modules',{}).items():
-     if sku not in licensed:continue
-     namespace=None
-     try:
-      if row.get('public_key')!=PUBLIC_KEY:continue
-      namespace=Namespace(row['folder'],sku=sku,public_key=PUBLIC_KEY,state_root=root)
-      manifest=namespace.manifest
-      result.append({'sku':sku,'version':str(manifest.get('version') or manifest.get('release') or 'Compilado local'),'engine_mode':'native','signature_verified':True})
-     except Exception:
-      # A license is not proof that a local library is present and intact.
-      continue
-     finally:
-      if namespace is not None:namespace.close()
-    return result
-   components=await self.hass.async_add_executor_job(installed_native)
-  else:
-   from . import ha_private212 as loader
-   local='CP-SOLAR' in licensed and await loader.async_prepare(self.hass)
-   if local:
-    def info():
-     envelope=json.loads((Path(__file__).resolve().parent/'_paid_modules/solar/manifest.json').read_bytes())
-     manifest=envelope.get('manifest',{})
-     return {'sku':'CP-SOLAR','name':'Inteligência Solar','version':str(manifest.get('version','1.0.0')),'engine_mode':'local','signature_verified':True}
-    components.append(await self.hass.async_add_executor_job(info))
-  # CP_COMPONENTS470: license visibility is independent of a local paid archive.
-  names={'CP-SOLAR':'Inteligência Solar','CP-MAINTENANCE':'Manutenção Residencial Preventiva','CP-SECURITY-PRO':'Central de Segurança Pro','CP-SECURITY':'Central de Segurança','CP-AUTOMATION':'Central Inteligente de Automações','CP-LIGHTING':'Iluminação','CP-INVENTORY':'Inventário'}
-  for component in components:component.update(name=names.get(component['sku'],component['sku']),license_active=True,installed=True)
-  if 'CP-INVENTORY' not in licensed and self.hass.data.get('cloudpelizzon_inventory_free632') is not None:
-   components.append({'sku':'CP-INVENTORY','name':'Inventário','version':'7.0.6','engine_mode':'free','signature_verified':False,'installed':True,'license_active':False})
-  present={component['sku'] for component in components}
-  for sku in sorted(licensed):
-   if sku not in present and sku in names:
-    components.append({'sku':sku,'name':names[sku],'version':None,'engine_mode':'license_only','signature_verified':False,'installed':False,'license_active':True})
+   for sku, runtime in compiled.status_runtimes.items():
+    if not runtime.closed and not runtime.namespace.closed:
+     manifest=runtime.namespace.manifest
+     add(sku,manifest.get('version') or manifest.get('release'),'native',True)
+
+  finance=self.hass.data.get('cloudpelizzon_finance651_runtime')
+  if finance is not None and not finance.closed and finance.namespace is not None and not finance.namespace.closed:
+   manifest=finance.namespace.manifest
+   add('CP-FINANCE',manifest.get('version') or manifest.get('release'),'native',True)
+
+  maintenance=self.hass.data.get('cloudpelizzon',{}).get('maintenance',{})
+  if 'CP-MAINTENANCE' not in components:
+   for row in maintenance.values():
+    if isinstance(row,dict) and row.get('sku')=='CP-MAINTENANCE':
+     controller=row.get('remote_controller')
+     if controller is not None and not controller.closed:
+      add('CP-MAINTENANCE',row.get('version'),'connector')
+      break
+  return components
+
+ async def updates(self):
+  integration=await async_get_integration(self.hass,'cloudpelizzon')
+  core_version=str(integration.version) if integration.version else None
+  try:
+   body=await self.profile()
+  except asyncio.CancelledError:
+   raise
+  except Exception:
+   body=None
+
+  licensed={r['sku'] for r in body['licenses'] if r['active']} if body is not None else None
+  components=self.local_components(core_version)
+  from . import ha_private212 as loader
+  if 'CP-SOLAR' not in components and self.hass.data.get(loader.READY_KEY):
+   def solar_version():
+    envelope=json.loads((Path(__file__).resolve().parent/'_paid_modules/solar/manifest.json').read_bytes())
+    return envelope.get('manifest',{}).get('version')
+   try:
+    version=await self.hass.async_add_executor_job(solar_version)
+   except (OSError,ValueError):
+    version=None
+   components['CP-SOLAR']={'sku':'CP-SOLAR','name':MODULES['CP-SOLAR']['name'],'version':version,
+                           'engine_mode':'local','signature_verified':True,'installed':True}
+
+  for sku in (licensed or set()) & MODULES.keys():
+   components.setdefault(sku,{'sku':sku,'name':MODULES[sku]['name'],'version':None,
+                              'engine_mode':'license_only','signature_verified':False,'installed':False})
+  for sku, component in components.items():
+   component['license_active']=None if licensed is None else sku in licensed
+
+  publications=body['published_releases'] if body is not None else []
+  stable=[row for row in publications if row.get('channel')=='stable' and row.get('sku') in licensed]
   return {'schema':'cp.private.updater229.v1','channel':'stable','checked_at':datetime.now(timezone.utc).isoformat(),
-      'components':components,'catalog_releases':body['published_releases'],
-      'licensed_modules':sorted(licensed),'releases':[],'backups':[],
-      'message':'Consulta concluída ao Release Center. A compatibilidade das publicações com o pacote local é conferida antes de disponibilizar uma instalação.'}
+          'core_version':core_version,'catalog_available':body is not None,
+          'components':[components[sku] for sku in sorted(components)],'catalog_releases':stable,
+          'licensed_modules':sorted(licensed or set()),'releases':[],'backups':[]}
 
 # CP_LIGHTING_READ_OBSERVER233: diagnostics only; preserve the original signed port.
 def observe_lighting233(hass):

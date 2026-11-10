@@ -122,7 +122,7 @@ import "/cloudpelizzon/frontend/optional-modules.js?v=3610e2205406e5e0c24fedc734
 
 
 
-import "/cloudpelizzon-updater/frontend/panel.js?v=68de5a9aae3147ad582535eb2e50e1e4b99208bc9a3122ed092624235f8df63e";
+import "/cloudpelizzon-updater/frontend/panel.js?v=e51e6758f1f38f36f7d784f06d4d3aa67e4e6f8697bd6a630cd63725b2b6108b";
 
 
 

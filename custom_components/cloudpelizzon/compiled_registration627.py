@@ -14,7 +14,7 @@ from .compiled_runtime627 import Runtime,LightingRuntime,AutomationRuntime,Secur
 class Registration:
  def __init__(self,hass,context,root,public_key,*,allow_test=False):
   self.hass=hass;self.context=context;self.root=safe(root);self.public_key=public_key
-  self.allow_test=allow_test;self.runtimes={};self.closers=[];self.closed=False
+  self.allow_test=allow_test;self.runtimes={};self.status_runtimes={};self.closers=[];self.closed=False
  def ready(self,sku):return not self.closed and sku in self.runtimes and not self.runtimes[sku].closed
  async def load(self):
   def read():
@@ -109,6 +109,7 @@ class Registration:
     inventory=await adapter.register(self.hass,entry,context);self.closers.append(inventory.close)
     from types import SimpleNamespace
     status_runtimes['CP-INVENTORY']=SimpleNamespace(namespace=namespace,iid=self.context['trial_id'],closed=False)
+   self.status_runtimes=status_runtimes
    bridge=self.hass.data.get('cloudpelizzon',{}).get('core',{}).get('status_transport')
    if bridge is not None:
     from .compiled_status627 import Status

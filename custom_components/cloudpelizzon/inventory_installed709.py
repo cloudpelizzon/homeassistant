@@ -10,6 +10,7 @@ from .compiled_release628 import PUBLIC_KEY, RELEASES
 from .compiled_runtime627 import LocalSDK
 
 SKU = 'CP-INVENTORY'
+KEY = 'cloudpelizzon_inventory_installed709'
 _LOGGER = logging.getLogger(__name__)
 
 
@@ -67,8 +68,11 @@ async def register_installed(hass, entry, context, bridge):
         return modules if inventory.closed else modules | {SKU}
 
     bridge.local_ready = ready
+    hass.data[KEY] = namespace
 
     def close():
+        if hass.data.get(KEY) is namespace:
+            hass.data.pop(KEY)
         if bridge.local_ready is ready:
             bridge.local_ready = previous_ready
         inventory.close()
