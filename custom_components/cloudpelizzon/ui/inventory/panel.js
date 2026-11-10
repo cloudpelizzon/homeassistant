@@ -30,10 +30,21 @@ class InventoryPanel extends HTMLElement{
  disconnectedCallback(){this.disconnectNavigation650?.();this.studioKeys560?.abort();this.fullscreenKeys557?.abort();clearInterval(this.timer);this.panKeys545?.abort();this.spacePan545=false;clearTimeout(this.renderTimer544);this.seq++;}
  async refreshGraph517(){this.graphPolling517=true;this.graphPollAt517=Date.now();const seq=this.navigationSeq,writeSeq=this.mapSaveSeq,actor=this._hass?.user?.id;try{const data=await this.ws('topology',{preserve_positions:true,...(this.topologyOrientation?{orientation:this.topologyOrientation}:{})});if(!this.isConnected||seq!==this.navigationSeq||writeSeq!==this.mapSaveSeq||this.mapWritesActive529||actor!==this._hass?.user?.id||this.interaction517||this.houseDragging517||this.shadowRoot.querySelector('dialog[open],.studio-menu560[open]'))return;this.topologyData=data;this.graph=data.document;this.render();}catch(_){/* Missing evidence is not an offline observation. */}finally{this.graphPolling517=false;}}
  async ws(operation,args={}){if(!this._hass)throw Error('Conexão com o HA ainda não disponível.');return this._hass.callWS({type:'cloudpelizzon/inventory/command',operation,args});}
+ async snapshotCompatible710(args){
+   const {candidate_page_size,...legacy}=args;
+   if(this.legacySnapshot710)return this.ws('snapshot',legacy);
+   try{return await this.ws('snapshot',args);}
+   catch(error){
+     if(error?.code!=='unknown_inventory_operation')throw error;
+     const result=await this.ws('snapshot',legacy);
+     this.legacySnapshot710=true;
+     return result;
+   }
+ }
  diagnostics(){return diagnosticsScreen614(this);}
  async load(paint=true){if(!this._hass)return;if(this.busy){this.queuedLoad532=true;return;}this.busy=true;const filter532=JSON.stringify([this.query,this.category,this.page,this.candidateQuery,this.candidatePage,this.candidatePageSize650,this.candidateProtocol531,this.candidateKind531,this.candidateGroup531]);const seq=++this.seq,actor=this._hass.user?.id,view=this.view,writeSeq=this.mapSaveSeq;try{
  const [data,topology,events,maint,snapshots,locations,diagnostic]=await Promise.all([
- this.ws('snapshot',{query:this.query,category:this.category,page:this.page,candidate_query:this.candidateQuery,candidate_page:this.candidatePage,candidate_page_size:this.candidatePageSize650||50,candidate_protocol:this.candidateProtocol531||'all',candidate_kind:this.candidateKind531||'equipment',candidate_group:this.candidateGroup531||'all'}),
+ this.snapshotCompatible710({query:this.query,category:this.category,page:this.page,candidate_query:this.candidateQuery,candidate_page:this.candidatePage,candidate_page_size:this.candidatePageSize650||50,candidate_protocol:this.candidateProtocol531||'all',candidate_kind:this.candidateKind531||'equipment',candidate_group:this.candidateGroup531||'all'}),
  ['map','overview','roofs'].includes(view)?this.ws('topology',{preserve_positions:true,...(this.topologyOrientation?{orientation:this.topologyOrientation}:{})}):null,
  view==='history'?this.ws('history'):null,view==='maintenance'&&this.data?.capabilities.features.maintenance_rules?this.ws('maintenance.list'):null,
  view==='reports'&&this.data?.capabilities.features.backups?this.ws('snapshots'):null,this.locationsCache?null:this.ws('locations'),view==='diagnostics'?this.ws('diagnostics.list'):null]);

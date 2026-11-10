@@ -444,22 +444,13 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
   startHomeCarousels(){clearInterval(this.carouselTimer);this.carouselTimer=null;const carousels=[...this.shadowRoot.querySelectorAll('[data-home-carousel]')];if(!carousels.length)return;carousels.forEach((c,i)=>{c.dataset.paused='0';c.addEventListener('mouseenter',()=>c.dataset.paused='1');c.addEventListener('mouseleave',()=>c.dataset.paused='0');this.setHomeCarousel(c,(c.dataset.homeCarousel==='CP-SECURITY'||c.dataset.homeCarousel==='CP-AUTOMATION'||c.dataset.homeCarousel==='CP-INVENTORY')?0:i%Math.max(1,c.querySelectorAll('[data-home-slide]').length))});this.carouselTimer=setInterval(()=>{if(document.hidden)return;carousels.forEach(c=>{if(!c.isConnected||c.dataset.paused==='1')return;this.setHomeCarousel(c,(Number(c.dataset.current)||0)+1)})},4400)}
   renderModuleStories(sku, module, data, planned) {
     const visuals = this.presentationItems629(sku).filter(item => item.src);
-    const finance = [
-      ['Contas e lançamentos', 'Registre receitas, despesas e transferências e acompanhe o saldo de cada conta.'],
-      ['Cartões e parcelas', 'Veja compras, faturas, limites e parcelas futuras sem contar o pagamento da fatura como nova despesa.'],
-      ['Orçamento e metas', 'Compare o planejado com o realizado e acompanhe o valor reservado para cada objetivo.'],
-      ['Patrimônio e investimentos', 'Organize bens, posições e movimentações para acompanhar a evolução do patrimônio.'],
-      ['Cuidados com a casa', 'Acompanhe despesas de manutenção, melhorias e equipamentos da residência.'],
-      ['Documentos e extratos', 'Anexe comprovantes e revise lançamentos importados antes de confirmar.'],
-    ];
-    const features = sku === 'CP-FINANCE' ? finance : (data.features || []).map(([, title, text]) => [title, text]);
-    if (!features.length) features.push([module.name, module.description || data.tagline || 'Conheça os recursos deste módulo.']);
-    const topics = features.map(([title, text], index) => {
-      const shot = visuals[index + 1] || (index === 0 ? visuals[0] : null);
-      const image = shot ? `<figure><img src="${this.esc(shot.src)}" alt="${this.esc(shot.title)}" loading="lazy"><figcaption>${this.esc(shot.title)}</figcaption></figure>` : '';
-      const example = shot?.desc && shot.desc !== text
-        ? `<aside><b>Na prática</b><p>${this.esc(shot.desc)}</p></aside>` : '';
-      return `<article class="cp-product-story ${image ? 'has-image' : ''}"><div><span class="eyebrow">${String(index + 1).padStart(2, '0')} · ${this.esc(title)}</span><h3>${this.esc(title)}</h3><p>${this.esc(text)}</p>${example}</div>${image}</article>`;
+    const stories = visuals.length
+      ? visuals.map((shot, index) => ({shot, title: shot.title || module.name, text: shot.desc || (index === 0 ? data.tagline || module.description : '')}))
+      : [{shot: null, title: module.name, text: data.tagline || module.description || 'Conheça os recursos deste módulo.'}];
+    const topics = stories.map(({shot,title,text}, index) => {
+      const image = shot ? `<figure><img src="${this.esc(shot.src)}" alt="${this.esc(title)}" loading="lazy"><figcaption>${this.esc(title)}</figcaption></figure>` : '';
+      const detail = text || (data.features || []).find(([, label]) => label === title)?.[2] || '';
+      return `<article class="cp-product-story ${image ? 'has-image' : ''}"><div><span class="eyebrow">TELA ${String(index + 1).padStart(2, '0')}</span><h3>${this.esc(title)}</h3>${detail ? `<p>${this.esc(detail)}</p>` : ''}</div>${image}</article>`;
     }).join('');
     const faq = [
       ['Como acesso o módulo?', planned ? 'Consulte a disponibilidade no catálogo do CloudPelizzon.' : 'Consulte o estado da sua instalação no painel. As ações disponíveis aparecem junto ao título do módulo.'],
