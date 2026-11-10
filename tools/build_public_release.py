@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parents[1]
 COMPONENT = ROOT / 'custom_components' / 'cloudpelizzon'
 MARKETPLACE_LIMIT = 100 * 1024 * 1024
 PACKAGE_BUDGET = 90 * 1024 * 1024
+EXTRACTED_BUDGET = 99 * 1024 * 1024
 
 def build(output):
     names = subprocess.check_output(
@@ -20,6 +21,12 @@ def build(output):
     if output.is_relative_to(COMPONENT):
         raise ValueError('Archive must be outside the integration')
     output.parent.mkdir(parents=True, exist_ok=True)
+    extracted_size = sum((ROOT / name).stat().st_size for name in names)
+    if extracted_size > EXTRACTED_BUDGET:
+        raise ValueError(
+            f'Extracted package {extracted_size} bytes exceeds release budget '
+            f'{EXTRACTED_BUDGET}; Marketplace limit {MARKETPLACE_LIMIT}'
+        )
     with zipfile.ZipFile(output, 'w', compression=zipfile.ZIP_DEFLATED, compresslevel=9) as archive:
         for name in names:
             path = ROOT / name
@@ -32,6 +39,7 @@ def build(output):
             archive.writestr(info, path.read_bytes())
     with zipfile.ZipFile(output) as archive:
         assert archive.testzip() is None
+        assert sum(member.file_size for member in archive.infolist()) == extracted_size
         assert len(archive.namelist()) == len(names)
         version = json.loads(archive.read('manifest.json'))['version']
         for name in names:
@@ -42,7 +50,8 @@ def build(output):
     digest = hashlib.sha256(output.read_bytes()).hexdigest()
     output.with_name('SHA256SUMS').write_text(digest + '  ' + output.name + '\n', encoding='ascii')
     return {'version': version, 'files': len(names), 'size': size, 'sha256': digest,
-            'marketplace_limit': MARKETPLACE_LIMIT, 'release_budget': PACKAGE_BUDGET}
+            'marketplace_limit': MARKETPLACE_LIMIT, 'release_budget': PACKAGE_BUDGET,
+            'extracted_size': extracted_size, 'extracted_budget': EXTRACTED_BUDGET}
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description=__doc__)

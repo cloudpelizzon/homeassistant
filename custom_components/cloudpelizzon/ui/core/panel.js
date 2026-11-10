@@ -783,16 +783,16 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     if(sku==='CP-FINANCE'){
       const base='/cloudpelizzon/frontend/finance/';
       return [
-        ['cover.jpg','Finanças · apresentação','Seu dinheiro. Sua casa. Tudo conectado.'],
-        ['showcase/home_hub.jpg','Visão geral','Principais indicadores financeiros da família.'],
-        ['showcase/money_hub.jpg','Meu dinheiro','Receitas, despesas e evolução do caixa.'],
-        ['showcase/planning_hub.jpg','Planejamento','Orçamentos, metas e compromissos futuros.'],
-        ['showcase/cards_hub.jpg','Cartões e parcelas','Compras, limites e faturas.'],
-        ['showcase/care_hub.jpg','Cuidado da casa','Gastos, economia e previsões de manutenção.'],
-        ['showcase/consumption_hub.jpg','Consumo e mobilidade','Medições e estimativas de custo.'],
-        ['showcase/portfolio_hub.jpg','Minha carteira','Posições, cotações e acompanhamento de ativos.'],
-        ['showcase/family_hub.jpg','Finanças da família','Acompanhamento compartilhado com permissões.']
-      ].map(([file,title,desc])=>({file,src:base+file+"?v=714",title,desc}));
+        ['cover.webp','Finanças · apresentação','Seu dinheiro. Sua casa. Tudo conectado.'],
+        ['showcase/home_hub.webp','Visão geral','Principais indicadores financeiros da família.'],
+        ['showcase/money_hub.webp','Meu dinheiro','Receitas, despesas e evolução do caixa.'],
+        ['showcase/planning_hub.webp','Planejamento','Orçamentos, metas e compromissos futuros.'],
+        ['showcase/cards_hub.webp','Cartões e parcelas','Compras, limites e faturas.'],
+        ['showcase/care_hub.webp','Cuidado da casa','Gastos, economia e previsões de manutenção.'],
+        ['showcase/consumption_hub.webp','Consumo e mobilidade','Medições e estimativas de custo.'],
+        ['showcase/portfolio_hub.webp','Minha carteira','Posições, cotações e acompanhamento de ativos.'],
+        ['showcase/family_hub.webp','Finanças da família','Acompanhamento compartilhado com permissões.']
+      ].map(([file,title,desc])=>({file,src:base+file+"?v=715",title,desc}));
     }
     if(sku==='CP-INVENTORY')return this._inventoryShowcase622?.length?this._inventoryShowcase622:[{file:'inventory-presentation629',src:CP_INVENTORY_PRESENTATION629,title:'Inventário · apresentação',desc:'Sua casa. Sua rede. Cada detalhe. Arte conceitual do módulo.'}];
     if(sku==='CP-LIGHTING'&&this.lightingPresentationItems629)return this.lightingPresentationItems629();

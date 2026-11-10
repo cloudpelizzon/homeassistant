@@ -1,5 +1,10 @@
 ## 7.0.6 — localização e tela cheia do Inventário, formulário de Manutenção
 
+## 7.0.15
+
+- Keep the Finance gallery at its original resolution with smaller WebP files.
+- Check both compressed and extracted sizes against the Marketplace limits.
+
 ## 7.0.14
 
 - Give the installed Core version its own card in Updates.
