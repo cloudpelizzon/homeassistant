@@ -723,7 +723,14 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
         || stem.replace(/^cp-/, '').replace(/-pro$/, '');
       const aliases = {cameras:'camera',ambiente:'environment',fitos:'fit',
         'notifications':'notify',alexa:'monitoramento-alexas',backup:'inteligencia-backups'};
-      const guidance = COPY711[aliases[key] || key] || (sku === 'CP-LIGHTING' ? COPY711.lighting : null);
+      const lighting = {
+        'lighting-grafite': ['Grafite organiza os controles por ambiente em uma interface de contraste escuro. A seleção do cômodo define quais luminárias você está consultando.', 'Abra a sala e ajuste o brilho das luminárias compatíveis para acompanhar um filme.'],
+        'lighting-flux': ['Flux apresenta os mesmos ambientes e dispositivos com outra hierarquia visual. Confira o ambiente ativo e o estado de cada luminária antes de ajustar uma configuração.', 'Compare o estado da iluminação de dois cômodos sem mudar a configuração compartilhada do módulo.'],
+        'lighting-neo': ['Neo Soft oferece outra apresentação para os controles das luminárias. Os recursos exibidos dependem das funções que cada equipamento disponibiliza.', 'Confira se a luminária oferece temperatura de cor antes de ajustar a luz para o fim do dia.'],
+        'lighting-config': ['A configuração associa as luzes e os ambientes à apresentação. Grafite, Flux e Neo Soft consultam as mesmas associações.', 'Inclua uma nova luz no cômodo correspondente e confira se aparece nos três painéis.']
+      };
+      const lightingCopy = lighting[shot.file] || (shot.file?.startsWith('lighting-neo') ? lighting['lighting-neo'] : null);
+      const guidance = lightingCopy ? [shot.title,...lightingCopy] : COPY711[aliases[key] || key] || (sku === 'CP-LIGHTING' ? COPY711.lighting : null);
       const [title,text,example] = guidance
         ? [sku === 'CP-LIGHTING' ? shot.title : guidance[0],guidance[1],guidance[2]]
         : [shot.title,shot.desc || data.tagline || module.description];
@@ -995,7 +1002,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     const items=this.showcasePreviewItems();
     if(!items.length)return;
     const name=String(file||"").split("?")[0].split("/").pop();
-    const selected=items.findIndex(x=>String(x.src||x.file).split("?")[0].split("/").pop()===name);
+    const selected=items.findIndex(x=>[x.src,x.file].some(path=>String(path||"").split("?")[0].split("/").pop()===name));
     this._showcaseItems=items;
     this._showcaseIndex=selected>=0?selected:0;
     this._showcaseOrigin=origin;
