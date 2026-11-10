@@ -501,7 +501,7 @@ class CloudPelizzonCorePanel extends HTMLElement {
   set panel(v){this._panel=v}
   set hass(h){this._hass=h;if(!this.data&&!this.loading)this.load()}
   connectedCallback(){if(this.requestOnly161)return;document.addEventListener("visibilitychange",this._focusHandler);window.addEventListener("focus",this._focusHandler);if(this._hass&&!this.data&&!this.loading)this.load();this.cpTrialTimer=setInterval(()=>{if(!document.hidden&&this._hass&&!this.loading&&(this.data?.modules||[]).some(m=>m?.trial?.verified===true))this.load()},20000);this.cpV2Display=setInterval(()=>this.updateTrialClocks(),1000)}
-  disconnectedCallback(){document.removeEventListener("visibilitychange",this._focusHandler);window.removeEventListener("focus",this._focusHandler);clearInterval(this.cpTrialTimer);this.cpTrialTimer=null;clearInterval(this.cpV2Display);this.cpV2Display=null;clearInterval(this.carouselTimer);this.carouselTimer=null;if(this._showcaseKeyHandler){document.removeEventListener("keydown",this._showcaseKeyHandler);this._showcaseKeyHandler=null}}
+  disconnectedCallback(){this.closeShowcasePreview();document.removeEventListener("visibilitychange",this._focusHandler);window.removeEventListener("focus",this._focusHandler);clearInterval(this.cpTrialTimer);this.cpTrialTimer=null;clearInterval(this.cpV2Display);this.cpV2Display=null;clearInterval(this.carouselTimer);this.carouselTimer=null;if(this._showcaseKeyHandler){document.removeEventListener("keydown",this._showcaseKeyHandler);this._showcaseKeyHandler=null}}
   esc(v){return String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;").replaceAll("'","&#039;")}
   async load(){if(!this._hass||this.loading)return;this.loading=true;if(!this.data)this.render();let changed=!this.data;try{const next=await this._hass.callWS({type:"cloudpelizzon/core/status"});changed=JSON.stringify(this.data)!==JSON.stringify(next);this.data=next;
 if(changed)this.dispatchEvent(new CustomEvent("cloudpelizzon-module-rights-changed",{detail:{modules:next?.modules||[]},bubbles:true,composed:true}));
@@ -998,7 +998,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
       '<div class="cp-showcase-footer"><span id="cp-showcase-counter"></span>'+
       '<span>Setas do teclado para navegar • Esc para fechar</span></div></dialog>';
   }
-  openShowcasePreview(file,origin=null){
+  async openShowcasePreview(file,origin=null){
     const items=this.showcasePreviewItems();
     if(!items.length)return;
     const name=String(file||"").split("?")[0].split("/").pop();
@@ -1008,7 +1008,29 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     this._showcaseOrigin=origin;
     const modal=this.shadowRoot.getElementById("cp-showcase-modal");
     if(!modal)return;
+    const viewport=document.documentElement;
+    const request=Symbol();
+    this._showcaseRequest=request;
+    if(!document.fullscreenElement&&document.fullscreenEnabled&&viewport.requestFullscreen){
+      try{
+        await viewport.requestFullscreen({navigationUI:"hide"});
+        if(this._showcaseRequest===request&&modal.isConnected){
+          this._showcaseFullscreen=viewport;
+          this._showcaseFullscreenHandler=()=>{
+            if(document.fullscreenElement!==viewport)this.closeShowcasePreview();
+          };
+          document.addEventListener("fullscreenchange",this._showcaseFullscreenHandler);
+        }else if(document.fullscreenElement===viewport){
+          await document.exitFullscreen();
+        }
+      }catch{
+        // Embedded panels and some mobile browsers allow only viewport sizing.
+      }
+    }
+    if(this._showcaseRequest!==request||!modal.isConnected)return;
     if(!modal.open)modal.showModal();
+    modal.style.setProperty("zoom","1","important");
+    modal.style.setProperty("zoom",String(1/(modal.currentCSSZoom||1)),"important");
     this.refreshShowcasePreview();
     if(this._showcaseKeyHandler)document.removeEventListener("keydown",this._showcaseKeyHandler);
     this._showcaseKeyHandler=e=>{
@@ -1041,7 +1063,14 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
   }
   closeShowcasePreview(){
     const modal=this.shadowRoot.getElementById("cp-showcase-modal");
+    this._showcaseRequest=null;
     if(modal?.open)modal.close();
+    document.removeEventListener("fullscreenchange",this._showcaseFullscreenHandler);
+    this._showcaseFullscreenHandler=null;
+    if(this._showcaseFullscreen&&document.fullscreenElement===this._showcaseFullscreen){
+      document.exitFullscreen().catch(()=>{});
+    }
+    this._showcaseFullscreen=null;
     if(this._showcaseKeyHandler){document.removeEventListener("keydown",this._showcaseKeyHandler);this._showcaseKeyHandler=null;}
     this._showcaseOrigin?.focus?.();
     this._showcaseOrigin=null;
@@ -1067,6 +1096,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     modal.querySelector("[data-showcase-prev]")?.addEventListener("click",()=>this.stepShowcasePreview(-1));
     modal.querySelector("[data-showcase-next]")?.addEventListener("click",()=>this.stepShowcasePreview(1));
     modal.addEventListener("click",e=>{if(e.target===modal)this.closeShowcasePreview();});
+    modal.addEventListener("cancel",e=>{e.preventDefault();this.closeShowcasePreview();});
   }
 
   renderMaintenancePreviewModal(){const item=CP_MAINT_PREVIEWS[this.previewIndex]||CP_MAINT_PREVIEWS[0];return `<div id="maint-preview-modal" class="preview-modal"><div class="preview-modal-head"><div><span class="eyebrow">CLOUDPELIZZON MANUTENÇÃO • PRÉVIA</span><b id="maint-preview-title">${this.esc(item.title)}</b><span id="maint-preview-desc">${this.esc(item.desc)}</span></div><button data-close-maint-preview><ha-icon icon="mdi:close"></ha-icon></button></div><div class="preview-modal-stage"><button class="preview-nav prev" data-preview-prev><ha-icon icon="mdi:chevron-left"></ha-icon></button><img id="maint-preview-image" src="${CP_BASE}/showcase/${item.file}" alt="${this.esc(item.title)}"><button class="preview-nav next" data-preview-next><ha-icon icon="mdi:chevron-right"></ha-icon></button></div><div class="preview-modal-thumbs">${CP_MAINT_PREVIEWS.map((x,i)=>`<button data-preview-thumb="${i}" class="${i===this.previewIndex?'on':''}">${i+1}. ${this.esc(x.title)}</button>`).join("")}</div></div>`}
@@ -1191,7 +1221,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     @media(max-width:800px){.cpauto-gallery .home-carousel-stage{min-height:280px!important}.cpauto-gallery .home-real-shot{height:240px!important}.cpauto-gallery-controls{justify-content:center}}
     .cp-showcase-modal:not([open]){display:none!important}
     .cp-showcase-modal::backdrop{background:#02070e}
-    .cp-showcase-modal{position:fixed;inset:0;margin:0;border:0;max-width:none;max-height:none;overflow:hidden;width:100vw;height:100dvh;z-index:2147483646;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding:clamp(10px,2vw,22px);background:rgba(0,5,11,.985);backdrop-filter:blur(10px);color:#f2fbff}
+    .cp-showcase-modal{position:fixed;inset:0;margin:0;border:0;max-width:none;max-height:none;overflow:hidden;box-sizing:border-box;width:100vw;height:100dvh;z-index:2147483646;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding:clamp(10px,2vw,22px);background:rgba(0,5,11,.985);backdrop-filter:blur(10px);color:#f2fbff}
     .cp-showcase-header{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:60px}
     .cp-showcase-header b{display:block;font-size:clamp(15px,2vw,23px);margin-top:4px}
     .cp-showcase-header small{display:block;color:#8badbe;margin-top:3px;font-size:11px}

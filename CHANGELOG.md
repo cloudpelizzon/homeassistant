@@ -1,5 +1,9 @@
 ## 7.0.6 — localização e tela cheia do Inventário, formulário de Manutenção
 
+## 7.0.12
+
+- Open showcase images in native fullscreen and fill the viewport when fullscreen is unavailable, including in scaled Home Assistant panels.
+
 ## 7.0.11
 
 - Open showcase and detail images in a viewport-sized modal.
