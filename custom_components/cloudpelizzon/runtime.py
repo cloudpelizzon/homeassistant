@@ -142,11 +142,16 @@ class Runtime:
                     self.hass.data['cloudpelizzon_finance_unavailable661'] = True
 
             if not self.hass.data.get('cloudpelizzon_compiled628_active'):
-                from .inventory_free632 import register as register_inventory_free
-                try:self.closers.append(await register_inventory_free(self.hass,self.entry,context))
-                except Exception:
-                    # Preserve other modules and any unreadable Free store.
-                    self.hass.data['cloudpelizzon_inventory_unavailable632']=True
+                from .inventory_installed709 import register_installed
+                close_inventory = await register_installed(self.hass, self.entry, context, self.bridge)
+                if close_inventory is not None:
+                    self.closers.append(close_inventory)
+                else:
+                    from .inventory_free632 import register as register_inventory_free
+                    try:
+                        self.closers.append(await register_inventory_free(self.hass, self.entry, context))
+                    except Exception:
+                        self.hass.data['cloudpelizzon_inventory_unavailable632'] = True
 
             self.closers.append(fleet_reporter.start(self.hass, self.entry, trial_context={
                 'trial_id': context['trial_id'], 'fetch_verified': self.bridge.fetch_verified}))
