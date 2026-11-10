@@ -60,7 +60,7 @@ import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 
 
 
-import "/cloudpelizzon-core/frontend/panel.js?v=5a3395487636a4d997f09b5930f65a706a1312ffe6a193678dc8ddad51d2cde7";
+import "/cloudpelizzon-core/frontend/panel.js?v=58460ecb9666144e513965d48a05c60757049467efe15750044a9cf28f0116a6";
 
 
 
@@ -5020,6 +5020,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
 
 
+        if(path==="/cloudpelizzon-updates"){this.show("updates");return;}
         if(path.includes("inventory")){this.show("inventory");return;}
 
 
