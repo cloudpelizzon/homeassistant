@@ -1,5 +1,10 @@
 ## 7.0.6 — localização e tela cheia do Inventário, formulário de Manutenção
 
+## 7.0.10
+
+- Corrige a abertura do Inventário com motores licenciados que usam a paginação anterior.
+- Associa cada imagem do carrossel à sua descrição na página de detalhes dos módulos.
+
 - Inventário: ao digitar um local no cadastro do equipamento, o formulário seleciona o modo manual e salva o local informado.
 - Inventário: o mapa ocupa toda a janela mesmo quando o navegador impede a tela cheia nativa.
 - Manutenção: as telas de seleção do serviço e registro da execução ganharam mais espaço e se ajustam a telas menores.
