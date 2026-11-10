@@ -53,7 +53,7 @@ class ModuleInstaller:
   archive=migration.safe(folder/'module.tar').read_bytes();self.advertisement(packet)
   return {'folder':folder,'packet':packet,'archive':archive,'database':folder/'local.sqlite3','migration_counts':value['migration_counts']}
  def clear_ready(self):self.hass.data.get(READY,{}).pop(self.sku,None)
- def mark_ready(self):self.hass.data.setdefault(READY,{})[self.sku]={'core_id':self.context['core_id'],'signed_id':self.context['trial_id']}
+ def mark_ready(self,candidate):self.hass.data.setdefault(READY,{})[self.sku]={'core_id':self.context['core_id'],'signed_id':self.context['trial_id'],'version':candidate['packet']['manifest'].get('version')}
  async def activate(self,candidate,guard):
   self.advertisement(candidate['packet']);runtime=None;detach=None;owned={}
   async def create():
@@ -77,7 +77,7 @@ class ModuleInstaller:
   if candidate is None:return False
   def guard():need(not self.closed,'module_installer_closed')
   runtime,detach=await self.activate(candidate,guard)
-  self.runtime=runtime;self.detach=detach;self.mark_ready();return True
+  self.runtime=runtime;self.detach=detach;self.mark_ready(candidate);return True
  async def status(self,connection):
   self.guard(connection)
   if self.lock.locked():return {'mode':'installing','can_install':False,'message':self.step or 'Instalação em andamento.'}
@@ -108,7 +108,7 @@ class ModuleInstaller:
      nonlocal marker_written
      write_marker(self.folder()/'active.json',marker);marker_written=True
     await self.job(commit_marker);guard()
-    self.runtime=runtime;self.detach=detach;self.mark_ready();committed=True
+    self.runtime=runtime;self.detach=detach;self.mark_ready(candidate);committed=True
     return {'installed':True,'engine_mode':'local','native_module_health_verified':True,'migration_counts':candidate['migration_counts'],'device_commands':0,'data_preserved':True}
    finally:
     if not committed:

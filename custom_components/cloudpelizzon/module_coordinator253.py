@@ -100,7 +100,7 @@ class MaintenanceInstaller:
    result=await self.job(runtime.execute,'maintenance.records.read',{},uuid.uuid4().hex)
    need(type(result) is dict and type(result.get('maintenances')) is list,'native_local_maintenance_projection_required')
    need(not self.closed,'module_installer_closed');router.runtime=runtime
-   self.hass.data.setdefault(READY,{})[self.sku]={'core_id':self.context['core_id'],'signed_id':self.context['trial_id']}
+   self.hass.data.setdefault(READY,{})[self.sku]={'core_id':self.context['core_id'],'signed_id':self.context['trial_id'],'version':runtime.manifest.get('version')}
    return True
   except BaseException:await self.job(runtime.close);raise
  async def status(self,connection):
@@ -137,7 +137,7 @@ class MaintenanceInstaller:
     marker={'schema':'cp.local.module253.v1','core_id':self.context['core_id'],'signed_id':self.context['trial_id'],'sku':self.sku,
      'manifest_sha256':self.release,'folder':folder.name,'migration_counts':candidate['migration_counts']}
     await self.job(write_marker,self.folder()/'active.json',marker);marker_written=True;guard()
-    router.runtime=runtime;self.hass.data.setdefault(READY,{})[self.sku]={'core_id':self.context['core_id'],'signed_id':self.context['trial_id']}
+    router.runtime=runtime;self.hass.data.setdefault(READY,{})[self.sku]={'core_id':self.context['core_id'],'signed_id':self.context['trial_id'],'version':runtime.manifest.get('version')}
     committed=True;self.step='Módulo completo instalado neste HA'
     return {'installed':True,'engine_mode':'local','native_local_read_verified':True,'migration_counts':candidate['migration_counts'],'device_commands':0,'data_preserved':True}
    finally:
@@ -163,7 +163,7 @@ async def register(hass,entry,context):
  def ready():
   values=set(original_ready())
   for sku,identity in hass.data.get(READY,{}).items():
-   if identity=={'core_id':context['core_id'],'signed_id':context['trial_id']}:values.add(sku)
+   if identity.get('core_id')==context['core_id'] and identity.get('signed_id')==context['trial_id']:values.add(sku)
   return values
  bridge.local_ready=ready
  async def status(sku,connection):return await (adapter.status(connection) if sku==adapter.sku else original_status(sku,connection))
