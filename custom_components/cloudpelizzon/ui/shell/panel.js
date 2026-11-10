@@ -60,7 +60,7 @@ import "/cloudpelizzon/frontend/date-format-r51.js?v=20260928-r51";
 
 
 
-import "/cloudpelizzon-core/frontend/panel.js?v=c9d58a3e423a348f2b4edf729184f242789a0e777dccfe29caf427bdf9da87c2";
+import "/cloudpelizzon-core/frontend/panel.js?v=f7b17deb421d7858c612b546410829a34d8bddd38f892c7488ff09815c06e3b4";
 
 
 
