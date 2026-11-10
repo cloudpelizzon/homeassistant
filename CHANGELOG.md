@@ -1,5 +1,11 @@
 ## 7.0.6 — localização e tela cheia do Inventário, formulário de Manutenção
 
+## 7.0.14
+
+- Give the installed Core version its own card in Updates.
+- Show the Finance trial offer for unlicensed installations and improve Finance showcase image quality.
+- Improve Control Center navigation and the readability of module status badges.
+
 ## 7.0.13
 
 - Show the installed Core version and report the active Inventory and Maintenance packages in the Updates tab.

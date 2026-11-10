@@ -750,7 +750,13 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     return `<section class="cp-product-stories"><h2>${planned ? 'Recursos previstos' : 'Como o módulo ajuda no dia a dia'}</h2>${topics}</section>
       <section class="cp-product-faq"><h2>Perguntas frequentes</h2>${faq.map(([question, answer]) => `<details><summary>${this.esc(question)}</summary><p>${this.esc(answer)}</p></details>`).join('')}</section>`;
   }
-  renderDetail(sku){const m=this.moduleBySku(sku);if(!m){this.selectedSku=null;return this.renderHome()}const d=CP_MODULES[sku]||{},allowed=this.cpAllowed(m),planned=m.lifecycle==="planned"&&!allowed&&!m.local_installed&&!this.cpTrialActive(m),installed=!!m.installed;return `<main class="detail"><div class="topbar"><button data-back><ha-icon icon="mdi:arrow-left"></ha-icon>Voltar ao Control Center</button><div><span class="${this.cpTrialActive(m)?'cp-trial-active':allowed?'licensed':'locked-state cp-unlicensed-pill'}">${planned?'◷':allowed?'✓':'🔒'} ${this.esc(this.cpModuleStatus(m))}</span><button class="secondary" data-license><ha-icon icon="mdi:key-variant"></ha-icon>Licença</button></div></div>
+  renderDetail(sku){const m=this.moduleBySku(sku);if(!m){this.selectedSku=null;return this.renderHome()}const d=CP_MODULES[sku]||{},allowed=this.cpAllowed(m),planned=m.lifecycle==="planned"&&!allowed&&!m.local_installed&&!this.cpTrialActive(m),installed=!!m.installed;return `<main class="detail"><style>
+ .detail .topbar .detail-back{display:inline-flex;align-items:center;gap:8px;min-height:44px;padding:9px 15px;border:1px solid #3a9ec6;border-radius:10px;background:#0e354b;color:#eefaff;font-size:14px;font-weight:750}
+ .detail .topbar .detail-back:hover{background:#174d67;border-color:#6cdfff}
+ .detail .topbar .detail-back:focus-visible{outline:2px solid #9cecff;outline-offset:3px}
+ .detail .topbar{flex-wrap:wrap;gap:10px}
+ .detail .topbar .cp-unlicensed-pill,.detail .product-title .locked-state,.detail .module-gallery629 .real-chip{display:inline-flex;align-items:center;min-height:26px;padding:4px 9px;font-size:11px;line-height:1.3;white-space:normal;text-align:center}
+ </style><div class="topbar"><button class="detail-back" data-back><ha-icon icon="mdi:arrow-left"></ha-icon>Voltar ao Control Center</button><div><span class="${this.cpTrialActive(m)?'cp-trial-active':allowed?'licensed':'locked-state cp-unlicensed-pill'}">${planned?'◷':allowed?'✓':'🔒'} ${this.esc(this.cpModuleStatus(m))}</span><button class="secondary" data-license><ha-icon icon="mdi:key-variant"></ha-icon>Licença</button></div></div>
     <section class="product-hero"><div class="product-title"><div><span class="eyebrow">${this.esc(d.kicker||'CLOUDPELIZZON')}</span><span class="sku">${this.esc(m.sku)}</span><h1>${this.esc(m.name)}</h1><p>${this.esc(d.tagline||m.description)}</p></div><div class="cta">${sku==='CP-FINANCE'?'<button class="primary big" type="button" data-open="/cloudpelizzon-finance">Abrir Finanças <ha-icon icon="mdi:arrow-right"></ha-icon></button>':`${this.requestButton161(m)}${this.v2Remaining(m)}${this.v2TrialButton(m)}${planned?'<span class="locked-state">Em desenvolvimento • indisponível para instalação</span>':allowed&&installed&&m.path?`<button class="primary big" data-open="${this.esc(m.path)}">Abrir módulo <ha-icon icon="mdi:arrow-right"></ha-icon></button>`:allowed?`<button class="primary big" data-updates>Ver instalação no Update Center</button>`:`<button class="secondary big" data-license>Já tenho licença</button>`}`}</div></div>${this.renderProductPreview(sku)}</section>
     <section class="block">${this.renderModuleStories(sku,m,d,planned)}</section>
     <section class="buy"><div><span class="eyebrow">CLOUDPELIZZON • ${this.esc(m.sku)}</span><h2>${planned?'Este módulo está em desenvolvimento.':allowed&&installed?'Este módulo já está instalado nesta residência.':allowed?'Licenciado • instalação pendente':`Conheça ${this.esc(m.name)}.`}</h2><p>${planned?'Esta é uma prévia conceitual. A instalação ficará disponível após o desenvolvimento e a publicação segura.':allowed&&installed?'Abra o dashboard real ou conheça os recursos acima.':allowed?'Sua licença está ativa. Aguarde uma versão comercial publicada no Update Center.':'A licença é vinculada ao Installation ID e requer uma versão publicada para instalar.'}</p></div><div>${planned?'<span class="locked-state">Lançamento futuro</span>':allowed&&installed&&m.path?`<button class="primary big" data-open="${this.esc(m.path)}">Abrir módulo</button>`:allowed?'<button class="primary big" data-updates>Ver atualizações e instalação</button>':`<button class="primary big" data-request="${this.esc(m.sku)}">Tenho interesse</button><button class="secondary big" data-license>Ativar licença</button>`}</div></section>
@@ -786,7 +792,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
         ['showcase/consumption_hub.jpg','Consumo e mobilidade','Medições e estimativas de custo.'],
         ['showcase/portfolio_hub.jpg','Minha carteira','Posições, cotações e acompanhamento de ativos.'],
         ['showcase/family_hub.jpg','Finanças da família','Acompanhamento compartilhado com permissões.']
-      ].map(([file,title,desc])=>({file,src:base+file,title,desc}));
+      ].map(([file,title,desc])=>({file,src:base+file+"?v=714",title,desc}));
     }
     if(sku==='CP-INVENTORY')return this._inventoryShowcase622?.length?this._inventoryShowcase622:[{file:'inventory-presentation629',src:CP_INVENTORY_PRESENTATION629,title:'Inventário · apresentação',desc:'Sua casa. Sua rede. Cada detalhe. Arte conceitual do módulo.'}];
     if(sku==='CP-LIGHTING'&&this.lightingPresentationItems629)return this.lightingPresentationItems629();
@@ -1396,9 +1402,12 @@ if(!customElements.get("cloudpelizzon-core-panel"))customElements.define("cloudp
   const t=m?.trial;if(t?.verified===true){
    if(t.phase==='trial_active'&&t.paid_confirmed===false)return Date.parse(t.blocks_at||'')>Date.now()?'trial':'expired';
    if(['trial_blocked','trial_removal_due'].includes(t.phase))return 'expired';
-   if(t.phase==='not_started'&&READY229.has(m.sku))return 'available';
+   if(t.phase==='not_started'&&(READY229.has(m.sku)||m.sku==='CP-FINANCE'))return 'available';
   }
   if(m?.license?.status==='unverified')return 'unknown';
+  if(this.data?.status_verified===true&&m?.sku==='CP-FINANCE'&&m.license?.allowed===false&&m.license.status==='locked'&&m.license.reason==='not_entitled'){
+   return 'available';
+  }
   return m.lifecycle==='planned'?'planned':'unknown';
  };
  p.remaining229=function(deadline){const sec=Math.max(0,Math.floor((Date.parse(deadline||'')-Date.now())/1000));if(!Number.isFinite(sec))return '';const d=Math.floor(sec/86400),h=Math.floor(sec%86400/3600),min=Math.floor(sec%3600/60);return sec===0?'Prazo encerrado':`Restam ${d?d+'d ':''}${h?h+'h ':''}${min}min`;};
@@ -1416,9 +1425,13 @@ if(!customElements.get("cloudpelizzon-core-panel"))customElements.define("cloudp
   else{note='Aguarde a confirmação do servidor. Nenhum acesso foi liberado por esta tela.';}
   if(m.sku==='CP-FINANCE'){
     action='<button class="primary" type="button" data-open="/cloudpelizzon-finance">Abrir Finanças →</button>';
+    if(state==='available'){
+      action='<button class="primary" type="button" data-open="/cloudpelizzon-finance">Experimentar por 7 dias →</button>';
+      note='A disponibilidade é confirmada ao solicitar o Trial. O prazo começa após a ativação.';
+    }
     if(state==='unknown')note='Abra o Finanças para consultar a disponibilidade do Trial de 7 dias ou instalar com sua licença.';
    }
-   return `<article class="cp-card229 ${state}"><div class="cp-card-head229"><small>${sku}</small><span class="cp-badge229 ${state}">${labels[state]}</span></div><div class="cp-card-preview229">${this.renderHomeCarousel(m.sku)}</div><div class="cp-card-body229"><h3>${this.esc(m.name)}</h3><p>${this.esc(m.description||'')}</p><div class="cp-card-status229">${note}</div><div class="cp-card-actions229">${action}<button class="secondary" data-detail="${sku}">Ver detalhes</button></div></div></article>`;
+   return `<article class="cp-card229 ${state}"><div class="cp-card-head229"><small>${sku}</small><span class="cp-badge229 ${state}">${m.sku==='CP-FINANCE'&&state==='available'?'Trial de 7 dias':labels[state]}</span></div><div class="cp-card-preview229">${this.renderHomeCarousel(m.sku)}</div><div class="cp-card-body229"><h3>${this.esc(m.name)}</h3><p>${this.esc(m.description||'')}</p><div class="cp-card-status229">${note}</div><div class="cp-card-actions229">${action}<button class="secondary" data-detail="${sku}">Ver detalhes</button></div></div></article>`;
  };
  p.renderHome=function(...args){
   let html=home.apply(this,args).replace(/<section class="cp-private220">[\s\S]*?<\/section>/,'');
@@ -1428,7 +1441,7 @@ if(!customElements.get("cloudpelizzon-core-panel"))customElements.define("cloudp
   html=html.replace(/<section class="block">[\s\S]*<\/main>/,sections+'</main>');
   return css+(this._connectionNotice229?`<div class="cp-connection229" role="status">${this.esc(this._connectionNotice229)}</div>`:'')+html;
  };
- p.v2TrialButton=function(m){return this.moduleState229(m)==='available'?`<button class="cp-v2-trial-button" type="button" data-start-trial="${this.esc(m.sku)}">Iniciar teste de 7 dias</button>`:'';};
+ p.v2TrialButton=function(m){return m?.sku!=='CP-FINANCE'&&this.moduleState229(m)==='available'?`<button class="cp-v2-trial-button" type="button" data-start-trial="${this.esc(m.sku)}">Iniciar teste de 7 dias</button>`:'';};
  p.v2StartTrial=async function(sku){
   if(sku!=='CP-LIGHTING')return start.call(this,sku);
   const m=this.moduleBySku(sku);if(!m||this.moduleState229(m)!=='available')return this.toast('Consulte o estado atual do teste. O prazo existente não será reiniciado.','error');
