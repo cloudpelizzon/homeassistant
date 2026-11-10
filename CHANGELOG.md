@@ -1,5 +1,10 @@
 ## 7.0.6 — localização e tela cheia do Inventário, formulário de Manutenção
 
+## 7.0.11
+
+- Open showcase and detail images in a viewport-sized modal.
+- Explain each screen with examples and add Security screenshots using synthetic data.
+
 ## 7.0.10
 
 - Corrige a abertura do Inventário com motores licenciados que usam a paginação anterior.

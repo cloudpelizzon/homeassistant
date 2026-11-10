@@ -1,3 +1,275 @@
+const COPY711 = {
+  "automation": [
+    "Painel de automações",
+    "A visão inicial reúne as rotinas da instalação e os indicadores usados para revisar sua operação.",
+    "Localize a categoria de uma rotina antes de investigar execuções e regras relacionadas."
+  ],
+  "cpauto-01": [
+    "Visão geral da operação",
+    "Leia os indicadores do painel e use o resumo para decidir se precisa abrir execuções, entidades ou auditoria.",
+    "Se uma categoria apresentar problemas, entre nela antes de revisar todas as rotinas da casa."
+  ],
+  "cpauto-02": [
+    "Categorias de automação",
+    "As rotinas aparecem agrupadas por categoria. Essa organização permite comparar automações do mesmo assunto e localizar a responsável por um comportamento.",
+    "Ao revisar iluminação noturna, comece pela categoria correspondente e procure as regras do ambiente afetado."
+  ],
+  "cpauto-03": [
+    "Lista de automações",
+    "A lista identifica as automações cadastradas e facilita a conferência do estado de cada uma. Use-a para separar as regras que você quer investigar.",
+    "Se a luz não acender no horário esperado, encontre a rotina pelo nome e confira seu estado."
+  ],
+  "cpauto-04": [
+    "Histórico de execuções",
+    "Acompanhe os horários registrados e compare o resultado das execuções com os eventos percebidos na residência.",
+    "Em uma falha intermitente, compare a última execução com o horário em que o problema ocorreu."
+  ],
+  "cpauto-05": [
+    "Auditoria técnica",
+    "A auditoria mostra checagens como consistência do inventário, categorias inválidas e identificadores duplicados. O resultado e a observação indicam o ponto a revisar.",
+    "Se aparecer um identificador duplicado, localize as duas regras antes de corrigir o cadastro."
+  ],
+  "cpauto-06": [
+    "Entidades analisadas",
+    "Consulte os elementos do Home Assistant que a central reconhece no contexto das automações. Esta leitura ajuda a identificar as dependências de uma regra.",
+    "Se um dispositivo foi substituído, procure a entidade antiga antes de atualizar as automações vinculadas."
+  ],
+  "cpauto-07": [
+    "Saúde operacional",
+    "Os indicadores de saúde ajudam a identificar inconsistências e rotinas que merecem investigação.",
+    "Priorize uma regra que sinaliza problema repetidamente e confronte o indicador com o histórico de execução."
+  ],
+  "cpauto-08": [
+    "Recomendações de governança",
+    "A tela agrupa achados da operação e sugestões de revisão. Leia a evidência antes de aplicar uma alteração.",
+    "Revise o grupo que concentra alertas para encontrar um ajuste com maior impacto."
+  ],
+  "presentation": [
+    "Inventário e organização da casa",
+    "A apresentação reúne a rede e os ambientes do Inventário. As telas seguintes mostram como localizar equipamentos, interpretar conexões e conferir a posição no projeto da casa.",
+    "Use o diagrama para identificar a ligação de um equipamento e a planta para conferir onde ele está instalado."
+  ],
+  "network": [
+    "Diagrama de rede",
+    "O diagrama organiza equipamentos, conexões e protocolos em uma visão de conjunto. Diferencie o que foi identificado na rede das relações registradas na organização da instalação.",
+    "Ao trocar um ponto de acesso, consulte o diagrama para identificar os equipamentos relacionados a ele."
+  ],
+  "house-front": [
+    "Casa completa pela frente",
+    "A vista frontal reúne a disposição dos andares, coberturas, ambientes e áreas externas. Ela ajuda a situar os equipamentos em relação ao conjunto da casa.",
+    "Antes de definir o local de um equipamento externo, compare o acesso e a altura em relação ao pavimento."
+  ],
+  "house-rear": [
+    "Casa completa por trás",
+    "A vista posterior mostra áreas que ficam escondidas no ângulo frontal. É outra leitura do mesmo projeto, com as posições dos ambientes preservadas.",
+    "Use o ângulo posterior para conferir a relação entre o quintal, a fachada e os equipamentos mais próximos."
+  ],
+  "living-room": [
+    "Posicionamento na sala de estar",
+    "A cena da sala mostra como móveis, aberturas e dispositivos ocupam o cômodo. Use as referências do ambiente para comparar pontos no piso, na parede e no teto.",
+    "Ao planejar um sensor, confira a posição do sofá e das aberturas antes de escolher a altura."
+  ],
+  "dining-room": [
+    "Posicionamento na sala de jantar",
+    "A cena aproxima o projeto para mostrar a relação entre mesa, circulação e equipamentos. Ela ajuda a escolher um ponto de instalação com referência visual.",
+    "Confira se a posição sugerida de um equipamento preserva a circulação ao redor da mesa."
+  ],
+  "cpsec-demo-01": [
+    "Mapa e resumo operacional",
+    "A captura mostra o mapa, os indicadores de dispositivos e os controles disponíveis para o modo da residência, alarme, portão e cerca. O resumo destaca os avisos que precisam de investigação.",
+    "Ao ver um dispositivo offline, confira primeiro qual parte da proteção foi afetada antes de mudar o modo do alarme."
+  ],
+  "cpsec-demo-02": [
+    "Sensores e comunicação",
+    "Cada cartão associa o sensor ao estado e, quando disponível, ao nível de bateria. Assim é possível distinguir um sensor que reporta estado normal de um ponto que perdeu comunicação.",
+    "Se um sensor de movimento estiver offline, confira também a bateria para orientar o primeiro diagnóstico."
+  ],
+  "cpsec-demo-03": [
+    "Portas e janelas monitoradas",
+    "Os totais separam portas, janelas, aberturas e fechamentos. A lista localiza o ponto físico relacionado a cada leitura.",
+    "Antes de sair, confira se há alguma abertura monitorada e use a lista para identificar onde ela fica."
+  ],
+  "cpsec-demo-04": [
+    "Perímetro, cerca e portão",
+    "O resumo coloca acessos, cerca e portão lado a lado. Os cartões e os controles disponíveis dependem dos dispositivos associados à instalação.",
+    "Compare o estado do portão com os contatos de portas e janelas para localizar o ponto que precisa de atenção."
+  ],
+  "cpsec-demo-05": [
+    "Baterias e manutenção preventiva",
+    "Os cartões resumem baterias em atenção ou em nível crítico. As barras ajudam a comparar os dispositivos e priorizar a troca.",
+    "Se dois sensores estiverem baixos, comece pelo mais crítico e confira se a leitura volta após a troca."
+  ],
+  "maintenance": [
+    "Planejamento de manutenção",
+    "O módulo organiza rotinas recorrentes da residência por categoria, prazo e histórico. As telas seguintes mostram a operação, os gastos e o registro das execuções.",
+    "Ao preparar uma revisão mensal, abra a operação para listar os vencimentos e use o financeiro para planejar os gastos."
+  ],
+  "manutencao-casa": [
+    "Operação, vencimentos e categorias",
+    "O painel combina a saúde da categoria, a evolução do período e os cartões das tarefas. Cada tarefa mostra a última execução, a próxima data e a situação do ciclo.",
+    "Se a limpeza do ar-condicionado estiver vencida, confira a última execução antes de marcar a atividade como concluída."
+  ],
+  "manutencao-financeiro": [
+    "Gastos, materiais e provisões",
+    "A visão financeira reúne os valores registrados para comparar gastos com materiais, mão de obra e previsões das manutenções.",
+    "Ao orçar uma nova intervenção, consulte os gastos das anteriores para estimar a provisão."
+  ],
+  "manutencao-cadastro": [
+    "Cadastro de tarefas recorrentes",
+    "O cadastro centraliza os dados necessários para identificar uma tarefa e definir sua recorrência e categoria.",
+    "Cadastre a troca do filtro com um ciclo de revisão para que a próxima data possa ser acompanhada."
+  ],
+  "manutencao-historico": [
+    "Histórico das intervenções",
+    "A tela de histórico reúne as execuções registradas. Use as datas e os detalhes disponíveis para recuperar o contexto de cada intervenção.",
+    "Ao remarcar uma revisão, compare com a última execução e com o intervalo previsto."
+  ],
+  "energy-preview-01": [
+    "Resumo de energia",
+    "O painel combina indicadores e leituras do período. Comece pelo resumo e abra a tela de consumo ou geração para localizar a origem de uma variação.",
+    "Compare o período que apresentou aumento com a tela de consumo antes de atribuir a diferença à geração."
+  ],
+  "energy-preview-02": [
+    "Geração e produção",
+    "Acompanhe a produção medida e compare sua evolução ao longo do tempo. As leituras dependem da telemetria disponível na instalação.",
+    "Compare dois dias com condições diferentes e confirme se o inversor forneceu dados em ambos."
+  ],
+  "energy-preview-03": [
+    "Consumo da residência",
+    "A leitura de consumo mostra como a demanda se distribui ao longo do período. Use os picos como ponto de partida para investigar os horários mais exigentes.",
+    "Se houver um pico à noite, compare o horário com o uso dos equipamentos de maior potência."
+  ],
+  "energy-preview-04": [
+    "Trocas com a rede",
+    "Importação e exportação são leituras distintas. Uma indica energia recebida da rede e a outra, excedente enviado quando a instalação mede esse fluxo.",
+    "Compare importação e exportação em um período para entender quando houve necessidade de energia da rede."
+  ],
+  "energy-preview-05": [
+    "Análise do período",
+    "A tela reúne indicadores e tendências para comparar períodos e orientar a investigação de mudanças no perfil energético.",
+    "Ao identificar uma variação, consulte primeiro a leitura correspondente para verificar se houve mudança real ou falta de dados."
+  ],
+  "solar": [
+    "Acompanhamento da produção solar",
+    "A apresentação mostra a proposta de acompanhamento da geração e de sua relação com a demanda da residência. Os dados reais dependem da integração com a medição.",
+    "Compare produção e consumo no mesmo horário para descobrir quando a instalação usa melhor a geração."
+  ],
+  "energy": [
+    "Acompanhamento do consumo",
+    "A apresentação introduz a leitura de consumo e as trocas com a rede. As telas seguintes detalham as leituras disponíveis conforme a instalação.",
+    "Para investigar uma variação na demanda, comece pelos horários de maior consumo."
+  ],
+  "cover": [
+    "Finanças da casa",
+    "A apresentação reúne contas, orçamento, cartões, patrimônio e custos da residência. As telas mostram como cada parte contribui para o planejamento.",
+    "Comece registrando entradas e despesas e use o planejamento para comparar com o orçamento do mês."
+  ],
+  "money_hub": [
+    "Movimentação das contas",
+    "Veja receitas, despesas, transferências e evolução de caixa no período. Transferências separam o movimento entre contas da despesa da casa.",
+    "Ao mover dinheiro entre duas contas, registre a transferência e confira a mudança nos respectivos saldos."
+  ],
+  "planning_hub": [
+    "Planejamento e orçamento",
+    "A tela aproxima orçamentos, metas e compromissos futuros para comparar o planejado com o realizado.",
+    "Ao projetar uma compra, verifique quais compromissos já ocupam o orçamento dos meses seguintes."
+  ],
+  "cards_hub": [
+    "Cartões, limites e parcelas",
+    "Os cartões reúnem compras, limites e faturas. A leitura das parcelas mostra quais valores já comprometem os próximos períodos.",
+    "Antes de parcelar uma compra, confira a distribuição das parcelas existentes."
+  ],
+  "home_hub": [
+    "Patrimônio e visão da família",
+    "A visão consolida indicadores para identificar quais áreas exigem atenção. Os registros da casa ajudam a acompanhar a composição dos bens e seus custos.",
+    "Compare a situação do mês e abra a área de patrimônio para investigar um bem específico."
+  ],
+  "care_hub": [
+    "Cuidados e custos da casa",
+    "Veja gastos e previsões de manutenção no contexto financeiro da residência.",
+    "Separe uma previsão para uma revisão recorrente e compare com o valor pago na última intervenção."
+  ],
+  "consumption_hub": [
+    "Consumo e mobilidade",
+    "A tela reúne medições e estimativas disponíveis para avaliar o custo associado ao uso.",
+    "Ao comparar dois períodos, confira se a base de medições é comparável antes de interpretar a diferença."
+  ],
+  "portfolio_hub": [
+    "Acompanhamento da carteira",
+    "O painel reúne posições, cotações e movimentações registradas para acompanhar a composição da carteira.",
+    "Ao revisar o patrimônio, identifique quais posições explicam a maior parte da variação."
+  ],
+  "family_hub": [
+    "Finanças compartilhadas",
+    "A área reúne o acompanhamento familiar e o acesso conforme as permissões de cada pessoa.",
+    "Antes de compartilhar a gestão, defina quais informações cada participante precisa consultar."
+  ],
+  "lighting": [
+    "Iluminação por ambiente",
+    "A apresentação mostra o controle por cômodo com painéis Grafite, Flux e Neo Soft. Os ajustes de intensidade, temperatura e cor dependem das luminárias integradas.",
+    "Escolha uma sala e teste os ajustes suportados por suas luminárias para preparar o ambiente à noite."
+  ],
+  "camera": [
+    "Câmeras e contexto visual",
+    "A apresentação reúne a proposta de acompanhar câmeras integradas à instalação. A disponibilidade das imagens depende da configuração de cada origem.",
+    "Ao receber um aviso, confira primeiro a câmera relacionada ao local antes de buscar outros ângulos."
+  ],
+  "environment": [
+    "Leitura das condições do ambiente",
+    "A apresentação propõe reunir as medições dos ambientes. A leitura disponível depende dos sensores e das entidades que estiverem integrados.",
+    "Compare as leituras entre dois ambientes antes de decidir qual deles precisa de atenção."
+  ],
+  "fit": [
+    "Acompanhamento de bem-estar",
+    "A apresentação situa os indicadores de bem-estar na rotina da casa. A informação exibida depende das fontes disponíveis no ambiente.",
+    "Use o acompanhamento de um período para identificar mudanças de rotina que valha a pena investigar."
+  ],
+  "gamification": [
+    "Participação e acompanhamento",
+    "A apresentação mostra a proposta de organizar objetivos e acompanhar a participação em tarefas. Os indicadores ajudam a conversar sobre progresso ao longo do tempo.",
+    "Use um objetivo familiar simples e acompanhe a evolução antes de criar novas metas."
+  ],
+  "gas": [
+    "Acompanhamento do gás",
+    "A apresentação situa as leituras e os avisos de gás no contexto da instalação. Confira quais sensores e medições o ambiente efetivamente oferece.",
+    "Ao perceber uma variação, consulte o histórico disponível e confirme o estado do sensor correspondente."
+  ],
+  "inteligencia-backups": [
+    "Rotina e histórico de backups",
+    "A apresentação organiza a consulta dos backups e da situação das cópias. Use a data, o resultado e a origem disponíveis para revisar a rotina.",
+    "Após uma falha, confira a última cópia concluída antes de decidir como recuperar o ambiente."
+  ],
+  "monitoramento-alexas": [
+    "Assistentes de voz na residência",
+    "A apresentação mostra como acompanhar os dispositivos de voz integrados e seu estado no ambiente.",
+    "Se um dispositivo parar de responder, localize-o no painel e compare com o estado dos outros assistentes."
+  ],
+  "noc": [
+    "Operação e disponibilidade",
+    "A apresentação reúne a proposta de acompanhar a saúde da instalação. Os painéis de operação ajudam a localizar serviços e fontes que merecem investigação.",
+    "Ao perceber indisponibilidade, compare o indicador do serviço com os eventos registrados no período."
+  ],
+  "notify": [
+    "Acompanhamento de avisos",
+    "A apresentação organiza notificações no contexto de automações e eventos. Os canais e os avisos disponíveis dependem da configuração.",
+    "Ao revisar um alerta recorrente, identifique a origem e confira quais canais devem receber aquele tipo de evento."
+  ],
+  "presence": [
+    "Presença e contexto dos ambientes",
+    "A apresentação mostra a proposta de reunir os sinais de presença disponíveis para acompanhar o estado dos ambientes.",
+    "Compare as fontes configuradas quando um ambiente mostrar um estado que não condiz com o esperado."
+  ],
+  "security": [
+    "Acompanhamento de segurança",
+    "A apresentação mostra a organização geral da segurança da residência, incluindo pontos de monitoramento e estado dos dispositivos integrados.",
+    "Ao revisar uma ocorrência, comece pelo tipo de evento e localize a origem na visão correspondente."
+  ],
+  "water": [
+    "Acompanhamento do uso de água",
+    "A apresentação mostra a proposta de visualizar as leituras de água disponíveis na instalação.",
+    "Compare dois períodos de consumo e confira se a medição foi registrada em ambos."
+  ]
+};
 import "/cloudpelizzon-core/frontend/fleet-registration.js?v=20261011-rc10";
 const CP_BASE = "/cloudpelizzon-core/frontend";
 
@@ -365,7 +637,6 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
 
     if(sku==="CP-MAINTENANCE") real=CP_MAINT_PREVIEWS;
     if(sku==="CP-SOLAR") real=CP_ENERGY_PREVIEWS;
-    if(sku==="CP-SECURITY") real=CP_SECURITY_PREVIEWS;
     if(sku==="CP-AUTOMATION") real=CP_AUTOMATION_PREVIEWS;
 
     const slides=real
@@ -443,14 +714,29 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
   setHomeCarousel(carousel,index){if(!carousel)return;const slides=[...carousel.querySelectorAll('[data-home-slide]')],dots=[...carousel.querySelectorAll('[data-home-dot]')];if(!slides.length)return;const next=((Number(index)||0)+slides.length)%slides.length;carousel.dataset.current=String(next);slides.forEach((x,i)=>x.classList.toggle('on',i===next));dots.forEach((x,i)=>x.classList.toggle('on',i===next))}
   startHomeCarousels(){clearInterval(this.carouselTimer);this.carouselTimer=null;const carousels=[...this.shadowRoot.querySelectorAll('[data-home-carousel]')];if(!carousels.length)return;carousels.forEach((c,i)=>{c.dataset.paused='0';c.addEventListener('mouseenter',()=>c.dataset.paused='1');c.addEventListener('mouseleave',()=>c.dataset.paused='0');this.setHomeCarousel(c,(c.dataset.homeCarousel==='CP-SECURITY'||c.dataset.homeCarousel==='CP-AUTOMATION'||c.dataset.homeCarousel==='CP-INVENTORY')?0:i%Math.max(1,c.querySelectorAll('[data-home-slide]').length))});this.carouselTimer=setInterval(()=>{if(document.hidden)return;carousels.forEach(c=>{if(!c.isConnected||c.dataset.paused==='1')return;this.setHomeCarousel(c,(Number(c.dataset.current)||0)+1)})},4400)}
   renderModuleStories(sku, module, data, planned) {
-    const visuals = this.presentationItems629(sku).filter(item => item.src);
-    const stories = visuals.length
-      ? visuals.map((shot, index) => ({shot, title: shot.title || module.name, text: shot.desc || (index === 0 ? data.tagline || module.description : '')}))
-      : [{shot: null, title: module.name, text: data.tagline || module.description || 'Conheça os recursos deste módulo.'}];
-    const topics = stories.map(({shot,title,text}, index) => {
-      const image = shot ? `<figure><img src="${this.esc(shot.src)}" alt="${this.esc(title)}" loading="lazy"><figcaption>${this.esc(title)}</figcaption></figure>` : '';
-      const detail = text || (data.features || []).find(([, label]) => label === title)?.[2] || '';
-      return `<article class="cp-product-story ${image ? 'has-image' : ''}"><div><span class="eyebrow">TELA ${String(index + 1).padStart(2, '0')}</span><h3>${this.esc(title)}</h3>${detail ? `<p>${this.esc(detail)}</p>` : ''}</div>${image}</article>`;
+    const visuals = this.presentationItems629(sku).filter(item => item.src || item.file)
+      .map(item => ({...item, src:item.src || CP_BASE + '/showcase/' + item.file}));
+    const stories = visuals.length ? visuals : [{title: module.name}];
+    const topics = stories.map((shot,index) => {
+      const stem = (shot.src || '').split('?')[0].split('/').pop().replace(/\.[^.]+$/, '');
+      const key = stem.match(/^(?:cpsec-demo|cpauto|energy-preview)-\d\d/)?.[0]
+        || stem.replace(/^cp-/, '').replace(/-pro$/, '');
+      const aliases = {cameras:'camera',ambiente:'environment',fitos:'fit',
+        'notifications':'notify',alexa:'monitoramento-alexas',backup:'inteligencia-backups'};
+      const lighting = {
+        'lighting-grafite': ['Grafite organiza os controles por ambiente em uma interface de contraste escuro. A seleção do cômodo define quais luminárias você está consultando.', 'Abra a sala e ajuste o brilho das luminárias compatíveis para acompanhar um filme.'],
+        'lighting-flux': ['Flux apresenta os mesmos ambientes e dispositivos com outra hierarquia visual. Confira o ambiente ativo e o estado de cada luminária antes de ajustar uma configuração.', 'Compare o estado da iluminação de dois cômodos sem mudar a configuração compartilhada do módulo.'],
+        'lighting-neo': ['Neo Soft oferece outra apresentação para os controles das luminárias. Os recursos exibidos dependem das funções que cada equipamento disponibiliza.', 'Confira se a luminária oferece temperatura de cor antes de ajustar a luz para o fim do dia.'],
+        'lighting-config': ['A configuração associa as luzes e os ambientes à apresentação. Grafite, Flux e Neo Soft consultam as mesmas associações.', 'Inclua uma nova luz no cômodo correspondente e confira se aparece nos três painéis.']
+      };
+      const lightingCopy = lighting[shot.file] || (shot.file?.startsWith('lighting-neo') ? lighting['lighting-neo'] : null);
+      const guidance = lightingCopy ? [shot.title,...lightingCopy] : COPY711[aliases[key] || key] || (sku === 'CP-LIGHTING' ? COPY711.lighting : null);
+      const [title,text,example] = guidance
+        ? [sku === 'CP-LIGHTING' ? shot.title : guidance[0],guidance[1],guidance[2]]
+        : [shot.title,shot.desc || data.tagline || module.description];
+      const notes = example ? `<aside><b>Na prática</b><p>${this.esc(example)}</p></aside>` : '';
+      const image = shot.src ? `<figure><button type="button" class="cp-story-image" aria-label="Ampliar ${this.esc(title)}"><img src="${this.esc(shot.src)}" alt="${this.esc(title)}" loading="lazy"></button><figcaption>${this.esc(title)}</figcaption></figure>` : '';
+      return `<article class="cp-product-story ${image ? 'has-image' : ''}"><div><span class="eyebrow">TELA ${String(index + 1).padStart(2,'0')}</span><h3>${this.esc(title)}</h3>${text ? `<p>${this.esc(text)}</p>` : ''}${notes}</div>${image}</article>`;
     }).join('');
     const faq = [
       ['Como acesso o módulo?', planned ? 'Consulte a disponibilidade no catálogo do CloudPelizzon.' : 'Consulte o estado da sua instalação no painel. As ações disponíveis aparecem junto ao título do módulo.'],
@@ -504,6 +790,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     }
     if(sku==='CP-INVENTORY')return this._inventoryShowcase622?.length?this._inventoryShowcase622:[{file:'inventory-presentation629',src:CP_INVENTORY_PRESENTATION629,title:'Inventário · apresentação',desc:'Sua casa. Sua rede. Cada detalhe. Arte conceitual do módulo.'}];
     if(sku==='CP-LIGHTING'&&this.lightingPresentationItems629)return this.lightingPresentationItems629();
+    if(sku==='CP-SECURITY'||sku==='CP-SECURITY-PRO')return [{"file": "cpsec-demo-01-visao-geral.jpg", "title": "Mapa e resumo operacional", "desc": "A captura mostra o mapa, os indicadores de dispositivos e os controles disponíveis para o modo da residência, alarme, portão e cerca. O resumo destaca os avisos que precisam de investigação."}, {"file": "cpsec-demo-02-sensores.jpg", "title": "Sensores e comunicação", "desc": "Cada cartão associa o sensor ao estado e, quando disponível, ao nível de bateria. Assim é possível distinguir um sensor que reporta estado normal de um ponto que perdeu comunicação."}, {"file": "cpsec-demo-03-portas-janelas.jpg", "title": "Portas e janelas monitoradas", "desc": "Os totais separam portas, janelas, aberturas e fechamentos. A lista localiza o ponto físico relacionado a cada leitura."}, {"file": "cpsec-demo-04-perimetro.jpg", "title": "Perímetro, cerca e portão", "desc": "O resumo coloca acessos, cerca e portão lado a lado. Os cartões e os controles disponíveis dependem dos dispositivos associados à instalação."}, {"file": "cpsec-demo-05-baterias.jpg", "title": "Baterias e manutenção preventiva", "desc": "Os cartões resumem baterias em atenção ou em nível crítico. As barras ajudam a comparar os dispositivos e priorizar a troca."}];
     const real={'CP-MAINTENANCE':CP_MAINT_PREVIEWS,'CP-SOLAR':CP_ENERGY_PREVIEWS,'CP-SECURITY':CP_SECURITY_PREVIEWS,'CP-AUTOMATION':CP_AUTOMATION_PREVIEWS}[sku];
     if(real)return real;
     const official=this.officialPresentation629?.(sku);
@@ -700,7 +987,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     return this.presentationItems629(this.selectedSku);
   }
   renderShowcasePreviewModal(){
-    return '<div id="cp-showcase-modal" class="cp-showcase-modal" hidden role="dialog" aria-modal="true" aria-label="Prévia ampliada do módulo">'+
+    return '<dialog id="cp-showcase-modal" class="cp-showcase-modal" aria-modal="true" aria-label="Prévia ampliada do módulo">'+
       '<div class="cp-showcase-header"><div><span class="eyebrow">CLOUDPELIZZON • TELA AMPLIADA</span>'+
       '<b id="cp-showcase-title"></b><small id="cp-showcase-description"></small></div>'+
       '<button type="button" class="cp-showcase-close" data-showcase-close aria-label="Fechar imagem"><ha-icon icon="mdi:close"></ha-icon></button></div>'+
@@ -709,19 +996,19 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
       '<img id="cp-showcase-image" alt="">'+
       '<button type="button" class="cp-showcase-arrow" data-showcase-next aria-label="Próxima imagem"><ha-icon icon="mdi:chevron-right"></ha-icon></button></div>'+
       '<div class="cp-showcase-footer"><span id="cp-showcase-counter"></span>'+
-      '<span>Setas do teclado para navegar • Esc para fechar</span></div></div>';
+      '<span>Setas do teclado para navegar • Esc para fechar</span></div></dialog>';
   }
   openShowcasePreview(file,origin=null){
     const items=this.showcasePreviewItems();
     if(!items.length)return;
     const name=String(file||"").split("?")[0].split("/").pop();
-    const selected=items.findIndex(x=>x.file===name);
+    const selected=items.findIndex(x=>[x.src,x.file].some(path=>String(path||"").split("?")[0].split("/").pop()===name));
     this._showcaseItems=items;
     this._showcaseIndex=selected>=0?selected:0;
     this._showcaseOrigin=origin;
     const modal=this.shadowRoot.getElementById("cp-showcase-modal");
     if(!modal)return;
-    modal.hidden=false;
+    if(!modal.open)modal.showModal();
     this.refreshShowcasePreview();
     if(this._showcaseKeyHandler)document.removeEventListener("keydown",this._showcaseKeyHandler);
     this._showcaseKeyHandler=e=>{
@@ -754,14 +1041,14 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
   }
   closeShowcasePreview(){
     const modal=this.shadowRoot.getElementById("cp-showcase-modal");
-    if(modal)modal.hidden=true;
+    if(modal?.open)modal.close();
     if(this._showcaseKeyHandler){document.removeEventListener("keydown",this._showcaseKeyHandler);this._showcaseKeyHandler=null;}
     this._showcaseOrigin?.focus?.();
     this._showcaseOrigin=null;
   }
   bindShowcasePreview(){
     if(!this.selectedSku)return;
-    const nodes=this.shadowRoot.querySelectorAll(".detail .real-preview-card, .detail .real-board, .detail .home-carousel .home-real-shot, #cp-energy-real-gallery .erg-stage button");
+    const nodes=this.shadowRoot.querySelectorAll(".detail .cp-story-image, .detail .real-preview-card, .detail .real-board, .detail .home-carousel .home-real-shot, #cp-energy-real-gallery .erg-stage button");
     nodes.forEach(el=>{
       const img=el.querySelector('img');
       if(!img)return;
@@ -902,8 +1189,9 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     .cpauto-gallery-controls button:hover{background:#103f58}
     .cpauto-gallery-controls span{color:#97b5c7;font-size:12px}
     @media(max-width:800px){.cpauto-gallery .home-carousel-stage{min-height:280px!important}.cpauto-gallery .home-real-shot{height:240px!important}.cpauto-gallery-controls{justify-content:center}}
-    .cp-showcase-modal[hidden]{display:none!important}
-    .cp-showcase-modal{position:fixed;inset:0;width:100vw;height:100dvh;z-index:2147483646;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding:clamp(10px,2vw,22px);background:rgba(0,5,11,.985);backdrop-filter:blur(10px);color:#f2fbff}
+    .cp-showcase-modal:not([open]){display:none!important}
+    .cp-showcase-modal::backdrop{background:#02070e}
+    .cp-showcase-modal{position:fixed;inset:0;margin:0;border:0;max-width:none;max-height:none;overflow:hidden;width:100vw;height:100dvh;z-index:2147483646;display:grid;grid-template-rows:auto minmax(0,1fr) auto;gap:10px;padding:clamp(10px,2vw,22px);background:rgba(0,5,11,.985);backdrop-filter:blur(10px);color:#f2fbff}
     .cp-showcase-header{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:60px}
     .cp-showcase-header b{display:block;font-size:clamp(15px,2vw,23px);margin-top:4px}
     .cp-showcase-header small{display:block;color:#8badbe;margin-top:3px;font-size:11px}
@@ -912,7 +1200,7 @@ this.error=null}catch(e){this.error=e?.message||String(e)}finally{this.loading=f
     .cp-showcase-arrow{height:74px;width:52px}
     .cp-showcase-close ha-icon,.cp-showcase-arrow ha-icon{--mdc-icon-size:28px}
     .cp-showcase-stage{display:grid;grid-template-columns:52px minmax(0,1fr) 52px;gap:10px;align-items:center;min-height:0;justify-items:center}
-    .cp-showcase-stage #cp-showcase-image{display:block;width:100%!important;height:100%!important;max-width:min(92vw,1920px)!important;max-height:calc(100dvh - 175px)!important;min-height:0;object-fit:contain!important;object-position:center;border:1px solid rgba(61,185,237,.3);border-radius:12px;background:#020a12}
+    .cp-showcase-stage #cp-showcase-image{display:block;width:100%!important;height:100%!important;max-width:none!important;max-height:100%!important;min-height:0;object-fit:contain!important;object-position:center;border:1px solid rgba(61,185,237,.3);border-radius:12px;background:#020a12}
     .cp-showcase-footer{display:flex;justify-content:space-between;align-items:center;gap:15px;font-size:12px;color:#8fb8cb;min-height:28px}
     .cp-showcase-footer #cp-showcase-counter{color:#45c9ff;font-weight:900}
     .detail .real-preview-card:focus-visible,.detail .real-board:focus-visible{outline:3px solid #26baff;outline-offset:2px}
@@ -1306,6 +1594,8 @@ p.closePresentation476=function(...args){const result=close.apply(this,args);if(
   .cp-product-story,.cp-product-faq details{padding:clamp(16px,2.6vw,34px);border:1px solid #345569;border-radius:16px;background:#102636}
   .cp-product-story.has-image{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(14px,3vw,40px);align-items:center}
   .cp-product-story figure{margin:0;min-width:0}
+    .cp-story-image{display:block;width:100%;padding:0;border:0;border-radius:12px;background:#020a12;cursor:zoom-in}
+    .cp-story-image:focus-visible{outline:3px solid #26baff;outline-offset:2px}
   .cp-product-story figure img{display:block;width:100%;max-height:56vh;object-fit:contain;border:1px solid #345569;border-radius:10px;background:#071825}
   .cp-product-story figcaption{margin-top:8px;color:#c0d6e5}
   .cp-product-story aside{margin-top:16px;padding:12px 16px;border-left:3px solid #76ddec;background:#091c2a}
