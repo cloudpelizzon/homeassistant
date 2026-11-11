@@ -3,6 +3,7 @@ from pathlib import Path
 import argparse
 import hashlib
 import json
+import re
 import subprocess
 import zipfile
 
@@ -12,7 +13,12 @@ MARKETPLACE_LIMIT = 100 * 1024 * 1024
 PACKAGE_BUDGET = 90 * 1024 * 1024
 EXTRACTED_BUDGET = 99 * 1024 * 1024
 
+VERSION_PATTERN = '(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-((?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*)(?:\\.(?:0|[1-9][0-9]*|[0-9]*[A-Za-z-][0-9A-Za-z-]*))*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?'
+
 def build(output):
+    version = json.loads((COMPONENT / 'manifest.json').read_text(encoding='utf-8'))['version']
+    if not isinstance(version, str) or not re.fullmatch(VERSION_PATTERN, version):
+        raise ValueError('Version must use SemVer (MAJOR.MINOR.PATCH)')
     names = subprocess.check_output(
         ['git', 'ls-files', '-z', 'custom_components/cloudpelizzon'], cwd=ROOT
     ).decode().split('\0')
@@ -41,7 +47,7 @@ def build(output):
         assert archive.testzip() is None
         assert sum(member.file_size for member in archive.infolist()) == extracted_size
         assert len(archive.namelist()) == len(names)
-        version = json.loads(archive.read('manifest.json'))['version']
+        assert json.loads(archive.read('manifest.json'))['version'] == version
         for name in names:
             assert archive.read((ROOT / name).relative_to(COMPONENT).as_posix()) == (ROOT / name).read_bytes()
     size = output.stat().st_size

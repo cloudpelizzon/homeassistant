@@ -11,7 +11,7 @@
     ".github/workflows/hacs.yml": "49ee7ee13d75c9f23e5bbfabe937e9f4f3446043e9e657adb24ad088669fec2b",
     ".github/workflows/validate.yml": "5d1eca30136a34081dee61ef5dec2d00aa69cf6ccd4c4f9758b761c44c30b331",
     ".gitignore": "861f6bdee7ac8983b0946925848b8f35b312096ecb5eb0d4e8216e9b9ed3f21e",
-    "CHANGELOG.md": "1d76d96c7a67a40cd12e0a5a96af4d7699dfa6a85695f27683806a704465ae90",
+    "CHANGELOG.md": "2755b3c1c6014f3d932b0812a237c40c8bc98029d1d6901ab5cb4ebe590eb308",
     "LICENSE": "cbca8e08a579d17baccf35655af30ff2666c28e8bfb422717ee9e9f47fee28b2",
     "README.md": "ba75659d4b40f6356d9a322e20434c752fb93fc9f2c8d19939e82d35f84ea298",
     "SECURITY.md": "c07a9a4d18217599882bddd38e68fb63f167a3c4382bca587da37f854eab78c4",
@@ -124,7 +124,7 @@
     "custom_components/cloudpelizzon/local_ownership300.py": "a58174306447853a98913aa850e9ea86dc40d400ce4aac474ff85c4ba12ab807",
     "custom_components/cloudpelizzon/local_security_migration287.py": "f5c366703697102a63d25cdb40a336d94dbf1c952be088ac5f59f5aaabf8d393",
     "custom_components/cloudpelizzon/maintenance_catalog253.py": "e890618c8c6ecacfb7afd9d6fbfac79b611f4f52256aefd2a340f876b3e50c87",
-    "custom_components/cloudpelizzon/manifest.json": "350cf752da40874f10a35137ad2348016eb9244ade00216767e6ad729e806c5d",
+    "custom_components/cloudpelizzon/manifest.json": "e9744477a54d7d79fd3ff731c65067d4bddb1c01ebc3416b98032cdcfba1d003",
     "custom_components/cloudpelizzon/migration213.py": "02e185c4c880a78bfd1617ccbb469a5848e6d7bdbac9374ce985b299157f94ea",
     "custom_components/cloudpelizzon/module_coordinator253.py": "1a2c8eb556967003d553909d9d94559e8eb57c3743ad87c8f41e00a83b54e646",
     "custom_components/cloudpelizzon/module_coordinator295.py": "c3cbae6983974bc66f02d6c794254aabf0ab813eb1d6679cf1b0b639561afef3",
@@ -504,7 +504,7 @@
     "custom_components/cloudpelizzon/ui/solar/assets/solar-plant-v17.png": "3c019275f19451b78fdaa94af8383e236cbb0b979feae84663d69b7c27c75986",
     "custom_components/cloudpelizzon/ui/solar/energy-card.js": "3c6e54d9a066cfcedf65df07d3f8dd50ff7187774264332f71be2fbf76a9687b",
     "custom_components/cloudpelizzon/ui/solar/panel.js": "5aa65261e59d8047c362596b2c64e12ed98a2019679f050f272dc571dd48fca5",
-    "custom_components/cloudpelizzon/ui/updater/panel.js": "a8bd7af509a4fb24478ded7e63d7e0409714e32794db8ae3cc07e9d90db1db9d",
+    "custom_components/cloudpelizzon/ui/updater/panel.js": "0bd48d5d2e8efac4132fd5c0a212adc54212d8e6977b8591e4e320646d95ace3",
     "custom_components/cloudpelizzon/ui_inventory.json": "d0d93eabb36682210a8ca026231e0722e339dbd8a875a4fccc6820ce9e0da5c8",
     "custom_components/cloudpelizzon/ui_inventory.py": "294d7ae693c24ea361842b7ac6734e0b2676b2af3ac8af86fc99e7a46d37d815",
     "docs/acompanhamento-trials-alpha60.md": "5e1860910d987e52a662b34b0011c315de686c48ba6f2f5faa1b75d1ce53fdd0",
@@ -564,7 +564,7 @@
     "tests/public-client/test_writer.cjs": "3852b3736a872dde3dafc88ae5ff4a561a1f2923252a568603df65844b67eab0",
     "tests/public-client/test_xlsx_compat.cjs": "7a8dd0224f12f48b3bb1cb81f5fb00398e383c489e6a6b21a1b14f7d34a9d2b3",
     "tests/test-updater-docs501.js": "be2d22f641d5ffc048d73e7a4f91caa741000f16c995b4c6a67500421de4e848",
-    "tools/build_public_release.py": "265dda20fde88ec39ec355a554b19fdf06fb71cdded0549a8226e90e26e73a43",
+    "tools/build_public_release.py": "85e9d6f7757e22438c668c7c0275ce8afa440b279232d6054a7b7378074f5bc2",
     "tools/verify_public_tree.py": "cdaf81760490282bcdda7249f137e72cd17bc2293812e8cab62630df042db739"
   }
 }
