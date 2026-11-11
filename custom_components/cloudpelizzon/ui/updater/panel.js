@@ -845,6 +845,38 @@ customElements.define('cloudpelizzon-updater-panel',CloudPelizzonUpdaterPanel);
  };
 })();
 
-/* CP_DOCUMENTATION233: theme-specific manuals and independent release notes. */
-(()=>{const C=customElements.get('cloudpelizzon-updater-panel');if(!C)return;const p=C.prototype,render=p.render,base='https://documentacao.cloudpelizzon.com.br',docs=[["CloudPelizzon Core", "cliente/sistemas/core/manual-operacao-20261026", "notas-de-versao/core/2026-10-26"], ["Inteligência Solar", "modulos/solar/manual-operacao-20261026", "notas-de-versao/energia/2026-10-26"], ["Manutenção Residencial Preventiva", "manutencao/manual-operacao-20261026", "notas-de-versao/manutencao/2026-10-26"], ["Documentação e Atualizações", "cliente/sistemas/documentacao/manual-operacao-20261026", "notas-de-versao/central-de-atualizacoes/2026-10-26"], ["Central de Segurança Pro", "modulos/seguranca/manual-operacao-20261026", "notas-de-versao/seguranca/2026-10-26"], ["Central Inteligente de Automações", "modulos/automacoes/manual-operacao-20261026", "notas-de-versao/automacoes/2026-10-26"], ["Iluminação Inteligente", "modulos/iluminacao/manual-operacao-20261026", "notas-de-versao/iluminacao/2026-10-26"], ["Inventário", "modulos/inventario/manual", "notas-de-versao/inventario/0-1-0-dev-r620"]];
-p.render=function(){render.call(this);const main=this.querySelector('main');if(!main)return;const section=document.createElement('section');section.className='card';section.style.marginTop='22px';section.innerHTML=`<h2>Documentação e notas de versão</h2><p class="muted">Manuais de processo e notas de alteração organizados por produto. Consulte o manual e as notas publicadas de cada módulo.</p><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px">${docs.filter(([name])=>{const sku={'Inteligência Solar':'CP-SOLAR','Manutenção Residencial Preventiva':'CP-MAINTENANCE','Central de Segurança Pro':'CP-SECURITY','Central Inteligente de Automações':'CP-AUTOMATION','Iluminação Inteligente':'CP-LIGHTING'}[name];return !sku||(this.data?.licensed_modules||[]).some(x=>x===sku||sku==='CP-SECURITY'&&x==='CP-SECURITY-PRO');}).map(([name,manual,notes])=>`<article class="doc488" style="padding:20px;border:1px solid #236583;border-radius:14px;background:#092638"><strong>${name}</strong><p class="muted">Processo, diagnóstico e histórico de alterações.</p><p><a target="_blank" rel="noopener noreferrer" href="${base+'/'+manual}" style="color:#5be4ff">Consultar manual ↗</a></p><a target="_blank" rel="noopener noreferrer" href="${base+'/'+notes}" style="color:#c2eaff">Notas de versão ↗</a></article>`).join('')}</div><p><a href="${base}/modulos" target="_blank" rel="noopener noreferrer" style="color:#4fdaff">Abrir módulos na documentação ↗</a></p>`;main.append(section);};})();
+/* CP_DOCUMENTATION233: canonical guides and release indexes by SKU. */
+(() => {
+ const Panel=customElements.get('cloudpelizzon-updater-panel');
+ if(!Panel)return;
+ const render=Panel.prototype.render;
+ const base='https://documentacao.cloudpelizzon.com.br/';
+ const guides={
+  'CP-SOLAR':['Inteligência Solar','modulos/solar','energia'],
+  'CP-MAINTENANCE':['Manutenção Residencial Preventiva','manutencao','manutencao'],
+  'CP-SECURITY':['Central de Segurança','modulos/seguranca','seguranca'],
+  'CP-SECURITY-PRO':['Central de Segurança Pro','modulos/seguranca','seguranca'],
+  'CP-AUTOMATION':['Central Inteligente de Automações','modulos/automacoes','automacoes'],
+  'CP-LIGHTING':['Iluminação Inteligente','modulos/iluminacao','iluminacao'],
+  'CP-INVENTORY':['Inventário','modulos/inventario','inventario'],
+  'CP-FINANCE':['Finanças','modulos/financas','financas'],
+ };
+ const shared=[
+  ['CloudPelizzon Core','cliente/sistemas/core/manual-operacao-20261026','core'],
+  ['Documentação e Atualizações','cliente/sistemas/documentacao/manual-operacao-20261026','central-de-atualizacoes'],
+ ];
+ const escape=v=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const anchor=(path,label)=>'<a target="_blank" rel="noopener noreferrer" href="'+base+path+'" style="color:#5be4ff">'+label+' ↗</a>';
+ Panel.prototype.render=function(){
+  render.call(this);
+  const main=this.querySelector('main');if(!main)return;
+  const d=this.data||{},components=new Map((d.components||[]).map(c=>[c.sku,c]));
+  const licensed=new Set(d.licensed_modules||[]);
+  const rows=[...shared,...Array.from(licensed,sku=>Object.hasOwn(guides,sku)?guides[sku]:[components.get(sku)?.name||sku])];
+  const section=document.createElement('section');
+  section.className='card';section.style.marginTop='22px';
+  const cards=rows.map(([name,manual,notes])=>'<article class="doc488" style="padding:20px;border:1px solid #236583;border-radius:14px;background:#092638"><strong>'+escape(name)+'</strong>'+(manual?'<p>'+anchor(manual,'Consultar manual')+'</p>'+anchor('notas-de-versao/'+notes,'Notas de versão'):'<p class="muted">Ainda sem manual ou notas de versão próprios na central.</p>')+'</article>').join('');
+  section.innerHTML='<h2>Documentação e notas de versão</h2><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px">'+cards+'</div><p>'+anchor('modulos','Ver catálogo de documentação')+'</p>';
+  main.append(section);
+ };
+})();
