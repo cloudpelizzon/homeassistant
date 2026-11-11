@@ -50871,7 +50871,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
 
 
-  updateRequestCTA161(){const finance=this.shadowRoot?.querySelector('button[data-view="finance"]');if(finance)finance.style.display=this._paidModules162?.["CP-FINANCE"]===true?"":"none";const button=this.shadowRoot?.querySelector("[data-module-request161]");if(button){button.hidden=!this.requestSku161()||this._paidModules162?.[this.requestSku161()]===true;button.dataset.sku=this.requestSku161()||"";}}
+  updateRequestCTA161(){const finance=this.shadowRoot?.querySelector('button[data-view="finance"]');if(finance?.style)finance.style.display=this._paidModules162?.["CP-FINANCE"]===true?"":"none";const button=this.shadowRoot?.querySelector("[data-module-request161]");if(button){button.hidden=!this.requestSku161()||this._paidModules162?.[this.requestSku161()]===true;button.dataset.sku=this.requestSku161()||"";}}
 
 
 
