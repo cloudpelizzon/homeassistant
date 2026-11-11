@@ -225,7 +225,7 @@
     "ui/inventory/maintenance612.js": "098eebae8aa798aa235f32f4a7ace4ef1f013dad90ff3c5da5d38fac00d8ce13",
     "ui/inventory/mapPrint592.js": "c2e5b93aae78197dbd0d2cec682b57c2dbf6fd99a99ddf254131558ba7e041c1",
     "ui/inventory/navigation650.js": "c54551ede630d0b09118c6b079d05e230a4625a0701a17bbc1fc51e35ea843cd",
-    "ui/inventory/panel.js": "712bd5627b67ed9332becc89a80968c124bc4c754d211bc0f574b102708807c9",
+    "ui/inventory/panel.js": "fc21ebe9a0d21cd4362f3d636037208850523632f94bd4b48204661449fc195b",
     "ui/inventory/pipeControls606.js": "caa94e86d431a38c576de98060f52c8a8967b22c867b7d56abb52336a25ca2ad",
     "ui/inventory/portalSync616.js": "f4bdc80e925e3304ee7381c5da98dcb1e1112e9edca4c49ff4a46f9346672a54",
     "ui/inventory/previewCache597.js": "e7ab731fc7e725725e0376e40c2b81edae7b847ddb6461d8d098937836439d29",
@@ -244,7 +244,7 @@
     "ui/inventory/styled611.js": "1babd709ea920ef7e8b12cbfe5ee3287fc21d83eb1322ccd44408e51d5fc446d",
     "ui/inventory/tanks603.js": "c4dcaae868035a66e794d15e1d52b56fac02f530bb49aeb36c73d5b297e9dde3",
     "ui/inventory/topology.css": "fc565ceac4b34f2b6e6a228adca150a81dbd2438e13b73ff5fa65b01545efdd6",
-    "ui/inventory/topology.js": "0eacbdb93c31ae29a54b1dafd8691fdfefac4590de84e5abb90509894b8963e2",
+    "ui/inventory/topology.js": "c3dcf747aa75517991945087c73a854a7c96a8c253833b338c372e1f3dd70cc0",
     "ui/inventory/vehicles585.js": "7fdd76d0daab67bfe8e9c0f9a50815e5dc5ae7071c1557cf7088cc4eb22a0990",
     "ui/inventory/vendor/BufferGeometryUtils.js": "018b6ec0dcbbaea7d68b02d8d1162ab37783b9dbd4cc85fdbc35506690a993ea",
     "ui/inventory/vendor/draco_decoder582.js": "8625489da79a805f4f2a7d511c3e52d8b4085608a9d2a4d5f4f9de5db0aea04f",
@@ -313,12 +313,12 @@
     "ui/shell/finance-install661.js": "6dba6593f68579db23fe504d1163e5bb4526059b3d67f835f29c4e6f45285293",
     "ui/shell/finance-panel.js": "9743c08caeadd82c5ab24094a96778ce84f67b2803c66196f5a01220abc4be64",
     "ui/shell/optional-modules.js": "3610e2205406e5e0c24fedc7349ed4a0ee8e582a3177af534b235f74d516a3bc",
-    "ui/shell/panel.js": "568e80d455b0da97de4f275048bd996ede4b9bcf22e178b1fdd6d92b08d695ce",
+    "ui/shell/panel.js": "03b0a5c76cdcea526f45e107766d0855c5c264d51b93de42fe4c9b5c69f624c2",
     "ui/solar/assets/copel-tower-v17.png": "a35bc0e3aca232e67e40c13b108fc0ea8f4b04c688b58dfbbbd7dec4b2246413",
     "ui/solar/assets/house-v17.png": "13ef57073e71ae554b953916e1ff0a2c3e37738cf2fac0212291b4975041f2bd",
     "ui/solar/assets/solar-plant-v17.png": "3c019275f19451b78fdaa94af8383e236cbb0b979feae84663d69b7c27c75986",
     "ui/solar/energy-card.js": "3c6e54d9a066cfcedf65df07d3f8dd50ff7187774264332f71be2fbf76a9687b",
     "ui/solar/panel.js": "5aa65261e59d8047c362596b2c64e12ed98a2019679f050f272dc571dd48fca5",
-    "ui/updater/panel.js": "a8bd7af509a4fb24478ded7e63d7e0409714e32794db8ae3cc07e9d90db1db9d"
+    "ui/updater/panel.js": "2321e3c8a37a30e474a9b91c7a981ef1da25d049c7d00a6c3cd3163ec4180e05"
   }
 }

@@ -1,5 +1,10 @@
 ## 7.0.6 — localização e tela cheia do Inventário, formulário de Manutenção
 
+## 7.0.16
+
+- Padroniza as versões exibidas em Atualizações e identifica revisões legadas.
+- Valida SemVer ao gerar o pacote da integração.
+
 ## 7.0.15
 
 - Keep the Finance gallery at its original resolution with smaller WebP files.

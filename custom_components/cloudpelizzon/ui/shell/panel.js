@@ -1,4 +1,4 @@
-import "/cloudpelizzon-inventory/frontend/panel.js?v=712bd5627b67ed9332becc89a80968c124bc4c754d211bc0f574b102708807c9";
+import "/cloudpelizzon-inventory/frontend/panel.js?v=fc21ebe9a0d21cd4362f3d636037208850523632f94bd4b48204661449fc195b";
 
 
 
@@ -122,7 +122,7 @@ import "/cloudpelizzon/frontend/optional-modules.js?v=3610e2205406e5e0c24fedc734
 
 
 
-import "/cloudpelizzon-updater/frontend/panel.js?v=a8bd7af509a4fb24478ded7e63d7e0409714e32794db8ae3cc07e9d90db1db9d";
+import "/cloudpelizzon-updater/frontend/panel.js?v=2321e3c8a37a30e474a9b91c7a981ef1da25d049c7d00a6c3cd3163ec4180e05";
 
 
 
@@ -31341,7 +31341,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
 
         <button data-view="inventory"><ha-icon icon="mdi:lan"></ha-icon>Inventário</button>
-        <button data-view="finance"><ha-icon icon="mdi:finance"></ha-icon>Finanças</button>
+        <button data-view="finance" style="${this._paidModules162?.['CP-FINANCE']===true?'':'display:none'}"><ha-icon icon="mdi:finance"></ha-icon>Finanças</button>
 
 
 
@@ -50871,7 +50871,7 @@ class CloudPelizzonPanel extends HTMLElement {
 
 
 
-  updateRequestCTA161(){const button=this.shadowRoot?.querySelector("[data-module-request161]");if(button){button.hidden=!this.requestSku161()||this._paidModules162?.[this.requestSku161()]===true;button.dataset.sku=this.requestSku161()||"";}}
+  updateRequestCTA161(){const finance=this.shadowRoot?.querySelector('button[data-view="finance"]');if(finance?.style)finance.style.display=this._paidModules162?.["CP-FINANCE"]===true?"":"none";const button=this.shadowRoot?.querySelector("[data-module-request161]");if(button){button.hidden=!this.requestSku161()||this._paidModules162?.[this.requestSku161()]===true;button.dataset.sku=this.requestSku161()||"";}}
 
 
 
