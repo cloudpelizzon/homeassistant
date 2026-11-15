@@ -397,6 +397,21 @@ class Rooms333:
   else:
    permitted={x['room_id'] for x in snap['configuration']['items'] if x.get('visible') is True}
    rooms=[{**r,'picture':None} for r in snap['configuration']['rooms'] if user.is_admin or r['id'] in permitted];assignments={}
+   if rooms and self.hass.data.get('cloudpelizzon_homolog_mirror'):
+    try:
+     if self.mirror() is not None:
+      areas,entities,devices=await self.registries(refresh)
+      source_rooms,_=ha_projection333(areas,entities,devices,set(snap.get('states',{})),user.is_admin)
+      def name_key(name):
+       return ' '.join(unicodedata.normalize('NFKC',name).casefold().split())
+      pictures={}
+      for area in source_rooms:
+       key=name_key(area['name'])
+       pictures[key]=None if key in pictures else area.get('picture')
+      for room in rooms:
+       room['picture']=pictures.get(name_key(room['name']))
+    except (PermissionError,TimeoutError,OSError,ValueError):
+     pass
   permitted=set(snap.get('states',{})) if not user.is_admin else {x['entity_id'] for x in snap['configuration']['items']}
   if record['mode']=='ha':
    valid={r['id'] for r in rooms}
@@ -424,8 +439,8 @@ class Rooms333:
   return {'entity_id':eid,'image_ref':image['digest'],'data':image['data']}
 
  async def raw_room_image337(self,view,room,iid):
-  if view['mode']=='custom':image=(await self.record(iid))['images'].get(room['id'])
-  elif room.get('picture'):
+  image=(await self.record(iid))['images'].get(room['id']) if view['mode']=='custom' else None
+  if image is None and room.get('picture'):
    path=room['picture'];mirror=self.mirror();key=(mirror.source if mirror else 'local',path)
    digest=hashlib.sha256(json.dumps(key).encode()).hexdigest();cached=await self.room_cache337.async_load() or {}
    if key in self.image_cache or digest in cached:image=self.image_cache.get(key) or cached[digest]
@@ -460,13 +475,12 @@ class Rooms333:
      cached=await self.room_cache337.async_load() or {};cached[digest]=image
      while len(cached)>64 or sum(len(v['data']) for v in cached.values())>12*1024*1024:cached.pop(next(iter(cached)))
      await self.room_cache337.async_save(cached)
-  else:image=None
   return image['data'] if image else None
  async def cached_room_images337(self,rooms,record):
   mirror=self.mirror();cache=await self.room_cache337.async_load() or {};result={};size=0
   for room in rooms:
    image=record['images'].get(room['id']) if record['mode']=='custom' else None
-   if record['mode']=='ha' and room.get('picture'):
+   if image is None and room.get('picture'):
     key=(mirror.source if mirror else 'local',room['picture']);digest=hashlib.sha256(json.dumps(key).encode()).hexdigest();image=self.image_cache.get(key) or cache.get(digest)
    if image and room.get('image_ref') and size+len(image['data'])<3*1024*1024:
     result[room['id']+':'+room['image_ref']]=image['data'];size+=len(image['data'])
