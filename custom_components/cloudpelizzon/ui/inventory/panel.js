@@ -8,7 +8,7 @@ import {roofScreen601,bindRoofs601} from './roofControls601.js?v=607';
 import {conflictScreen600,bindConflicts600} from './conflicts600.js?v=612';
 import {mapReportCard592,openMapPrint592} from './mapPrint592.js?v=611';
 import {connectorCoverage} from "/cloudpelizzon-inventory/frontend/connector-view.js?v=613";
-import {bindStudio560,renderTopology,topologySvg,bindTopology,renderOverview,bindAtlas,mediumSelect526,ICON_LIBRARY520,renderIcon520,inferMedium539} from "/cloudpelizzon-inventory/frontend/topology.js?v=f9c76649055939777ab5cfe2c0773a2c629c39a2b14931e1dceb763544438901";
+import {bindStudio560,renderTopology,topologySvg,bindTopology,renderOverview,bindAtlas,mediumSelect526,ICON_LIBRARY520,renderIcon520,inferMedium539} from "/cloudpelizzon-inventory/frontend/topology.js?v=9aba01a9c7e55fba56f027c93d6654d05796f65065e78607489875b5994fcde6";
 import {saveXlsx,printReport} from "/cloudpelizzon-inventory/frontend/reports.js?v=caec9f371c2d752b205c5617f2ced5d9971f2828c88ea181ce205c5e4c790357";
 export function duplicateDraft551(source){
  const d=structuredClone(source);d.name=(d.display_name||d.name).slice(0,148)+' (cópia)';d.display_name=d.name;d.id='';d.primary_ip='';d.manual_addresses=[];d.addresses=[];d.identifiers=[];

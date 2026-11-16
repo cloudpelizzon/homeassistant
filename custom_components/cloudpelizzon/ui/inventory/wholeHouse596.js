@@ -1,14 +1,17 @@
 import{openExterior612 as e}from"./exterior612.js?v=612";const o=e=>String(e??"").replace(/[&<>"']/g,e=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[e]));
 // Keep the free plan in storage, but omit its duplicate rooms from the assembled house.
-export function importedDuplicateRooms(house) {
+export function importedDuplicateRooms(house, areaNames = new Map()) {
   const freeFloorIds = new Set(house.floors.filter(floor => floor.id.startsWith('prod-free-')).map(floor => floor.id));
   const roomName = room => String(room.label || room.name || '').normalize('NFKC').trim().replace(/\s+/g, ' ').toLocaleLowerCase('pt-BR');
-  const mainRoomNames = new Set(house.rooms.filter(room => !freeFloorIds.has(room.floor_id)).map(roomName).filter(Boolean));
+  const mainRoomNames = new Set(house.rooms.filter(room => !freeFloorIds.has(room.floor_id)).map(room => {
+    const sourceId = room.area_id.replace(/^source_area:/, '');
+    return roomName({label: room.label, name: room.name || areaNames.get(room.area_id) || areaNames.get(sourceId)});
+  }).filter(Boolean));
   return new Set(house.rooms.filter(room =>
     freeFloorIds.has(room.floor_id) && room.area_id.startsWith('plan-free-') && mainRoomNames.has(roomName(room))
   ).map(room => room.area_id));
 }
-export function openWholeHouse596(a,t){let i,n=structuredClone(a.data.settings.house),s=JSON.stringify(n),r="move",l=n.floors[1]?.id||n.floors[0]?.id,d={yaw:-30,elevation:28},c=!1,u=[],m=null;const duplicates=importedDuplicateRooms(n);
+export function openWholeHouse596(a,t){let i,n=structuredClone(a.data.settings.house),s=JSON.stringify(n),r="move",l=n.floors[1]?.id||n.floors[0]?.id,d={yaw:-30,elevation:28},c=!1,u=[],m=null;const duplicates=importedDuplicateRooms(n,new Map(t.names.map(area=>[area.id,area.name])));
 const displayedFloors=n.floors.filter(floor=>{
  const rooms=n.rooms.filter(room=>room.floor_id===floor.id);
  return !rooms.length||rooms.some(room=>!duplicates.has(room.area_id));
