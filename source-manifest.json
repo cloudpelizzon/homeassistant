@@ -125,7 +125,7 @@
     "custom_components/cloudpelizzon/local_ownership300.py": "a58174306447853a98913aa850e9ea86dc40d400ce4aac474ff85c4ba12ab807",
     "custom_components/cloudpelizzon/local_security_migration287.py": "f5c366703697102a63d25cdb40a336d94dbf1c952be088ac5f59f5aaabf8d393",
     "custom_components/cloudpelizzon/maintenance_catalog253.py": "e890618c8c6ecacfb7afd9d6fbfac79b611f4f52256aefd2a340f876b3e50c87",
-    "custom_components/cloudpelizzon/manifest.json": "c0740d784c0ff094a6615492dcb4f437835da9567cae2f58ad8a256b2ced5699",
+    "custom_components/cloudpelizzon/manifest.json": "ce62016566bf3ba60d907d68b958b5e1da5c457fd2ef75a15b4fb211950d4bb5",
     "custom_components/cloudpelizzon/migration213.py": "02e185c4c880a78bfd1617ccbb469a5848e6d7bdbac9374ce985b299157f94ea",
     "custom_components/cloudpelizzon/module_coordinator253.py": "1a2c8eb556967003d553909d9d94559e8eb57c3743ad87c8f41e00a83b54e646",
     "custom_components/cloudpelizzon/module_coordinator295.py": "c3cbae6983974bc66f02d6c794254aabf0ab813eb1d6679cf1b0b639561afef3",
