@@ -97,7 +97,7 @@ class Runtime:
             self.stage = 'trial_websocket'
             from .engine_hooks298 import prepare_trial as prepare_registered_trial, trial_activated as registered_trial_activated
             async def prepare_trial(sku):await prepare_registered_trial(self.hass,context,sku)
-            def trial_activated(sku):registered_trial_activated(self.hass,context,sku)
+            async def trial_activated(sku):await registered_trial_activated(self.hass,context,sku)
             self.closers.append(public_trials.register(self.hass, context['client'],prepare=prepare_trial,activated=trial_activated))
             self.stage = 'portal_fleet'
             handoff = await onboarding(self.hass, self.entry, context)

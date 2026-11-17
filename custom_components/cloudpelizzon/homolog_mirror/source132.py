@@ -128,13 +128,14 @@ def execution_events(rows,ids,start,end,tz):
  return counts,hours,by_entity
 
 async def daily(hass):
- from zoneinfo import ZoneInfo
  from homeassistant.util import dt as dt_util
  mirror=observer(hass)
  config=await request(mirror,'get_config')
  zone=config.get('time_zone') if isinstance(config,dict) else None
  if not isinstance(zone,str):raise ValueError('source_timezone_unavailable')
- tz=ZoneInfo(zone);now=dt_util.utcnow().astimezone(tz);start=now.replace(hour=0,minute=0,second=0,microsecond=0)
+ tz=await dt_util.async_get_time_zone(zone)
+ if tz is None:raise ValueError('source_timezone_unavailable')
+ now=dt_util.utcnow().astimezone(tz);start=now.replace(hour=0,minute=0,second=0,microsecond=0)
  ids=sorted(eid for eid in mirror.owned if eid.startswith('automation.'))
  cached=getattr(mirror,'daily_cache',None)
  key=(start.isoformat(),tuple(ids))

@@ -9,10 +9,13 @@ from .module_package243 import sha
 from .module_profile298 import REGISTRY_SHA,ENGINE_PROFILES
 from .tenant_migration246 import safe
 
-async def register(hass,entry,context):
+def _load_reviewed_registry():
  path=safe(Path(__file__).with_name('module_registry294.json'))
  if sha(path.read_bytes())!=REGISTRY_SHA:raise PermissionError('reviewed_module_registry_required')
- registry=Registry.load(path)
+ return Registry.load(path)
+
+async def register(hass,entry,context):
+ registry=await hass.async_add_executor_job(_load_reviewed_registry)
  close_legacy=await legacy_common.register(hass,entry,context);close_catalog=None
  try:
   legacy=hass.data[legacy_native.KEY];bridge=hass.data['cloudpelizzon']['core']['status_transport'];adapters={}

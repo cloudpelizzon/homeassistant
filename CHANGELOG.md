@@ -1,3 +1,7 @@
+## 7.0.21
+
+- Move integration file reads and timezone loading off the Home Assistant event loop.
+
 ## 7.0.6 — localização e tela cheia do Inventário, formulário de Manutenção
 
 ## 7.0.16

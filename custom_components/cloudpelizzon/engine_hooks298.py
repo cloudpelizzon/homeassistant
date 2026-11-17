@@ -42,5 +42,9 @@ def hook(sku):
  spec=Registry.load(path).get(sku)
  if spec.runtime_adapter not in ENGINE_HOOKS:raise PermissionError('module_trial_adapter_not_connected')
  return ENGINE_HOOKS[spec.runtime_adapter]
-async def prepare_trial(hass,context,sku):return await hook(sku).prepare_trial(hass,context)
-def trial_activated(hass,context,sku):return hook(sku).trial_activated(hass,context)
+async def prepare_trial(hass,context,sku):
+ hooks=await hass.async_add_executor_job(hook,sku)
+ return await hooks.prepare_trial(hass,context)
+async def trial_activated(hass,context,sku):
+ hooks=await hass.async_add_executor_job(hook,sku)
+ return hooks.trial_activated(hass,context)

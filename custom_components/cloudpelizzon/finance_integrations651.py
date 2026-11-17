@@ -9,10 +9,10 @@ import json
 import re
 import unicodedata
 from uuid import NAMESPACE_URL, uuid4, uuid5
-from zoneinfo import ZoneInfo
 
 import aiohttp
 from homeassistant.core import Context
+from homeassistant.util import dt as dt_util
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.event import async_call_later, async_track_time_interval
 from homeassistant.helpers.storage import Store
@@ -676,7 +676,8 @@ class FinanceIntegrations:
         return count, detail
 
     async def sync_b3_history(self, session, now):
-        today = now.astimezone(ZoneInfo('America/Sao_Paulo')).date()
+        zone = await dt_util.async_get_time_zone('America/Sao_Paulo')
+        today = now.astimezone(zone).date()
         cached = self.saved.get('market_b3_history', {})
         if self.saved.get('market_b3_history_attempt') == today.isoformat():
             return cached
@@ -734,7 +735,7 @@ class FinanceIntegrations:
                 if len(payload) > 128_000:
                     raise ValueError('Resposta de mercado acima do limite')
         history = {}
-        eastern = ZoneInfo('America/New_York')
+        eastern = await dt_util.async_get_time_zone('America/New_York')
         for line in payload.splitlines():
             row = json.loads(line)
             if not isinstance(row, dict) or row.get('symbol') != ticker or row.get('is_gap'):
@@ -799,9 +800,10 @@ class FinanceIntegrations:
         if not price:
             raise ValueError('Cotação indisponível')
         history = {}
+        history_zone = await dt_util.async_get_time_zone('America/Sao_Paulo')
         for row in (result.get('historicalDataPrice') or [])[-100:]:
             try:
-                day = datetime.fromtimestamp(row['date'],tz=ZoneInfo('America/Sao_Paulo')).date().isoformat()
+                day = datetime.fromtimestamp(row['date'],tz=history_zone).date().isoformat()
                 close = cents(row.get('close'))
             except (KeyError,TypeError,ValueError,OverflowError,OSError):
                 continue
@@ -815,7 +817,7 @@ class FinanceIntegrations:
                 'history':sorted(history.items())}
 
     async def import_market_csv(self, content, *, preview=False):
-        today = datetime.now(ZoneInfo(self.hass.config.time_zone)).date()
+        today = dt_util.now().date()
         points = parse_market_csv(content,today)
         if preview:
             grouped = {}
@@ -875,7 +877,7 @@ class FinanceIntegrations:
         return count
 
     async def run(self, actor, state, command, active, *, scheduled=False, sources=None):
-        now = datetime.now(ZoneInfo(self.hass.config.time_zone))
+        now = dt_util.now()
         config = self.config()
         if (sources is None or 'sensors' in sources) and not self.saved.get('energy_cost_setup') and not any(link['kind']=='electricity' for link in config['sensors']):
             candidates = {row['id']:row for row in self.choices()['sensors'] if row['monthly'] and row['unit']=='kWh'}
