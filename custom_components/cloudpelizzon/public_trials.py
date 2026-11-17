@@ -1,6 +1,7 @@
 """Original explicit trial button transport. No automatic activation or keys."""
 import asyncio
 from functools import partial
+from inspect import isawaitable
 import probatio
 from homeassistant.components import websocket_api
 
@@ -35,7 +36,9 @@ async def dispatch(hass,connection,msg):
             if not await authorized():raise PermissionError('session_or_runtime_changed')
         result=await hass.async_add_executor_job(partial(state['client'].activate,msg['sku'],confirmed=True))
         if not await authorized():raise PermissionError('session_or_runtime_changed')
-        if state['activated'] is not None:state['activated'](msg['sku'])
+        if state['activated'] is not None:
+            activated=state['activated'](msg['sku'])
+            if isawaitable(activated):await activated
         claim=result['claims']
         connection.send_result(msg['id'],{'first_activation':result['first_activation'],
             'sku':claim['sku'],'phase':claim['phase'],'blocks_at':claim['blocks_at'],

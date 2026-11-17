@@ -19,7 +19,9 @@ def attach(hass,entry,context,registration,root):
     from .compiled_bootstrap628 import provision
     await hass.async_add_executor_job(partial(provision,root,context,force=sku));guard(connection)
     if sku=='CP-INVENTORY':
-     runtime=hass.data['cloudpelizzon_inventory506'];packet=json.loads((root/sku/'inventory-entitlement.json').read_bytes())
+     runtime=hass.data['cloudpelizzon_inventory506']
+     packet=await hass.async_add_executor_job((root/sku/'inventory-entitlement.json').read_bytes)
+     packet=json.loads(packet)
      await hass.async_add_executor_job(runtime.engine.install_license,packet)
     result={'installed':True,'engine_mode':'local','reused':True,'compiled':True,'core_restart_required':False}
    else:
