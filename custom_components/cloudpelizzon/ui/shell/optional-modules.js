@@ -5,7 +5,7 @@ const OPTIONAL_MODULES = {
   "CP-MAINTENANCE": {
     tag: "cloudpelizzon-maintenance-panel",
     title: "Manutenção",
-    url: "/cloudpelizzon-maintenance/frontend/panel.js?v=c6dc3c47948f",
+    url: "/cloudpelizzon-maintenance/frontend/panel.js?v=120737d6b132",
   },
   // CP-SOLAR reuses the private energy/ folder and registered panel tag.
   // The SKU must always be CP-SOLAR (never an implicit CP-ENERGY grant).
@@ -1065,3 +1065,51 @@ Slot.prototype.load=async function(...args){await load.apply(this,args);if(this.
  const reset=p._reset;p._reset=function(...args){cancelAnimationFrame(this._geometryFrame475);this._geometryObserver475?.disconnect();this._geometryObserver475=null;return reset.apply(this,args);};
  p.shadowRoot.addEventListener('load',queue,true);p.render();
 };})();
+
+// Inventory dialogs share the overview density: 20261122.
+
+// Refresh network fullscreen transition: 20261122.
+
+// Refresh full-window 2D and 3D room studios: 20261122.
+
+// Refresh persisted room equipment visibility: 20261122.
+
+// Refresh full-window whole-house editor: 20261122.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.
+
+// Refresh friendly inventory history and branded reports: 20261123.

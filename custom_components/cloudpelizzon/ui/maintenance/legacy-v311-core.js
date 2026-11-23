@@ -203,17 +203,17 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
     const original = this.allCategoryDefinitions().find(c => c.name === category || c.originalName === category);
     if (original?.headerImage) return original.headerImage;
     const map = {
-      "Casa": "/cloudpelizzon-maintenance/frontend/assets/01_casa.png?v=311-final-1",
-      "Energia": "/cloudpelizzon-maintenance/frontend/assets/02_energia.png?v=311-final-1",
-      "Gás": "/cloudpelizzon-maintenance/frontend/assets/03_gas.png?v=311-final-1",
-      "Veículos": "/cloudpelizzon-maintenance/frontend/assets/04_veiculos.png?v=311-final-1",
-      "Tecnologia": "/cloudpelizzon-maintenance/frontend/assets/06_tecnologia.png?v=311-final-1"
+      "Casa": "/cloudpelizzon-maintenance/frontend/assets/01_casa.webp?v=311-final-1",
+      "Energia": "/cloudpelizzon-maintenance/frontend/assets/02_energia.webp?v=311-final-1",
+      "Gás": "/cloudpelizzon-maintenance/frontend/assets/03_gas.webp?v=311-final-1",
+      "Veículos": "/cloudpelizzon-maintenance/frontend/assets/04_veiculos.webp?v=311-final-1",
+      "Tecnologia": "/cloudpelizzon-maintenance/frontend/assets/06_tecnologia.webp?v=311-final-1"
     };
     return map[category] || "";
   }
 
   generalHeaderImage() {
-    return "/cloudpelizzon-maintenance/frontend/assets/05_visao_geral.png?v=311-final-1";
+    return "/cloudpelizzon-maintenance/frontend/assets/05_visao_geral.webp?v=311-final-1";
   }
 
   st(entity) { return this.h?.states?.[entity]; }
@@ -708,10 +708,21 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
     const preview = root?.querySelector(options.previewSelector || "[data-image-preview]");
     const clearButton = root?.querySelector(options.clearSelector || "[data-clear-image]");
     const state = { dataUrl: options.initialImage || "" };
+    const setPreviewLoaded = loaded => {
+      preview?.classList.toggle("has-image", loaded);
+      preview?.closest(".registration-image-preview")?.classList.toggle("has-image", loaded);
+    };
+    if (preview) {
+      preview.onload = () => setPreviewLoaded(preview.naturalWidth > 0);
+      preview.onerror = () => setPreviewLoaded(false);
+    }
     const show = value => {
       if (!preview) return;
-      if (value) { preview.src = value; preview.classList.add("has-image"); }
-      else { preview.removeAttribute("src"); preview.classList.remove("has-image"); }
+      setPreviewLoaded(false);
+      if (value) {
+        preview.src = value;
+        if (preview.complete && preview.naturalWidth > 0) setPreviewLoaded(true);
+      } else preview.removeAttribute("src");
     };
     show(state.dataUrl || pathInput?.value || "");
     pathInput?.addEventListener("input", () => { state.dataUrl = ""; show(pathInput.value.trim()); });
@@ -918,7 +929,7 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
 
   render() {
     this.shadowRoot.innerHTML = `
-      <link rel="stylesheet" href="/cloudpelizzon-maintenance/frontend/maintenance-v311.css?v=6c56c68944d6" data-maintenance-style="v285">
+      <link rel="stylesheet" href="/cloudpelizzon-maintenance/frontend/maintenance-v311.css?v=99e071b3dfc1" data-maintenance-style="v285">
       <ha-card>
         <div class="shell">
           <aside class="sidebar">
@@ -1118,7 +1129,10 @@ class ManutencaoResidencialCardV200 extends HTMLElement {
   }
 
   update() {
-    this.style.zoom=(window.innerWidth<=1100?1:this.v==="financeiro"?0.536:0.603);this.style.width="100%";
+    const uiZoom=window.innerWidth<=1100?1:this.v==="financeiro"?0.536:0.603;
+    this.style.zoom=uiZoom;this.style.width="100%";
+    this.style.setProperty("--cp-maintenance-dialog-zoom",String(1/uiZoom));
+    this.toggleAttribute("data-registration-view",this.v==="cadastro");
     if (!this.h) return;
     this.shadowRoot.querySelector("#upd").textContent = new Date().toLocaleString("pt-BR");
     this.shadowRoot.querySelectorAll("[data-v]").forEach(b => b.classList.toggle("active", b.dataset.v === this.v));

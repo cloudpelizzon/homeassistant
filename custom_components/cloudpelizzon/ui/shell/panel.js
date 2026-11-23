@@ -1,4 +1,5 @@
-import "/cloudpelizzon-inventory/frontend/panel.js?v=7befb3c8a36d8c5efdaa29605c24dc283243f3fb2a31e75c9ed028906c9a2a3e";
+import './refresh754.js?v=e074d2bd1eb7';
+import "/cloudpelizzon-inventory/frontend/panel.js?v=308e04b78eaa088fc981b7bd8ea86cf81c58231f3bd86fe16eb86fad554be9ed";
 
 
 
@@ -91,7 +92,7 @@ import "/cloudpelizzon-core/frontend/panel.js?v=f7b17deb421d7858c612b546410829a3
 
 
 
-import "/cloudpelizzon/frontend/optional-modules.js?v=3610e2205406e5e0c24fedc7349ed4a0ee8e582a3177af534b235f74d516a3bc";
+import "/cloudpelizzon/frontend/optional-modules.js?v=c94ada3393d5";
 
 
 
@@ -57321,33 +57322,3 @@ const protectedView=p.showProtectedView;p.showProtectedView=function(...args){cl
 
 
 })();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

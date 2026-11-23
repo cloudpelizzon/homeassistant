@@ -1,3 +1,5 @@
+> **Atualização 7.0.22:** melhorias de Manutenção, Inventário, relatórios e impressão de mapas. Instale pelo HACS e reinicie o Home Assistant. Dados locais existentes são preservados. Motores comerciais e fontes proprietários continuam fora deste repositório.
+
 # CloudPelizzon para Home Assistant
 
 ![CloudPelizzon](custom_components/cloudpelizzon/ui/core/cloudpelizzon-logo.png)

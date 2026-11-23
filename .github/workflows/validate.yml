@@ -23,6 +23,10 @@ jobs:
           persist-credentials: false
       - name: Verify reviewed public hashes and reject sensitive artifacts
         run: python3 tools/verify_public_tree.py
+      - name: Inventory reports, capture, audit and safe refresh regressions
+        run: |
+          python3 tests/inventory-improvements/run_checks.py
+          node tests/public-client/test_ui_refresh754.cjs
       - name: Build exact HACS archive below Marketplace size budget
         run: python3 tools/build_public_release.py --output /tmp/cloudpelizzon.zip
       - name: Verify document SHA-256 with HTTP fallback and 10 MB files

@@ -1,0 +1,301 @@
+{
+  "lossless": true,
+  "official_logo_unchanged": true,
+  "saved_bytes": 9901231,
+  "images": [
+    {
+      "source": "ui/maintenance/assets/01_casa.png",
+      "target": "ui/maintenance/assets/01_casa.webp",
+      "before": 475948,
+      "after": 365048,
+      "dimensions": [
+        512,
+        512
+      ],
+      "source_sha256": "7400d9c48be12a8822326916c8d0e15528b3002eb29493a7b5b9bab852a5469b",
+      "webp_sha256": "615d5b29aa5b22b0d7be11572c9c3916b9e43e4e45dd649162e8e39fca3f8cde",
+      "rgba_sha256": "0bf39a78e3dda45d84b9d40cdef65617669c5d5c8fbb10c090061d94aff6fb7b",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/maintenance/assets/02_energia.png",
+      "target": "ui/maintenance/assets/02_energia.webp",
+      "before": 539526,
+      "after": 424328,
+      "dimensions": [
+        512,
+        512
+      ],
+      "source_sha256": "a75934c344e6bfe8909be948b7eeb84b7731d270b7652a7525c7a5f22d06c024",
+      "webp_sha256": "bd4a8a28896a9e00006eaf6bc45cb531c0dfdd578b4c4cc816bfc1d1ff401ed2",
+      "rgba_sha256": "a77a4aa30882fa8ffb820a48d43ab4f8a78e59eea5d405bea1d9207d75c17516",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/maintenance/assets/03_gas.png",
+      "target": "ui/maintenance/assets/03_gas.webp",
+      "before": 465186,
+      "after": 360360,
+      "dimensions": [
+        512,
+        512
+      ],
+      "source_sha256": "3291286b101e82f4ccdedc88584ff3474c4948d3b6ae6b45b705fe5545aea067",
+      "webp_sha256": "b6855643ab70826789d745b99c02e42dcbf5ecdd382c0a15bff949fa24c8ca53",
+      "rgba_sha256": "e524cbc48a42fb78bbee30dd04562ae35ae17984ae44a1b7719338d2f4763d3e",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/maintenance/assets/04_veiculos.png",
+      "target": "ui/maintenance/assets/04_veiculos.webp",
+      "before": 423224,
+      "after": 331150,
+      "dimensions": [
+        512,
+        512
+      ],
+      "source_sha256": "d977777b2b598ace80d2cc8baf10110ad3beb35a5b4ab4a11c2b6cf9fee6ea54",
+      "webp_sha256": "04f9e9f12e07adc90b35c5dfbe30594892d08ad803912c5e0406645d082ba8b9",
+      "rgba_sha256": "ec6f8da47c98ac0b8736bb863eeeff355ce00e27153283d9b6f511d250bd63a0",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/maintenance/assets/05_visao_geral.png",
+      "target": "ui/maintenance/assets/05_visao_geral.webp",
+      "before": 2408695,
+      "after": 1815096,
+      "dimensions": [
+        1536,
+        1024
+      ],
+      "source_sha256": "779580dbfb53421edc78ae89a7c80a0dff25a59201d0b3b2640534a2c707aae8",
+      "webp_sha256": "3e057995c9d6a201e0974009236ae1733598331ca38a5304efb6816d96f58cf8",
+      "rgba_sha256": "987c76fb6b06de1000be3b3d1e8443defc0b5795f6a319ff2845042750d23a6e",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/maintenance/assets/06_tecnologia.png",
+      "target": "ui/maintenance/assets/06_tecnologia.webp",
+      "before": 436862,
+      "after": 330762,
+      "dimensions": [
+        512,
+        512
+      ],
+      "source_sha256": "93b22cba942a0655af5d41f2a2630bd699c1d99e6cf4d0c69c0e9321be5ce414",
+      "webp_sha256": "d0bfa8a2c408d347439a13e9198dcf2794cd44fc71c99768850d7c1d25c15a21",
+      "rgba_sha256": "cbd2791d3c9a0478e60b8dff23b94311bc6add368a90c3162c3a53dcb96a1911",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/cpsec-real-01-visao-geral.png",
+      "target": "ui/core/showcase/cpsec-real-01-visao-geral.webp",
+      "before": 2015348,
+      "after": 1132028,
+      "dimensions": [
+        1846,
+        824
+      ],
+      "source_sha256": "64d10aeceef9cc3aec2266f0d4c542bf9da39db230deb1ae1744555086620ef6",
+      "webp_sha256": "4ae750ff2d75ba12aca3069204fbbc3da3ebbbe0bcfb5f2ac0c1e5e98f609ec6",
+      "rgba_sha256": "00f58b8156acd1edf1fb37d032c72229a5756b90b5b022e1a9fff3e7c0392c71",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/cpauto-01-visao-geral.png",
+      "target": "ui/core/showcase/cpauto-01-visao-geral.webp",
+      "before": 1928048,
+      "after": 785482,
+      "dimensions": [
+        1865,
+        1024
+      ],
+      "source_sha256": "cc4b69b5db85e1a7f940914dc7f249bd0e31b489af3bba4d6e79f18e214df839",
+      "webp_sha256": "9dd87b67e62204e5d2f0906b6642d6907bdd0f5ff4bbab4b0e1a33bcd711510c",
+      "rgba_sha256": "3019c2144265b764b89c8266a58def7f474deff03e22eace20c7d70414e712fc",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/security-preview-03-perimetro.png",
+      "target": "ui/core/showcase/security-preview-03-perimetro.webp",
+      "before": 1763601,
+      "after": 1398514,
+      "dimensions": [
+        1536,
+        864
+      ],
+      "source_sha256": "6ee68bc7dd5cefd010b93e1f8da03fbd1a0a35f5386f5466fed52433c2a44492",
+      "webp_sha256": "f5b09fc3e97c443a3a03ee593a9a6a62af648813c3b9307a1e94e024dffb7ef5",
+      "rgba_sha256": "c6aea976d954a8c23e7bd263147bde6560ce8c4d5b94065ce80d11cd48c22d41",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/security-preview-01-visao-geral.png",
+      "target": "ui/core/showcase/security-preview-01-visao-geral.webp",
+      "before": 1655338,
+      "after": 1318056,
+      "dimensions": [
+        1536,
+        864
+      ],
+      "source_sha256": "6e36760d55436674060273e5345e6e5a15b22d6c054f1a167833c822bf1aa4a1",
+      "webp_sha256": "9007a9762a4e96f4a42826bd3e65372411bcd4901bc809d34464ae4cba122dcd",
+      "rgba_sha256": "ea4bd64ba89dde6ffc2ada519bb4af320f25c203a2865b364b0b88d8b55bbe95",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/security-preview-02-central-alarme.png",
+      "target": "ui/core/showcase/security-preview-02-central-alarme.webp",
+      "before": 1652789,
+      "after": 1315710,
+      "dimensions": [
+        1536,
+        864
+      ],
+      "source_sha256": "341ef7656a69217ae32f6983ef7e722be13efde9bf52b1b2ebb89c906f7f0c9a",
+      "webp_sha256": "4e4a39213315fae5d9be7ef65bb41f451f4696c00543d707a43ee8e1ba07e51f",
+      "rgba_sha256": "631b295569291d26941c005fb01065a7976daeb6531f0a9cbd1b0e9a4b894f2f",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/energy-preview-01-visao-geral.png",
+      "target": "ui/core/showcase/energy-preview-01-visao-geral.webp",
+      "before": 1612641,
+      "after": 644142,
+      "dimensions": [
+        1879,
+        987
+      ],
+      "source_sha256": "8ba71e865e71b5bb237c4a84e82fd5e0836ef92ab76eddb983d4c3fcc141ef5d",
+      "webp_sha256": "2f9223a712afa870bc965abf93d30d26f72d64db706afd03e1b73606670c6567",
+      "rgba_sha256": "3b9f51bae9298b542ad430425475cdecb2a1ead80354c61ce81beb66d0e14db6",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/security-preview-04-cameras-eventos.png",
+      "target": "ui/core/showcase/security-preview-04-cameras-eventos.webp",
+      "before": 1537105,
+      "after": 1167024,
+      "dimensions": [
+        1536,
+        864
+      ],
+      "source_sha256": "6376e009be36242096377db779949ae544c79db8eeda6fe444876c961d08e370",
+      "webp_sha256": "0b2cb48e6c23f55f03fbaff2e885ca029c9dee3db99eaff548fd1b3d122201e5",
+      "rgba_sha256": "ad72893dc89b5508189ddb129b612df2468866c4abfc364e9fbc89806d31f1b5",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/energy-preview-05-analises.png",
+      "target": "ui/core/showcase/energy-preview-05-analises.webp",
+      "before": 946187,
+      "after": 355748,
+      "dimensions": [
+        1868,
+        800
+      ],
+      "source_sha256": "06df00117c718636232304067607d0e5bf385b0f21dc17623e7735c3d8c39eb7",
+      "webp_sha256": "fe25bf600a61a1b8f5b5426578e6e4ec3beee3e04ab42b2c15d136f513c46806",
+      "rgba_sha256": "b22644d959b6bc2c7e6df5ea8ff8fa807248ce44cefd67a9caa3df364479b275",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/energy-preview-03-consumo.png",
+      "target": "ui/core/showcase/energy-preview-03-consumo.webp",
+      "before": 932267,
+      "after": 356238,
+      "dimensions": [
+        1868,
+        832
+      ],
+      "source_sha256": "8be6b1e44f68450b77a0c44f46a17e7973706b48da8c14508ead42cd03e981a3",
+      "webp_sha256": "72be45cce63f18898807a157325d7bdf9222d9b3636974d7b52bdb478e0c2676",
+      "rgba_sha256": "85a14c2a0bd383224b9ef4c960d636c70f1b0e33d9e6e72fc910a8dcc563c224",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/energy-flow-tempo-real.png",
+      "target": "ui/core/showcase/energy-flow-tempo-real.webp",
+      "before": 924956,
+      "after": 506862,
+      "dimensions": [
+        1828,
+        533
+      ],
+      "source_sha256": "73b4418b199899afc8b946d55f50a6a53036c84eda586f910d9b36ef7b7670f9",
+      "webp_sha256": "270173681e35c5f7899709a6f68a10e2e30b6b7507f52e2f73d9e2d6f53f7426",
+      "rgba_sha256": "c9de9b24cf818710e2b1da90fe2b59f6086a9942469ec6737d9e6dc04b82ef3e",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/cpauto-06-entidades.png",
+      "target": "ui/core/showcase/cpauto-06-entidades.webp",
+      "before": 902930,
+      "after": 315044,
+      "dimensions": [
+        1801,
+        958
+      ],
+      "source_sha256": "4335fd61cf662a01b64dc611a69ed1282d9daacd1fe5cd43ac79c7081e6db7f7",
+      "webp_sha256": "0ce512e7b18787383816822c1f5efad30fd89a78a6918745d09cceb35a4eeaa6",
+      "rgba_sha256": "366e2ab60031af3a2f0c3eb350af075e74aa86c1c5271f375b06b8b590a5825b",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/manutencao-casa.png",
+      "target": "ui/core/showcase/manutencao-casa.webp",
+      "before": 899359,
+      "after": 460194,
+      "dimensions": [
+        1699,
+        816
+      ],
+      "source_sha256": "b2540d773541a07059ac595078c897f352b3bfd22724c6bcd9ca9b52293f3fa5",
+      "webp_sha256": "683062522c28b6483957b33a0e113a984e6209b3ba73bd3cc9708c03477e17cd",
+      "rgba_sha256": "572b6d5d43517bf787ff8ec42f4ca1a4bcf8c449541bd5bfbeb8888564e1967a",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/cpauto-04-execucoes.png",
+      "target": "ui/core/showcase/cpauto-04-execucoes.webp",
+      "before": 855759,
+      "after": 270392,
+      "dimensions": [
+        1727,
+        964
+      ],
+      "source_sha256": "fb0a1065e8b484c8804f5967f6c8977700e63cf0176e269db65bd5d21efa80b0",
+      "webp_sha256": "bf469f0f43e75c97ccc47854e5124b6da95b003a0f6eb86235e7d2bf3320b3ac",
+      "rgba_sha256": "1f5bfb0dd6c54f9740cdbcf6574384a081a51a59b27a6c626672710bd46b9f9a",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/cpauto-03-automacoes.png",
+      "target": "ui/core/showcase/cpauto-03-automacoes.webp",
+      "before": 846693,
+      "after": 267104,
+      "dimensions": [
+        1673,
+        964
+      ],
+      "source_sha256": "45f9030fe6826a5b43e07ad5a876f5e243ce63a5ee674a4d797c1e36c5cbd5a6",
+      "webp_sha256": "1836f2cdc69a8e444ecf5a71cfa1bb21b86742bc84a915838c418a9b851a7d16",
+      "rgba_sha256": "2c8786ad089901bea0684f6d470c1d2f1c7993a6573da469631a22511a9086ca",
+      "pixel_identical": true
+    },
+    {
+      "source": "ui/core/showcase/cpauto-07-saude.png",
+      "target": "ui/core/showcase/cpauto-07-saude.webp",
+      "before": 840339,
+      "after": 242288,
+      "dimensions": [
+        1629,
+        957
+      ],
+      "source_sha256": "24bf0dff0181f0562643be791ef23f43dc530195d9dca083b4d11e93d0fca07d",
+      "webp_sha256": "532ef8ec85a8d1be79df470c132b910e0f51b21a504a71027f8ed92cc1d15b06",
+      "rgba_sha256": "2d1d3464894bf2b62f7bd192019ef55d6ce01ca416c20066b9d4e1c55056200f",
+      "pixel_identical": true
+    }
+  ]
+}

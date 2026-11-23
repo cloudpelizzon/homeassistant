@@ -45,6 +45,8 @@ async def register_installed(hass, entry, context, bridge):
     if not await hass.async_add_executor_job((root / 'installed627.json').is_file):
         return None
 
+    from .inventory_portal740 import MapSigningClient
+
     try:
         verified = await hass.async_add_executor_job(_verified_package, root, context)
         if verified is None:
@@ -52,7 +54,7 @@ async def register_installed(hass, entry, context, bridge):
         namespace, adapter = verified
         try:
             inventory = await adapter.register(
-                hass, entry, {**context, 'client': LocalSDK(context['trial_id'], {})}
+                hass, entry, {**context, 'client': MapSigningClient(LocalSDK(context['trial_id'], {}), context['client'], context['core_id'])}
             )
         except BaseException:
             namespace.close()
@@ -60,6 +62,16 @@ async def register_installed(hass, entry, context, bridge):
     except Exception as error:
         _LOGGER.warning('Inventory package could not be loaded (%s)', type(error).__name__)
         return None
+
+    from .inventory_portal740 import install as install_portal_export
+    install_portal_export(inventory, namespace)
+
+    from .inventory_audit723 import install as install_audit
+    try:
+        close_audit = install_audit(hass)
+    except Exception:
+        _LOGGER.exception("Inventory audit presentation could not be initialized")
+        close_audit = lambda: None
 
     previous_ready = bridge.local_ready
 
@@ -71,6 +83,7 @@ async def register_installed(hass, entry, context, bridge):
     hass.data[KEY] = namespace
 
     def close():
+        close_audit()
         if hass.data.get(KEY) is namespace:
             hass.data.pop(KEY)
         if bridge.local_ready is ready:

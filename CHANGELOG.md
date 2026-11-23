@@ -1,3 +1,13 @@
+## 7.0.22 — Manutenção, Inventário e documentação da instalação
+
+- Corrige imagens, prévias, escala e altura dos cadastros e editores de Manutenção.
+- Melhora os cadastros do Inventário, a tela cheia da rede e as plantas 2D/3D, preservando os equipamentos posicionados.
+- Padroniza relatórios PDF/Excel, cabeçalhos institucionais, indicadores exclusivos e histórico legível.
+- Permite ajustar zoom e recorte da rede antes da impressão; melhora carregamento dos modelos e captura 3D com fundo branco.
+- Inclui adaptadores de replicação consentida e atualização segura de abas por hashes portáveis.
+- Reduz o pacote com imagens oficiais em WebP sem perda, preservando o logo original.
+- Mantém motores comerciais, fontes proprietários, dados e configurações pessoais fora da distribuição pública.
+
 ## 7.0.21
 
 - Move integration file reads and timezone loading off the Home Assistant event loop.

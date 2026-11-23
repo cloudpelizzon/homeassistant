@@ -72,7 +72,7 @@ def verify(root):
     if type(document) is not dict or set(document) != {'schema', 'files'} or document['schema'] != 'cp.ui.inventory73.v1':
         raise ValueError('invalid_public_inventory')
     expected = document['files']
-    if type(expected) is not dict or not 7 <= len(expected) <= 320:
+    if type(expected) is not dict or not 7 <= len(expected) <= 384:
         raise ValueError('invalid_public_inventory_size')
     seen = set()
     sections = set()
@@ -81,7 +81,7 @@ def verify(root):
         if (type(name) is not str or '\\' in name or ':' in name or path.is_absolute()
                 or any(part in ('', '.', '..') for part in name.split('/'))
                 or len(path.parts) < 3 or '/'.join(path.parts[:2]) not in ROUTES.values()
-                or path.suffix.lower() not in SUFFIXES or name.casefold() in seen
+                or (path.suffix.lower() not in SUFFIXES and name != 'ui/shell/ui-version.json') or name.casefold() in seen
                 or type(digest) is not str or len(digest) != 64 or any(c not in '0123456789abcdef' for c in digest)):
             raise ValueError('unsafe_public_asset_name')
         seen.add(name.casefold())
