@@ -1,5 +1,5 @@
 const CP_BASE = "/cloudpelizzon-maintenance/frontend";
-const CP_CORE_URL = `${CP_BASE}/legacy-v311-core.js?v=80e40d8bcf99`;
+const CP_CORE_URL = `${CP_BASE}/legacy-v311-core.js?v=0ccb2ccbc8ca`;
 const CP_CORE_TAG = "cloudpelizzon-maintenance-v311-core";
 const CP_API_SNAPSHOT = "cloudpelizzon/maintenance/compat/get_snapshot";
 const CP_API_SAVE = "cloudpelizzon/maintenance/compat/save_snapshot";
@@ -12,11 +12,11 @@ const CP_API_NOTIFY_CHECK = "cloudpelizzon/maintenance/notifications/check_now";
 const CP_LICENSE_STATUS = "cloudpelizzon/core/license/status";
 const CP_MODULE_SKU = "CP-MAINTENANCE";
 const CP_CATEGORY_DEFAULTS = {
-  "Casa": {icon:"🏠", image:`${CP_BASE}/assets/01_casa.png`},
-  "Energia": {icon:"⚡", image:`${CP_BASE}/assets/02_energia.png`},
-  "Gás": {icon:"🔥", image:`${CP_BASE}/assets/03_gas.png`},
-  "Veículos": {icon:"🚗", image:`${CP_BASE}/assets/04_veiculos.png`},
-  "Tecnologia": {icon:"💻", image:`${CP_BASE}/assets/06_tecnologia.png`},
+  "Casa": {icon:"🏠", image:`${CP_BASE}/assets/01_casa.webp`},
+  "Energia": {icon:"⚡", image:`${CP_BASE}/assets/02_energia.webp`},
+  "Gás": {icon:"🔥", image:`${CP_BASE}/assets/03_gas.webp`},
+  "Veículos": {icon:"🚗", image:`${CP_BASE}/assets/04_veiculos.webp`},
+  "Tecnologia": {icon:"💻", image:`${CP_BASE}/assets/06_tecnologia.webp`},
 };
 
 let corePromise = null;
@@ -131,7 +131,7 @@ function patchLegacyPrototype() {
     const found=this.categoryDefinitions().find(x=>x.name===category||x.originalName===category);
     return found?.headerImage || CP_CATEGORY_DEFAULTS[category]?.image || "";
   };
-  p.generalHeaderImage = function () { return `${CP_BASE}/assets/05_visao_geral.png`; };
+  p.generalHeaderImage = function () { return `${CP_BASE}/assets/05_visao_geral.webp`; };
   p.houseProfile = function () { return genericProfile(this.registrationData?.profile || {}); };
 
   // Keep the exact V311 cards/finance/history logic, but mark backend items as
@@ -238,7 +238,7 @@ class CloudPelizzonMaintenancePanel extends HTMLElement {
     this.shadowRoot.innerHTML = `
       <style>
         :host{display:block;min-height:100vh;background:#020a12;color:#eefaff;font-family:Inter,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
-        *{box-sizing:border-box}.showcase{position:relative;min-height:100vh;overflow:hidden;background:#020a12}.shot{position:absolute;inset:0;background-position:center top;background-size:contain;background-repeat:no-repeat;opacity:0;will-change:opacity;animation:cpShot 18s linear infinite both}.s1{background-image:url('${CP_BASE}/showcase/manutencao-casa.png')}.s2{background-image:url('${CP_BASE}/showcase/manutencao-financeiro.png');animation-delay:-9s}@keyframes cpShot{0%,44%{opacity:1}50%,94%{opacity:0}100%{opacity:1}}
+        *{box-sizing:border-box}.showcase{position:relative;min-height:100vh;overflow:hidden;background:#020a12}.shot{position:absolute;inset:0;background-position:center top;background-size:contain;background-repeat:no-repeat;opacity:0;will-change:opacity;animation:cpShot 18s linear infinite both}.s1{background-image:url('${CP_BASE}/showcase/manutencao-casa.webp')}.s2{background-image:url('${CP_BASE}/showcase/manutencao-financeiro.png');animation-delay:-9s}@keyframes cpShot{0%,44%{opacity:1}50%,94%{opacity:0}100%{opacity:1}}
         .veil{position:absolute;inset:0;background:linear-gradient(180deg,rgba(1,8,13,.10),rgba(1,8,13,.24)),radial-gradient(circle at 50% 42%,rgba(1,8,13,.02) 0 22%,rgba(1,8,13,.10) 60%,rgba(1,8,13,.24) 100%);pointer-events:none}
         .lock-wrap{position:relative;z-index:2;min-height:100vh;display:grid;place-items:center;padding:28px}.lock-card{width:min(630px,90vw);padding:23px 26px;border-radius:22px;border:1px solid rgba(58,188,246,.48);background:linear-gradient(145deg,rgba(5,28,42,.92),rgba(3,16,25,.90));box-shadow:0 28px 95px rgba(0,0,0,.48),0 0 55px rgba(25,164,231,.08);text-align:center}.lock-card:before{content:"";display:block;width:84px;height:4px;border-radius:999px;background:linear-gradient(90deg,#0e7dc9,#41c8ff);margin:0 auto 16px;box-shadow:0 0 24px rgba(65,200,255,.45)}
         .badge{display:inline-flex;align-items:center;gap:6px;padding:7px 11px;border-radius:999px;border:1px solid rgba(255,200,84,.45);background:rgba(76,53,7,.66);color:#ffd66d;font-size:10px;font-weight:900}.lock-card h1{margin:13px 0 6px;font-size:31px}.lock-card p{max-width:610px;margin:0 auto;color:#93adba;font-size:12px;line-height:1.6}.meta{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:17px 0}.meta>div{padding:10px;border-radius:11px;background:#04131d;border:1px solid rgba(255,255,255,.07);text-align:left}.meta span{display:block;color:#648697;font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}.meta code,.meta b{display:block;margin-top:4px;color:#d9f3ff;font-size:10px;word-break:break-all}.actions{display:flex;justify-content:center;gap:9px;flex-wrap:wrap}.primary,.secondary,.whatsapp{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:11px 16px;border-radius:11px;font-weight:900;font-size:10px;cursor:pointer}.primary{border:1px solid #49c5ff;background:linear-gradient(135deg,#0869b3,#13a4f7);color:#fff}.secondary{border:1px solid rgba(95,166,197,.36);background:#0a2230;color:#d6effa}.whatsapp{border:1px solid #35cf79;background:#0c6a3c;color:#fff}.hint{display:block;margin-top:13px;color:#5e8293;font-size:8px}.dots{display:flex;justify-content:center;gap:6px;margin-top:14px}.dots i{width:22px;height:3px;border-radius:999px;background:#214657}.dots i:first-child{animation:cpDot 18s linear infinite}.dots i:last-child{animation:cpDot 18s linear -9s infinite}@keyframes cpDot{0%,44%{background:#42c7ff}50%,94%{background:#214657}100%{background:#42c7ff}}
@@ -320,7 +320,9 @@ class CloudPelizzonMaintenancePanel extends HTMLElement {
         items: [],
       });
       this.hydrateCard(card, snapshot);
-      card.style.zoom=(window.innerWidth<=1100?1:0.603);card.style.width="100%";
+      const uiZoom=window.innerWidth<=1100?1:0.603;
+      card.style.zoom=uiZoom;card.style.width="100%";
+      card.style.setProperty("--cp-maintenance-dialog-zoom",String(1/uiZoom));
       this._card = card;
       this.shadowRoot.replaceChildren(card);
       card.hass = this.createHassProxy(this._hass, card);

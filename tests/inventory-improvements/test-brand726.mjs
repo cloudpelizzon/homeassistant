@@ -1,0 +1,18 @@
+import assert from 'node:assert/strict';
+import crypto from 'node:crypto';
+import fs from 'node:fs';
+import {LOGO,BRAND_BLUE,BRAND_DEEP_BLUE} from './brand726.js';
+import {prepareReport,reportHtml,buildWorkbook} from './reports.js';
+import {createRequire} from 'node:module';
+const bytes=Buffer.from(LOGO.split(',')[1],'base64');
+assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),'09589abe9aab02e51543e959be9b492073febf2a38a864dbe624911bcb85b9ac');
+assert.deepEqual([BRAND_BLUE,BRAND_DEEP_BLUE],['0080FC','005FFC']);
+const r=prepareReport({filename:'devices.csv',columns:['Nome'],rows:[]});
+const html=reportHtml(r);assert(html.includes('alt="Logo oficial CloudPelizzon"'));assert(html.includes(LOGO));assert(!html.includes('<strong>Cloud<span>'));assert(!html.includes('#22D3EE'));assert(!html.includes('#2DD4BF'));
+const Excel=createRequire(import.meta.url)('./exceljs-4.4.0.min.js'),png='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/l9kAAAAASUVORK5CYII=';
+const book=await buildWorkbook(r,Excel,async()=>png);
+assert.equal(book.getWorksheet('Resumo').getImages()[0].imageId,book.getWorksheet('Detalhamento').getImages()[0].imageId);
+assert.equal(book.getWorksheet('Resumo').getCell('A1').value??'','');
+assert.equal(book.getWorksheet('Resumo').getRow(1).height,46);
+fs.writeFileSync(new URL('./test-official-brand726.xlsx',import.meta.url),Buffer.from(await book.xlsx.writeBuffer()));
+console.log('PASS: official logo bytes unchanged, exact logo blue tones, actual logo in HTML and both Excel headers, original cyan/mint removed, header height preserves image proportions.');

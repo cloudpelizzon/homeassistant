@@ -10775,3 +10775,81 @@ button[data-alert-test]:disabled,button[data-test]:disabled{opacity:.58;cursor:n
  .maintenance-entry-overlay .finance-estimate-grid{grid-template-columns:repeat(3,minmax(0,1fr))}
  .maintenance-entry-overlay .finance-form-grid:not(.finance-estimate-grid){grid-template-columns:repeat(2,minmax(0,1fr))}
 }
+
+/* 2026-11-22: dialogs keep normal size inside the compact desktop panel. */
+#modal .overlay{zoom:var(--cp-maintenance-dialog-zoom,1);padding:16px}
+#modal .registration-edit-modal{width:min(1000px,calc(100vw - 32px));max-width:100%;max-height:calc(100dvh - 32px);overflow-y:auto;overflow-x:hidden;padding:24px}
+#modal .registration-grid{grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(70px,1fr);gap:16px}
+#modal .registration-grid>*,#modal .registration-image-field>*{min-width:0;max-width:100%}
+#modal .registration-grid input,#modal .registration-grid select,#modal .registration-grid textarea{max-width:100%;width:100%;font-size:14px;min-height:40px}
+#modal .registration-grid label{font-size:13px;line-height:1.5}
+#modal .registration-image-field{grid-template-columns:minmax(0,1fr) minmax(150px,.5fr) 140px;gap:12px}
+#modal .registration-image-preview{width:100%;height:90px;min-width:0}
+#modal .registration-file-label>span{white-space:normal;font-size:13px;min-height:40px}
+#modal .finance-entry-actions{display:flex;flex-wrap:wrap;gap:12px;margin-top:20px}
+#modal .finance-entry-actions button{font-size:14px;min-height:40px}
+.registration-form .registration-image-field.registration-full{grid-template-columns:minmax(0,1fr) 132px 62px!important}
+@media(max-width:700px){
+ #modal .overlay{padding:8px}
+ #modal .registration-edit-modal{width:calc(100vw - 16px);max-height:calc(100dvh - 16px);padding:18px}
+ #modal .registration-grid,#modal .registration-image-field{grid-template-columns:minmax(0,1fr)!important}
+ #modal .registration-image-preview{height:140px}
+ .registration-form .registration-image-field.registration-full{grid-template-columns:minmax(0,1fr)!important;grid-template-areas:none!important}
+ .registration-form .registration-image-field.registration-full>*{grid-area:auto!important;min-width:0!important}
+}
+
+/* Registration uses readable, unscaled controls in both create and edit. */
+:host([data-registration-view]) .registration-head h2{font-size:22px!important}
+:host([data-registration-view]) .registration-head p{font-size:13px!important}
+:host([data-registration-view]) .registration-grid{gap:16px!important;grid-template-columns:minmax(0,2fr) minmax(0,1fr) minmax(70px,1fr)}
+:host([data-registration-view]) .registration-grid label{font-size:14px!important;min-width:0!important}
+:host([data-registration-view]) .registration-grid input,:host([data-registration-view]) .registration-grid select,:host([data-registration-view]) .registration-grid textarea{font-size:14px!important;min-height:42px!important;max-width:100%;width:100%}
+:host([data-registration-view]) .registration-image-field.registration-full{grid-template-columns:minmax(0,1fr) minmax(150px,.6fr) 160px!important;grid-template-areas:none!important;gap:14px!important;padding:14px!important;min-height:140px!important}
+:host([data-registration-view]) .registration-image-field.registration-full>*{min-width:0!important;grid-area:auto!important}
+:host([data-registration-view]) .registration-image-field.registration-full .registration-file-label>span{font-size:13px!important;min-height:44px!important;height:auto!important;padding:10px!important;white-space:normal!important}
+:host([data-registration-view]) .registration-image-preview{width:160px!important;height:110px!important;min-height:110px!important}
+:host([data-registration-view]) .registration-save{font-size:15px!important;min-height:44px!important}
+@media(max-width:1250px){
+ :host([data-registration-view]) .registration-layout{grid-template-columns:minmax(0,1fr)!important}
+}
+@media(max-width:700px){
+ :host([data-registration-view]) .registration-grid,:host([data-registration-view]) .registration-image-field.registration-full{grid-template-columns:minmax(0,1fr)!important}
+ :host([data-registration-view]) .registration-image-preview{width:100%!important;height:150px!important}
+}
+
+:host([data-registration-view]) header{flex-wrap:wrap}
+
+:host([data-registration-view]) .registration-grid.maintenance-fields,#modal .registration-grid.maintenance-fields{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+:host([data-registration-view]) .registration-grid input[type=checkbox],#modal .registration-grid input[type=checkbox]{width:20px!important;height:20px!important;min-height:20px!important}
+:host([data-registration-view]) .registration-grid input[type=color],#modal .registration-grid input[type=color]{width:64px!important;height:42px!important}
+@media(max-width:700px){:host([data-registration-view]) .registration-grid.maintenance-fields,#modal .registration-grid.maintenance-fields{grid-template-columns:minmax(0,1fr)!important}}
+
+/* Preview state follows successful image loading; fit the complete image. */
+.registration-image-preview.has-image::before{content:none!important;display:none!important}
+.registration-image-preview img{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;max-width:100%!important;max-height:100%!important;min-width:0!important;min-height:0!important;padding:4px!important;object-fit:contain!important;object-position:center!important;transform:none!important;box-sizing:border-box!important}
+
+/* Larger complete-image previews in category and maintenance forms. */
+:host([data-registration-view]) .registration-image-field,
+:host([data-registration-view]) .registration-image-field.registration-full,
+#modal .registration-image-field{grid-template-columns:minmax(0,1fr) minmax(150px,.6fr) 220px!important}
+:host([data-registration-view]) .registration-image-preview,
+#modal .registration-image-preview{width:220px!important;height:160px!important;min-height:160px!important}
+@media(max-width:700px){
+ :host([data-registration-view]) .registration-image-field,
+ :host([data-registration-view]) .registration-image-field.registration-full,
+ #modal .registration-image-field{grid-template-columns:minmax(0,1fr)!important}
+ :host([data-registration-view]) .registration-image-preview,
+ #modal .registration-image-preview{width:100%!important;height:200px!important;min-height:200px!important}
+}
+
+/* Category and maintenance editors follow the same scale as their forms. */
+#modal .overlay:has(>.registration-edit-modal){zoom:1}
+#modal .registration-edit-modal .registration-grid label{font-size:14px}
+#modal .registration-edit-modal .registration-grid input,
+#modal .registration-edit-modal .registration-grid select,
+#modal .registration-edit-modal .registration-grid textarea{font-size:14px;min-height:42px}
+#modal .registration-edit-modal .finance-entry-actions button{min-height:44px}
+
+/* Account for the panel scale when limiting editor height to the viewport. */
+#modal .registration-edit-modal{max-height:calc((100dvh - 32px) * var(--cp-maintenance-dialog-zoom,1))}
+@media(max-width:700px){#modal .registration-edit-modal{max-height:calc((100dvh - 16px) * var(--cp-maintenance-dialog-zoom,1))}}

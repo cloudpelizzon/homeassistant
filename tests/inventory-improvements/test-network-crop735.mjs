@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {zoomBox735,panBox735} from './networkPrint735.js';
+const original={x:-200,y:80,w:1200,h:600},snapshot=JSON.stringify(original);
+const anchor={x:100,y:200},closer=zoomBox735(original,.5,anchor);
+assert.deepEqual(closer,{x:-50,y:140,w:600,h:300});
+assert.equal((anchor.x-original.x)/original.w,(anchor.x-closer.x)/closer.w);
+assert.equal((anchor.y-original.y)/original.h,(anchor.y-closer.y)/closer.h);
+assert.deepEqual(zoomBox735(closer,2,anchor),original);
+assert.deepEqual(panBox735(closer,70,-30),{x:-120,y:170,w:600,h:300});
+assert.equal(JSON.stringify(original),snapshot);
+assert.ok(Number.isFinite(zoomBox735(original,0).w));
+console.log('PASS: cursor-anchored zoom, inverse zoom, pan direction, preserved aspect and immutable source bounds.');

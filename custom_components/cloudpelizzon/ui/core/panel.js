@@ -439,19 +439,19 @@ const CP_MODULES = {
 
 // CP_AUTOMATION_GALLERY_V022: capturas originais autorizadas pelo proprietário para publicação na galeria pública.
 const CP_AUTOMATION_PREVIEWS = [
-  {file:"cpauto-01-visao-geral.png",title:"Visão Geral",desc:"Painel operacional, categorias, eventos e indicadores."},
+  {file:"cpauto-01-visao-geral.webp",title:"Visão Geral",desc:"Painel operacional, categorias, eventos e indicadores."},
   {file:"cpauto-02-categorias.png",title:"Categorias",desc:"Inventário das categorias monitoradas."},
-  {file:"cpauto-03-automacoes.png",title:"Automações",desc:"Consulta das automações, status e última execução."},
-  {file:"cpauto-04-execucoes.png",title:"Execuções",desc:"Histórico e frequência de execuções."},
+  {file:"cpauto-03-automacoes.webp",title:"Automações",desc:"Consulta das automações, status e última execução."},
+  {file:"cpauto-04-execucoes.webp",title:"Execuções",desc:"Histórico e frequência de execuções."},
   {file:"cpauto-05-auditoria.png",title:"Auditoria",desc:"Integridade do inventário e diagnósticos."},
-  {file:"cpauto-06-entidades.png",title:"Entidades do sistema",desc:"Consulta das entidades integradas ao Home Assistant."},
-  {file:"cpauto-07-saude.png",title:"Saúde operacional",desc:"Indicadores de saúde e alertas de consistência."},
+  {file:"cpauto-06-entidades.webp",title:"Entidades do sistema",desc:"Consulta das entidades integradas ao Home Assistant."},
+  {file:"cpauto-07-saude.webp",title:"Saúde operacional",desc:"Indicadores de saúde e alertas de consistência."},
   {file:"cpauto-08-insights.png",title:"Insights de governança",desc:"Análise preventiva e recomendações."}
 ];
 
 // CP_CATALOG_SECURITY_V023 - previas reais apenas no ambiente privado
 const CP_SECURITY_PREVIEWS = [
-  {file:"cpsec-real-01-visao-geral.png",title:"Visão Geral",desc:"Núcleo de segurança, casa, alarmes, câmeras, presença e eventos."},
+  {file:"cpsec-real-01-visao-geral.webp",title:"Visão Geral",desc:"Núcleo de segurança, casa, alarmes, câmeras, presença e eventos."},
   {file:"cpsec-real-02-sensores.png",title:"Sensores",desc:"Sensores monitorados, estados e níveis de bateria."},
   {file:"cpsec-real-03-portas-janelas.png",title:"Portas e janelas",desc:"Estado dos acessos, portas e janelas."},
   {file:"cpsec-real-04-perimetro.png",title:"Perímetro",desc:"Integridade do perímetro e controles de portão e cerca."},
@@ -460,7 +460,7 @@ const CP_SECURITY_PREVIEWS = [
 ];
 
 const CP_MAINT_PREVIEWS = [
-  {file:"manutencao-casa.png", title:"Visão Geral / Operação", desc:"Saúde, vencimentos, planejamento, categorias e execução."},
+  {file:"manutencao-casa.webp", title:"Visão Geral / Operação", desc:"Saúde, vencimentos, planejamento, categorias e execução."},
   {file:"manutencao-financeiro.png", title:"Financeiro", desc:"Gastos, economia, materiais, mão de obra e provisões."},
   {file:"manutencao-cadastro.png", title:"Cadastro e gestão", desc:"Cadastro, edição, imagens, ciclos, prioridades e categorias."},
   {file:"manutencao-historico.png", title:"Histórico", desc:"Filtros, prazos, prioridades, status e histórico operacional."},
@@ -468,7 +468,7 @@ const CP_MAINT_PREVIEWS = [
 
 const CP_ENERGY_PREVIEWS = [
   {
-    file:"energy-preview-01-visao-geral.png",
+    file:"energy-preview-01-visao-geral.webp",
     title:"Visão Geral",
     desc:"Malha energética em tempo real, indicadores do dia, fluxo entre geração, residência e rede, consumidores e equipamentos."
   },
@@ -478,7 +478,7 @@ const CP_ENERGY_PREVIEWS = [
     desc:"Produção e desempenho dos geradores, participação das fontes e curva de potência do período."
   },
   {
-    file:"energy-preview-03-consumo.png",
+    file:"energy-preview-03-consumo.webp",
     title:"Consumo",
     desc:"Demanda da residência, consumo por quadro e ranking individual das cargas monitoradas."
   },
@@ -488,7 +488,7 @@ const CP_ENERGY_PREVIEWS = [
     desc:"Importação, exportação, saldo e histórico de intercâmbio energético com a concessionária."
   },
   {
-    file:"energy-preview-05-analises.png",
+    file:"energy-preview-05-analises.webp",
     title:"Análises",
     desc:"Autoconsumo, autossuficiência, dependência da rede, balanço energético e indicadores consolidados."
   }

@@ -517,20 +517,108 @@ dialog:not([open]){display:none!important}
  flex:1 1 0!important;min-height:0!important;height:auto!important;
 }
 
-/* All Inventory subviews use the full browser viewport, even at compact panel density. */
-:host dialog.inventory-fullscreen-dialog {
-  position: fixed !important;
-  inset: 0 !important;
-  box-sizing: border-box !important;
-  width: 100vw !important;
-  width: 100dvw !important;
-  height: 100vh !important;
-  height: 100dvh !important;
-  max-width: none !important;
-  max-height: none !important;
-  margin: 0 !important;
-  border-radius: 0 !important;
+/* Shared dialog density follows the Inventory overview, including nested editors. */
+:host dialog.inventory-scaled-dialog {
+ zoom:1!important;box-sizing:border-box!important;min-width:0!important;
+ max-width:calc((100vw - 32px) / var(--inventory-density631,1))!important;
+ max-height:calc((100dvh - 40px) / var(--inventory-density631,1))!important;
+ margin:auto!important;font:14px/1.5 Inter,"Segoe UI",sans-serif;
 }
-:host dialog.inventory-fullscreen-dialog:not([open]) {
-  display: none;
+:host dialog.inventory-scaled-dialog:not([open]){display:none!important}
+:host dialog.inventory-scaled-dialog :is(input,select,textarea){box-sizing:border-box;min-width:0;max-width:100%}
+:host dialog.inventory-scaled-dialog img{max-width:100%;object-fit:contain}
+:host dialog.cmdb-dialog515[data-layout637][data-layout650]{
+ zoom:1!important;width:min(1440px,calc((100vw - 32px) / var(--inventory-density631,1)))!important;
+ height:min(850px,calc((100dvh - 40px) / var(--inventory-density631,1)))!important;
+ font-size:14px!important;inset:0!important;
 }
+:host dialog.cmdb-dialog515[data-layout650] :is(input,select,textarea){font-size:13px!important;min-height:38px!important}
+:host dialog.cmdb-dialog515[data-layout650] label{font-size:13px!important;line-height:1.5!important}
+:host dialog.cmdb-dialog515[data-layout650] button{font-size:12px!important;min-height:36px!important}
+:host dialog.cmdb-dialog515[data-layout650] #device-form{grid-template-columns:180px minmax(0,1fr)!important}
+:host dialog.cmdb-dialog515[data-layout650] .cmdb-tabs515 button{width:100%;text-align:left}
+:host dialog.document-preview637{zoom:1!important;width:calc((100vw - 48px) / var(--inventory-density631,1))!important;height:calc((100dvh - 48px) / var(--inventory-density631,1))!important}
+@media(max-width:899px){
+ :host dialog.inventory-scaled-dialog{max-width:calc(100vw - 16px)!important;max-height:calc(100dvh - 24px)!important;padding:16px!important}
+ :host dialog.cmdb-dialog515[data-layout637][data-layout650]{width:calc(100vw - 16px)!important;height:calc(100dvh - 24px)!important}
+ :host dialog.cmdb-dialog515[data-layout650] #device-form{grid-template-columns:minmax(0,1fr)!important}
+ :host dialog.cmdb-dialog515[data-layout650] :is(input,select,textarea){font-size:16px!important}
+}
+
+/* Room studios use the complete viewport; equipment forms keep overview density. */
+:host dialog.room-detail567.inventory-scaled-dialog {
+ zoom:calc(1 / var(--inventory-density631,1))!important;
+ position:fixed!important;inset:0!important;margin:0!important;
+ width:100dvw!important;max-width:100dvw!important;
+ height:100dvh!important;max-height:100dvh!important;
+ box-sizing:border-box!important;border-radius:0!important;padding:14px!important;
+ display:flex!important;flex-direction:column!important;overflow:hidden!important;
+}
+:host dialog.room-detail567.inventory-scaled-dialog:not([open]){display:none!important}
+:host dialog.room-detail567 .room-detail-heading567{gap:12px;flex-wrap:wrap;padding-bottom:10px}
+:host dialog.room-detail567 .room-detail-workspace567{flex:1 1 0;min-height:0;min-width:0;grid-template-columns:minmax(0,1fr) 260px;gap:12px}
+:host dialog.room-detail567 .room-detail-canvas567{min-height:0;min-width:0}
+:host dialog.room-detail567 .room-detail-fit567{flex:1 1 0;min-height:0;min-width:0}
+:host dialog.room-detail567 .room-detail-sidebar567{min-height:0;overflow:auto}
+@media(max-width:700px){
+ :host dialog.room-detail567.inventory-scaled-dialog{padding:8px!important}
+ :host dialog.room-detail567 .room-detail-workspace567{grid-template-columns:1fr;grid-template-rows:minmax(200px,1fr) 150px}
+ :host dialog.room-detail567 .room-detail-sidebar567{display:flex;overflow:auto}
+}
+
+/* Whole-house editor fills the same viewport as individual room studios. */
+:host dialog.building-dialog596.inventory-scaled-dialog{
+ zoom:calc(1 / var(--inventory-density631,1))!important;
+ position:fixed!important;inset:0!important;margin:0!important;
+ width:100dvw!important;max-width:100dvw!important;
+ height:100dvh!important;max-height:100dvh!important;
+ box-sizing:border-box!important;border-radius:0!important;padding:14px!important;
+ display:flex!important;flex-direction:column!important;overflow:hidden!important;gap:10px;
+}
+:host dialog.building-dialog596.inventory-scaled-dialog:not([open]){display:none!important}
+:host dialog.building-dialog596 .building-head596{flex:none;flex-wrap:wrap;gap:10px}
+:host dialog.building-dialog596 .building-bar596{flex:none;flex-wrap:wrap}
+:host dialog.building-dialog596 .building-canvas596{flex:1 1 0!important;min-height:0!important;height:auto!important;min-width:0}
+:host dialog.building-dialog596 .building-foot596{flex:none}
+@media(max-width:700px){:host dialog.building-dialog596.inventory-scaled-dialog{padding:8px!important;gap:6px}}
+
+/* Human-readable Inventory audit: same data in the screen and exports. */
+.cp-audit-event723{padding:22px 0;border-bottom:1px solid #40546a}
+.cp-audit-event723:last-child{border-bottom:0}
+.cp-audit-event723 header{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;background:none!important;height:auto!important;padding:0!important}
+.cp-audit-event723 h3{font-size:20px;margin:6px 0 16px;color:#eef8ff}
+.cp-audit-event723 .eyebrow{color:#67e8f9}
+.cp-audit-meta723{display:grid;gap:7px;font-size:13px;color:#b9ccda;align-content:start}
+.cp-audit-table723{overflow-x:auto;margin-top:8px}
+.cp-audit-table723 table{width:100%;table-layout:fixed;border-collapse:collapse}
+.cp-audit-table723 th,.cp-audit-table723 td{padding:12px;border:1px solid #3a5064;text-align:left;overflow-wrap:anywhere;font-size:13px}
+.cp-audit-table723 thead{background:#123043;color:#b8f7ff}
+.cp-audit-table723 tbody td:last-child{color:#79ead2}
+.cp-audit-event723 details{margin-top:12px;color:#b2c7d8}
+@media(max-width:700px){.cp-audit-table723 table{min-width:600px}.cp-audit-event723{padding:16px 0}}
+
+/* Report workspace fills the viewport without changing exported paper dimensions. */
+:host dialog:is(.map-print592,.print3d593).inventory-scaled-dialog{
+ zoom:calc(1 / var(--inventory-density631,1))!important;
+ position:fixed!important;inset:0!important;margin:0!important;
+ width:100dvw!important;max-width:100dvw!important;height:100dvh!important;max-height:100dvh!important;
+ box-sizing:border-box!important;border-radius:0!important;padding:14px!important;
+ display:flex!important;flex-direction:column!important;overflow:hidden!important;gap:8px;
+}
+:host dialog:is(.map-print592,.print3d593).inventory-scaled-dialog:not([open]){display:none!important}
+:host dialog.map-print592 :is(.print-header596,.print-options592,.print-toggles596,.print-actions596,[data-print-status592]){flex:none;margin-top:0;margin-bottom:0}
+:host dialog.map-print592 .print-preview596{flex:1 1 0!important;min-width:0;min-height:0!important;max-height:none!important;overflow:auto;display:flex;flex-direction:column;gap:8px}
+:host dialog.map-print592 .print-camera-tools596{flex:none}
+:host dialog.map-print592 .print-scene593{flex:1 0 300px!important;height:auto!important;min-height:300px!important;max-height:none!important;position:relative}
+:host dialog.map-print592 .print-preview596>iframe.map-print-frame592{flex:1 0 300px!important;height:auto!important;min-height:300px!important;width:100%!important}
+:host dialog.map-print592 .print-preview596>details{flex:none}
+:host dialog.map-print592 .print-preview596>details iframe.map-print-frame592{width:100%!important;height:75dvh!important}
+:host dialog.print3d593 [data-current-host593]{flex:1 1 0;min-height:0;display:flex}
+:host dialog.print3d593 iframe.map-print-frame592{flex:1;height:100%!important;min-height:0!important;width:100%!important}
+@media(max-width:700px){:host dialog:is(.map-print592,.print3d593).inventory-scaled-dialog{padding:8px!important;overflow:auto!important}}
+
+/* Print-only network framing controls stay outside the exported document. */
+:host dialog.map-print592 .print-network-tools735{display:flex;flex:none;align-items:center;gap:8px;flex-wrap:wrap;background:#1c222c;border-radius:8px;padding:8px 10px}
+:host dialog.map-print592 .print-network-tools735 span{flex:1;min-width:200px;font-size:13px;color:#d8e8f5}
+:host dialog.map-print592 .print-network-tools735 output{min-width:50px;text-align:center;color:#eef7ff;font-size:13px}
+:host dialog.map-print592 .print-network-tools735 button{flex:none}
